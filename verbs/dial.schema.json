@@ -59,9 +59,19 @@
       "description": "URL of an audio file to play to the caller while the outbound call is ringing. Replaces the default ringback tone."
     },
     "dtmfCapture": {
-      "type": "object",
-      "description": "Configuration for capturing DTMF digits during the bridged call. Keys are DTMF patterns to capture, values are configuration for each.",
-      "additionalProperties": true
+      "oneOf": [
+        {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Array of DTMF patterns to capture on both call legs."
+        },
+        {
+          "type": "object",
+          "description": "Per-leg DTMF capture configuration with childCall and/or parentCall arrays.",
+          "additionalProperties": true
+        }
+      ],
+      "description": "Configuration for capturing DTMF digits during the bridged call. Can be a simple array of patterns (applied to both legs) or an object with childCall/parentCall arrays."
     },
     "dtmfHook": {
       "$ref": "../components/actionHook",
