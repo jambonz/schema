@@ -69,16 +69,19 @@
       "additionalProperties": true
     },
     "listen": {
-      "$ref": "listen",
-      "description": "Nested listen verb — session-level audio streaming configuration."
+      "type": "object",
+      "description": "Session-level audio streaming configuration defaults. Properties match the listen verb but no fields are required here.",
+      "additionalProperties": true
     },
     "stream": {
-      "$ref": "stream",
-      "description": "Nested stream verb — session-level audio streaming configuration. Alias for 'listen'."
+      "type": "object",
+      "description": "Session-level audio streaming configuration defaults. Alias for 'listen'.",
+      "additionalProperties": true
     },
     "transcribe": {
-      "$ref": "transcribe",
-      "description": "Nested transcribe verb — session-level real-time transcription configuration."
+      "type": "object",
+      "description": "Session-level transcription configuration defaults.",
+      "additionalProperties": true
     },
     "amd": {
       "$ref": "../components/amd",
