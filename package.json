@@ -1,0 +1,39 @@
+{
+  "name": "@jambonz/schema",
+  "version": "0.1.0",
+  "description": "JSON Schema definitions and validation for jambonz verb applications",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/",
+    "lint": "eslint lib/ index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jambonz/schema.git"
+  },
+  "author": "Dave Horton",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jambonz/schema/issues"
+  },
+  "homepage": "https://github.com/jambonz/schema#readme",
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "debug": "^4.3.4"
+  },
+  "devDependencies": {
+    "eslint": "^9.3.0",
+    "eslint-plugin-promise": "^6.2.0",
+    "globals": "^15.3.0"
+  },
+  "files": [
+    "index.js",
+    "lib/",
+    "verbs/",
+    "components/",
+    "callbacks/",
+    "docs/",
+    "jambonz-app.schema.json",
+    "AGENTS.md"
+  ]
+}
