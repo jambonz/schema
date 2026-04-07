@@ -76,7 +76,7 @@
           "default": false
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "noResponseTimeout": {
       "type": "number",

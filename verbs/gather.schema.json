@@ -117,12 +117,14 @@
       "description": "Override the session-level STT configuration for this gather."
     },
     "say": {
-      "$ref": "say",
-      "description": "A nested 'say' verb to use as the prompt. Played to the caller while listening for input."
+      "type": "object",
+      "description": "A nested say prompt played to the caller while listening for input. Accepts the same properties as the say verb (text, synthesizer, etc.) but no fields are required.",
+      "additionalProperties": true
     },
     "play": {
-      "$ref": "play",
-      "description": "A nested 'play' verb to use as the prompt. Played to the caller while listening for input."
+      "type": "object",
+      "description": "A nested play prompt played to the caller while listening for input. Accepts the same properties as the play verb (url, etc.) but no fields are required.",
+      "additionalProperties": true
     },
     "fillerNoise": {
       "$ref": "../components/fillerNoise",

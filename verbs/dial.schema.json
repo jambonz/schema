@@ -108,16 +108,19 @@
       ]
     },
     "listen": {
-      "$ref": "listen",
-      "description": "Nested listen verb — streams audio of the bridged call to a websocket endpoint."
+      "type": "object",
+      "description": "Nested listen configuration for streaming audio of the bridged call.",
+      "additionalProperties": true
     },
     "stream": {
-      "$ref": "stream",
-      "description": "Nested stream verb — streams audio of the bridged call. Alias for 'listen'."
+      "type": "object",
+      "description": "Nested stream configuration for streaming audio of the bridged call. Alias for 'listen'.",
+      "additionalProperties": true
     },
     "transcribe": {
-      "$ref": "transcribe",
-      "description": "Nested transcribe verb — enables real-time transcription of the bridged call."
+      "type": "object",
+      "description": "Nested transcribe configuration for real-time transcription of the bridged call.",
+      "additionalProperties": true
     },
     "timeLimit": {
       "type": "number",
