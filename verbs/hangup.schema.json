@@ -18,7 +18,7 @@
       "type": "object",
       "description": "Custom SIP headers to include on the BYE request.",
       "additionalProperties": {
-        "type": "string"
+        "oneOf": [{ "type": "string" }, { "type": "number" }]
       }
     }
   },

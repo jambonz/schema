@@ -71,7 +71,7 @@
       "type": "object",
       "description": "Custom SIP headers to include on the outbound INVITE.",
       "additionalProperties": {
-        "type": "string"
+        "oneOf": [{ "type": "string" }, { "type": "number" }]
       }
     },
     "anchorMedia": {

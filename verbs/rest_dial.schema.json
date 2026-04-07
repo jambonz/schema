@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/verbs/rest:dial",
+  "title": "REST Dial",
+  "description": "Internal verb used to originate an outbound call via the REST API. Not typically used directly in application verb arrays.",
+  "type": "object",
+  "properties": {
+    "verb": {
+      "const": "rest:dial"
+    },
+    "id": {
+      "type": "string"
+    },
+    "account_sid": {
+      "type": "string"
+    },
+    "application_sid": {
+      "type": "string"
+    },
+    "call_hook": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "object" }
+      ],
+      "description": "Webhook URL or object for call control."
+    },
+    "call_status_hook": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "object" }
+      ],
+      "description": "Webhook URL or object for call status notifications."
+    },
+    "from": {
+      "type": "string",
+      "description": "The caller ID for the outbound call."
+    },
+    "callerName": {
+      "type": "string",
+      "description": "Display name for the caller."
+    },
+    "fromHost": {
+      "type": "string",
+      "description": "SIP host to use in the From header."
+    },
+    "speech_synthesis_vendor": {
+      "type": "string"
+    },
+    "speech_synthesis_voice": {
+      "type": "string"
+    },
+    "speech_synthesis_language": {
+      "type": "string"
+    },
+    "speech_recognizer_vendor": {
+      "type": "string"
+    },
+    "speech_recognizer_language": {
+      "type": "string"
+    },
+    "tag": {
+      "type": "object",
+      "description": "Arbitrary metadata to attach to the call.",
+      "additionalProperties": true
+    },
+    "to": {
+      "$ref": "../components/target",
+      "description": "The call destination."
+    },
+    "headers": {
+      "type": "object",
+      "description": "Custom SIP headers to include on the outbound INVITE.",
+      "additionalProperties": {
+        "oneOf": [
+          { "type": "string" },
+          { "type": "number" }
+        ]
+      }
+    },
+    "timeout": {
+      "type": "number",
+      "description": "Ring timeout in seconds."
+    },
+    "amd": {
+      "$ref": "../components/amd",
+      "description": "Answering machine detection configuration."
+    },
+    "dual_streams": {
+      "type": "boolean",
+      "description": "If true, send separate audio streams for each call leg."
+    },
+    "sipRequestWithinDialogHook": {
+      "type": "string",
+      "description": "Webhook for in-dialog SIP requests."
+    },
+    "referHook": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "object" }
+      ],
+      "description": "Webhook for SIP REFER handling."
+    },
+    "timeLimit": {
+      "type": "number",
+      "description": "Maximum call duration in seconds."
+    }
+  },
+  "required": [
+    "call_hook",
+    "from",
+    "to"
+  ]
+}

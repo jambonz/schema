@@ -43,7 +43,8 @@
         { "$ref": "verbs/tag" },
         { "$ref": "verbs/sip:decline" },
         { "$ref": "verbs/sip:request" },
-        { "$ref": "verbs/sip:refer" }
+        { "$ref": "verbs/sip:refer" },
+        { "$ref": "verbs/rest:dial" }
       ],
       "discriminator": {
         "propertyName": "verb"
