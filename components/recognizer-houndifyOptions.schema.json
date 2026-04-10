@@ -47,7 +47,9 @@
       "description": "Custom vocabulary terms."
     },
     "languageModel": { "type": "string", "description": "Language model to use." },
-    "audioQueryAbsoluteTimeout": { "type": "number", "description": "Absolute timeout for audio queries." }
+    "audioQueryAbsoluteTimeout": { "type": "number", "description": "Absolute timeout for audio queries." },
+    "eoqThreshold": { "type": "number", "minimum": 0, "maximum": 1, "description": "End-of-query likelihood threshold (0.0-1.0) to trigger end of speech when segmentation is disabled. Default 0.8, set to 0 to disable." },
+    "vadStopThreshold": { "type": "number", "minimum": 0, "maximum": 1, "description": "VAD probability threshold to trigger end of speech when segmentation is disabled. When VAD drops below this value after speech is detected, streaming stops. Default 0.05, set to 0 to disable." }
   },
   "additionalProperties": false
 }
