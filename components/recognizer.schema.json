@@ -41,9 +41,24 @@
     },
     "hints": {
       "type": "array",
-      "items": { "type": "string" },
-      "description": "An array of words or phrases that the recognizer should favor. Use this to improve accuracy for domain-specific terminology, product names, or proper nouns.",
-      "examples": [["jambonz", "drachtio", "SIP", "WebRTC"]]
+      "items": {
+        "oneOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "properties": {
+              "phrase": { "type": "string" },
+              "boost": { "type": "number" }
+            },
+            "required": ["phrase"]
+          }
+        ]
+      },
+      "description": "An array of words or phrases that the recognizer should favor. Each item can be a plain string or an object with 'phrase' and optional 'boost' properties.",
+      "examples": [
+        ["jambonz", "drachtio", "SIP", "WebRTC"],
+        [{"phrase": "jambonz", "boost": 20}, {"phrase": "drachtio", "boost": 10}]
+      ]
     },
     "hintsBoost": {
       "type": "number",
