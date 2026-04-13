@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://jambonz.org/schema/verbs/pipeline",
+  "$id": "https://jambonz.org/schema/verbs/agent",
   "minVersion": "10.1.0",
-  "title": "Pipeline",
-  "description": "Configures a complete STT → LLM → TTS voice AI pipeline with integrated turn detection. Provides a higher-level abstraction than manually orchestrating the individual components. Optimized for building voice AI agents with proper turn-taking behavior.",
+  "title": "Agent",
+  "description": "Configures a complete voice AI agent by wiring together STT → LLM → TTS with integrated turn detection. Provides a higher-level abstraction than manually orchestrating the individual components. Optimized for building voice AI agents with proper turn-taking behavior.",
   "type": "object",
   "properties": {
     "verb": {
-      "const": "pipeline"
+      "const": "agent"
     },
     "id": {
       "type": "string",
@@ -15,11 +15,11 @@
     },
     "stt": {
       "$ref": "../components/recognizer",
-      "description": "Speech-to-text configuration for the pipeline."
+      "description": "Speech-to-text configuration for the agent."
     },
     "tts": {
       "$ref": "../components/synthesizer",
-      "description": "Text-to-speech configuration for the pipeline."
+      "description": "Text-to-speech configuration for the agent."
     },
     "turnDetection": {
       "oneOf": [
@@ -53,7 +53,7 @@
         }
       ],
       "default": "stt",
-      "description": "Turn detection strategy. Controls when the pipeline decides the user has finished speaking. STT vendors with native turn-taking (deepgramflux, assemblyai, speechmatics) always use their built-in detection regardless of this setting."
+      "description": "Turn detection strategy. Controls when the agent decides the user has finished speaking. STT vendors with native turn-taking (deepgramflux, assemblyai, speechmatics) always use their built-in detection regardless of this setting."
     },
     "bargeIn": {
       "type": "object",
@@ -86,16 +86,16 @@
     },
     "llm": {
       "type": "object",
-      "description": "LLM configuration for the pipeline. See the 'llm' verb schema for details.",
+      "description": "LLM configuration for the agent. See the 'llm' verb schema for details.",
       "additionalProperties": true
     },
     "actionHook": {
       "$ref": "../components/actionHook",
-      "description": "A webhook invoked when the pipeline ends."
+      "description": "A webhook invoked when the agent ends."
     },
     "eventHook": {
       "$ref": "../components/actionHook",
-      "description": "A webhook invoked for pipeline events. Receives event types: 'user_transcript' (user speech recognized), 'agent_response' (assistant reply), 'user_interruption' (barge-in detected), and 'turn_end' (end-of-turn summary with transcript, response, and latency metrics)."
+      "description": "A webhook invoked for agent events. Receives event types: 'user_transcript' (user speech recognized), 'llm_response' (assistant reply), 'user_interruption' (barge-in detected), and 'turn_end' (end-of-turn summary with transcript, response, and latency metrics)."
     },
     "toolHook": {
       "$ref": "../components/actionHook",
@@ -171,7 +171,7 @@
         },
         "required": ["url"]
       },
-      "description": "External MCP servers that provide tools to the LLM. The pipeline connects at startup via SSE, discovers available tools, and makes them callable by the LLM."
+      "description": "External MCP servers that provide tools to the LLM. The agent connects at startup via SSE, discovers available tools, and makes them callable by the LLM."
     }
   },
   "required": [
@@ -179,7 +179,7 @@
   ],
   "examples": [
     {
-      "verb": "pipeline",
+      "verb": "agent",
       "stt": {
         "vendor": "deepgram",
         "language": "en-US"
@@ -201,10 +201,10 @@
         }
       },
       "turnDetection": "stt",
-      "actionHook": "/pipeline-complete"
+      "actionHook": "/agent-complete"
     },
     {
-      "verb": "pipeline",
+      "verb": "agent",
       "stt": {
         "vendor": "deepgram",
         "language": "en-US"
@@ -234,7 +234,7 @@
         "minSpeechDuration": 0.3,
         "sticky": false
       },
-      "actionHook": "/pipeline-complete"
+      "actionHook": "/agent-complete"
     }
   ]
 }

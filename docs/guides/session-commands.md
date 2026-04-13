@@ -143,16 +143,16 @@ For any command not covered by a specific method:
 session.injectCommand('commandName', { ...data });
 ```
 
-## Pipeline Update
+## Agent Update
 
-The `updatePipeline()` method sends mid-conversation updates to an active `pipeline` verb. Four operation types are supported:
+The `updateAgent()` method sends mid-conversation updates to an active `agent` verb. Four operation types are supported:
 
 ### Update Instructions
 
 Replace the LLM system prompt while the conversation is in progress:
 
 ```typescript
-session.updatePipeline({
+session.updateAgent({
   type: 'update_instructions',
   instructions: 'You are now a billing support agent. Help the caller with invoice questions.',
 });
@@ -163,7 +163,7 @@ session.updatePipeline({
 Append messages to the LLM conversation history (e.g. CRM data retrieved after the call started):
 
 ```typescript
-session.updatePipeline({
+session.updateAgent({
   type: 'inject_context',
   messages: [
     { role: 'system', content: 'Customer account #12345: Gold tier, 3 open tickets.' },
@@ -176,7 +176,7 @@ session.updatePipeline({
 Replace the tool set available to the LLM:
 
 ```typescript
-session.updatePipeline({
+session.updateAgent({
   type: 'update_tools',
   tools: [
     {
@@ -193,24 +193,24 @@ session.updatePipeline({
 
 ### Generate Reply
 
-Prompt the LLM to generate a new response. If the pipeline is not idle, the request is queued and executes when the current turn completes. Use `interrupt: true` to cancel the current response and generate immediately.
+Prompt the LLM to generate a new response. If the agent is not idle, the request is queued and executes when the current turn completes. Use `interrupt: true` to cancel the current response and generate immediately.
 
 ```typescript
 // Simple prompt
-session.updatePipeline({
+session.updateAgent({
   type: 'generate_reply',
   user_input: 'The customer just entered their account number: 12345',
 });
 
 // With one-shot instructions
-session.updatePipeline({
+session.updateAgent({
   type: 'generate_reply',
   user_input: 'Customer is asking about refunds',
   instructions: 'Be empathetic and offer a 20% discount before processing a refund.',
 });
 
 // Interrupt current response and generate a new one
-session.updatePipeline({
+session.updateAgent({
   type: 'generate_reply',
   user_input: 'Urgent: supervisor override',
   interrupt: true,
@@ -219,7 +219,7 @@ session.updatePipeline({
 
 ## LLM Tool Output
 
-When using the `pipeline` verb with a `toolHook`, tool call requests arrive as events. Return results with:
+When using the `agent` verb with a `toolHook`, tool call requests arrive as events. Return results with:
 
 ```typescript
 session.on('/tool-hook', (evt: Record<string, any>) => {
@@ -237,7 +237,7 @@ The result is stringified and fed back to the LLM as the tool response.
 
 ## Building a Cascaded Voice AI Agent
 
-The **pipeline** verb is the simplest way to build a voice AI agent — jambonz manages everything. But when you need full control over the LLM interaction (custom tool handling, conversation history management, multiple LLM providers, etc.), build a **cascaded agent**: your app handles STT transcripts and LLM calls directly, piping responses back via TTS token streaming.
+The **agent** verb is the simplest way to build a voice AI agent — jambonz manages everything. But when you need full control over the LLM interaction (custom tool handling, conversation history management, multiple LLM providers, etc.), build a **cascaded agent**: your app handles STT transcripts and LLM calls directly, piping responses back via TTS token streaming.
 
 ### Architecture
 
@@ -257,9 +257,9 @@ User speaks again → bargeIn fires → repeat
 
 The key mechanism is the `bargeIn` actionHook on the `config` verb. When enabled with `sticky: true`, it persists across all verbs. Whenever the caller speaks, the `/speech-detected` hook fires with the speech transcript — even while TTS is playing (which triggers an interruption). Your app then calls the LLM and streams the response back.
 
-### When to Use Cascaded vs Pipeline
+### When to Use Cascaded vs Agent
 
-| | Pipeline verb | Cascaded agent |
+| | Agent verb | Cascaded agent |
 |---|---|---|
 | **STT/LLM/TTS** | jambonz orchestrates all three | App owns the LLM; jambonz handles STT and TTS |
 | **Turn detection** | Built-in (Krisp or STT-native) | App manages via bargeIn actionHook |

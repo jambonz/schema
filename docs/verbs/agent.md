@@ -1,8 +1,8 @@
 ## Overview
 
-The pipeline verb orchestrates a complete voice AI agent by wiring together three separate components — STT, LLM, and TTS — with integrated turn detection. Unlike the s2s verbs (where a single vendor handles everything), pipeline lets you mix and match: e.g. Deepgram for STT, Anthropic for the LLM, and Cartesia for TTS.
+The agent verb orchestrates a complete voice AI agent by wiring together three separate components — STT, LLM, and TTS — with integrated turn detection. Unlike the s2s verbs (where a single vendor handles everything), the agent verb lets you mix and match: e.g. Deepgram for STT, Anthropic for the LLM, and Cartesia for TTS.
 
-Pipeline manages the full conversational turn cycle:
+The agent manages the full conversational turn cycle:
 1. User speaks → STT produces a transcript
 2. Turn detection decides the user is done speaking
 3. Transcript is sent to the LLM
@@ -12,7 +12,7 @@ Pipeline manages the full conversational turn cycle:
 
 ## Turn detection
 
-The `turnDetection` property controls how the pipeline decides the user has finished speaking.
+The `turnDetection` property controls how the agent decides the user has finished speaking.
 
 **`"stt"` (default)** — Uses the STT vendor's native end-of-utterance signal. For most vendors this is silence-based. Some vendors have smarter built-in turn detection:
 - **deepgramflux** — Acoustic + semantic turn detection (Deepgram's "Flux" model)
@@ -105,15 +105,15 @@ The `eventHook` receives real-time events during the conversation. In WebSocket 
 | Event type | Description | Key fields |
 |---|---|---|
 | `user_transcript` | User speech recognized | `transcript` |
-| `agent_response` | Assistant reply text | `response` |
+| `llm_response` | Assistant reply text | `response` |
 | `user_interruption` | User barged in | — |
 | `turn_end` | End-of-turn summary | `transcript`, `response`, `interrupted`, `latency` |
 
-The `turn_end` event is the most useful for observability. It includes per-component latency metrics (STT, LLM, TTS) in milliseconds. See the `callback:pipeline-turn` schema for the full payload structure.
+The `turn_end` event is the most useful for observability. It includes per-component latency metrics (STT, LLM, TTS) in milliseconds. See the `callback:agent-turn` schema for the full payload structure.
 
 ## toolHook (function calling)
 
-When the LLM requests a tool/function call, the pipeline sends a request to the `toolHook` with:
+When the LLM requests a tool/function call, the agent sends a request to the `toolHook` with:
 
 ```json
 {
@@ -131,11 +131,11 @@ The `arguments` field is already parsed (an object, not a JSON string).
 
 ## MCP servers (external tools)
 
-Instead of (or in addition to) defining tools inline via `llmOptions.tools` and handling them with `toolHook`, you can connect to external MCP servers. The pipeline connects to each server at startup via SSE transport, discovers available tools, and makes them available to the LLM alongside any inline tools.
+Instead of (or in addition to) defining tools inline via `llmOptions.tools` and handling them with `toolHook`, you can connect to external MCP servers. The agent connects to each server at startup via SSE transport, discovers available tools, and makes them available to the LLM alongside any inline tools.
 
 ```json
 {
-  "verb": "pipeline",
+  "verb": "agent",
   "mcpServers": [
     {
       "url": "https://livescoremcp.com/sse"
@@ -155,7 +155,7 @@ Instead of (or in addition to) defining tools inline via `llmOptions.tools` and 
 }
 ```
 
-The [LiveScore MCP server](https://livescoremcp.com/) is a free, public MCP server that exposes tools for live football scores, fixtures, team stats, and player data. The pipeline discovers these tools automatically at startup — no need to define tool schemas in `llmOptions.tools`. A caller can simply ask "what football matches are on right now?" and the LLM will use the `get_live_scores` tool to fetch real-time data.
+The [LiveScore MCP server](https://livescoremcp.com/) is a free, public MCP server that exposes tools for live football scores, fixtures, team stats, and player data. The agent discovers these tools automatically at startup — no need to define tool schemas in `llmOptions.tools`. A caller can simply ask "what football matches are on right now?" and the LLM will use the `get_live_scores` tool to fetch real-time data.
 
 If an MCP server requires authentication, pass credentials in the `auth` property:
 
@@ -172,13 +172,13 @@ If an MCP server requires authentication, pass credentials in the `auth` propert
 }
 ```
 
-**How tool dispatch works**: When the LLM requests a tool call, the pipeline checks MCP servers first. If the tool name matches one discovered from an MCP server, the call is dispatched there directly and the result is fed back to the LLM. If no MCP server provides the tool, it falls through to the `toolHook` webhook. You can use both MCP servers and `toolHook` together — MCP handles the tools it knows about, and `toolHook` handles the rest.
+**How tool dispatch works**: When the LLM requests a tool call, the agent checks MCP servers first. If the tool name matches one discovered from an MCP server, the call is dispatched there directly and the result is fed back to the LLM. If no MCP server provides the tool, it falls through to the `toolHook` webhook. You can use both MCP servers and `toolHook` together — MCP handles the tools it knows about, and `toolHook` handles the rest.
 
-**TypeScript example** — a pipeline agent with the LiveScore MCP server:
+**TypeScript example** — an agent with the LiveScore MCP server:
 
 ```typescript
 session
-  .pipeline({
+  .agent({
     stt: { vendor: 'deepgram', language: 'en-US' },
     tts: { vendor: 'cartesia', voice: 'sonic-english' },
     llm: {
@@ -196,18 +196,18 @@ session
       // { url: 'https://mcp.example.com/sse', auth: { apiKey: 'your-key' } },
     ],
     turnDetection: 'krisp',
-    actionHook: '/pipeline-complete',
+    actionHook: '/agent-complete',
   })
   .send();
 ```
 
 ## Mid-conversation updates
 
-The pipeline supports asynchronous updates while a conversation is in progress. These let you change the agent's behavior, inject new context, modify available tools, or trigger a new LLM response — without interrupting the current verb stack.
+The agent supports asynchronous updates while a conversation is in progress. These let you change the agent's behavior, inject new context, modify available tools, or trigger a new LLM response — without interrupting the current verb stack.
 
 Updates can be sent via:
-- **WebSocket**: `session.updatePipeline(data)` (sends a `pipeline:update` command)
-- **REST API**: `client.calls.updatePipeline(callSid, data)` (sends `pipeline_update` in the PUT body)
+- **WebSocket**: `session.updateAgent(data)` (sends an `agent:update` command)
+- **REST API**: `client.calls.updateAgent(callSid, data)` (sends `agent_update` in the PUT body)
 
 ### update_instructions
 
@@ -215,13 +215,13 @@ Replace the LLM system prompt mid-conversation. Useful when the conversation tra
 
 ```typescript
 // WebSocket
-session.updatePipeline({
+session.updateAgent({
   type: 'update_instructions',
   instructions: 'You are now a billing support agent. Help the caller with invoice questions.',
 });
 
 // REST
-await client.calls.updatePipeline(callSid, {
+await client.calls.updateAgent(callSid, {
   type: 'update_instructions',
   instructions: 'You are now a billing support agent. Help the caller with invoice questions.',
 });
@@ -232,7 +232,7 @@ await client.calls.updatePipeline(callSid, {
 Append messages to the LLM conversation history. Useful for injecting CRM data, call notes, or other context retrieved after the call started.
 
 ```typescript
-session.updatePipeline({
+session.updateAgent({
   type: 'inject_context',
   messages: [
     { role: 'system', content: 'Customer account #12345: Gold tier, 3 open tickets.' },
@@ -245,7 +245,7 @@ session.updatePipeline({
 Replace the tool set available to the LLM. The new tools take effect on the next LLM turn.
 
 ```typescript
-session.updatePipeline({
+session.updateAgent({
   type: 'update_tools',
   tools: [
     {
@@ -262,26 +262,26 @@ session.updatePipeline({
 
 ### generate_reply
 
-Prompt the LLM to generate a new response. If the pipeline is currently idle, the prompt executes immediately. If the pipeline is busy (e.g. the assistant is speaking), the request is queued and executes when the current turn completes.
+Prompt the LLM to generate a new response. If the agent is currently idle, the prompt executes immediately. If the agent is busy (e.g. the assistant is speaking), the request is queued and executes when the current turn completes.
 
 Use `interrupt: true` to cancel the current response and generate immediately — useful for supervisor overrides or urgent context changes.
 
 ```typescript
 // Simple prompt
-session.updatePipeline({
+session.updateAgent({
   type: 'generate_reply',
   user_input: 'The customer just entered their account number: 12345',
 });
 
 // With one-shot instructions
-session.updatePipeline({
+session.updateAgent({
   type: 'generate_reply',
   user_input: 'Customer is asking about refunds',
   instructions: 'Be empathetic and offer a 20% discount before processing a refund.',
 });
 
 // Interrupt current response
-session.updatePipeline({
+session.updateAgent({
   type: 'generate_reply',
   user_input: 'Urgent: supervisor override',
   interrupt: true,
@@ -326,11 +326,11 @@ For Anthropic models, use `"vendor": "anthropic"` and structure messages accordi
 
 ## Greeting
 
-By default (`greeting: true`), the pipeline prompts the LLM to generate an initial greeting before the user speaks. Set `greeting: false` if you want the agent to wait silently for the user to speak first.
+By default (`greeting: true`), the agent prompts the LLM to generate an initial greeting before the user speaks. Set `greeting: false` if you want the agent to wait silently for the user to speak first.
 
 ## Complete example (TypeScript)
 
-A pipeline voice agent using Deepgram STT, OpenAI LLM, and Cartesia TTS with Krisp turn detection. Exposes multiple endpoints with different STT/TTS combinations:
+A voice agent using Deepgram STT, OpenAI LLM, and Cartesia TTS with Krisp turn detection. Exposes multiple endpoints with different STT/TTS combinations:
 
 ```typescript
 import * as http from 'node:http';
@@ -354,19 +354,19 @@ function handleSession(session: Session) {
   const model = session.data.env_vars?.OPENAI_MODEL || 'gpt-4.1-mini';
   const systemPrompt = session.data.env_vars?.SYSTEM_PROMPT || envVars.SYSTEM_PROMPT.default;
 
-  session.on('/pipeline-event', (evt: Record<string, unknown>) => {
+  session.on('/agent-event', (evt: Record<string, unknown>) => {
     if (evt.type === 'turn_end') {
       const { transcript, response, interrupted, latency } = evt as Record<string, unknown>;
       console.log('turn_end', JSON.stringify({ transcript, response, interrupted, latency }, null, 2));
     }
   });
 
-  session.on('/pipeline-complete', () => {
+  session.on('/agent-complete', () => {
     session.hangup().reply();
   });
 
   session
-    .pipeline({
+    .agent({
       stt: {
         vendor: 'deepgram',
         language: 'multi',
@@ -386,8 +386,8 @@ function handleSession(session: Session) {
       turnDetection: 'krisp',
       earlyGeneration: true,
       bargeIn: { enable: true },
-      eventHook: '/pipeline-event',
-      actionHook: '/pipeline-complete',
+      eventHook: '/agent-event',
+      actionHook: '/agent-complete',
     })
     .send();
 }
@@ -426,19 +426,19 @@ function handleSession(session) {
   const model = session.data.env_vars?.OPENAI_MODEL || 'gpt-4.1-mini';
   const systemPrompt = session.data.env_vars?.SYSTEM_PROMPT || envVars.SYSTEM_PROMPT.default;
 
-  session.on('/pipeline-event', (evt) => {
+  session.on('/agent-event', (evt) => {
     if (evt.type === 'turn_end') {
       const { transcript, response, interrupted, latency } = evt;
       console.log('turn_end', JSON.stringify({ transcript, response, interrupted, latency }, null, 2));
     }
   });
 
-  session.on('/pipeline-complete', () => {
+  session.on('/agent-complete', () => {
     session.hangup().reply();
   });
 
   session
-    .pipeline({
+    .agent({
       stt: {
         vendor: 'deepgram',
         language: 'multi',
@@ -458,8 +458,8 @@ function handleSession(session) {
       turnDetection: 'krisp',
       earlyGeneration: true,
       bargeIn: { enable: true },
-      eventHook: '/pipeline-event',
-      actionHook: '/pipeline-complete',
+      eventHook: '/agent-event',
+      actionHook: '/agent-complete',
     })
     .send();
 }
