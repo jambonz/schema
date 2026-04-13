@@ -1,6 +1,6 @@
 {
   "name": "@jambonz/schema",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "description": "JSON Schema definitions and validation for jambonz verb applications",
   "main": "index.js",
   "scripts": {

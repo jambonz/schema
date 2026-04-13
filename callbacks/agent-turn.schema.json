@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://jambonz.org/schema/callbacks/pipeline-turn",
-  "title": "Pipeline EventHook Events",
-  "description": "Events sent to the pipeline verb's eventHook during a conversation. These are sent as 'pipeline:event' messages over the WebSocket connection.",
+  "$id": "https://jambonz.org/schema/callbacks/agent-turn",
+  "title": "Agent EventHook Events",
+  "description": "Events sent to the agent verb's eventHook during a conversation. These are sent as 'agent:event' messages over the WebSocket connection.",
   "type": "object",
   "oneOf": [
     {
@@ -84,7 +84,7 @@
     {
       "properties": {
         "type": {
-          "const": "agent_response",
+          "const": "llm_response",
           "description": "Sent when the LLM has finished generating its response for the current turn. Contains the complete response text."
         },
         "response": {

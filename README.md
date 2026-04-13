@@ -4,7 +4,7 @@ JSON Schema definitions and validation for jambonz verb applications.
 
 ## What's Included
 
-- **33 verb schemas** (`verbs/`) -- every jambonz verb (say, gather, dial, openai_s2s, pipeline, etc.)
+- **33 verb schemas** (`verbs/`) -- every jambonz verb (say, gather, dial, openai_s2s, agent, etc.)
 - **42 component schemas** (`components/`) -- shared types (synthesizer, recognizer, target, actionHook, etc.)
 - **32 callback schemas** (`callbacks/`) -- actionHook payload definitions for each verb
 - **AGENTS.md** -- language-agnostic developer guide covering the verb model, transport modes, and protocol

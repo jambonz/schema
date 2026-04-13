@@ -28,7 +28,7 @@
         { "$ref": "verbs/deepgram_s2s" },
         { "$ref": "verbs/ultravox_s2s" },
         { "$ref": "verbs/dialogflow" },
-        { "$ref": "verbs/pipeline" },
+        { "$ref": "verbs/agent" },
         { "$ref": "verbs/conference" },
         { "$ref": "verbs/transcribe" },
         { "$ref": "verbs/enqueue" },

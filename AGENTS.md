@@ -35,7 +35,7 @@ The verb schemas and JSON structure are identical in both modes. The difference 
 - **Webhook**: Simple IVR, call routing, voicemail, basic gather-and-respond patterns.
 - **WebSocket**: LLM-powered voice agents, real-time audio streaming, complex conversational flows, anything requiring bidirectional communication, or asynchronous logic, or streaming tts.
 
-**IMPORTANT**: Any application that uses a speech-to-speech verb (`openai_s2s`, `google_s2s`, `deepgram_s2s`, `ultravox_s2s`, `elevenlabs_s2s`, `s2s`, or `pipeline`) MUST use WebSocket transport, not webhooks. These verbs require persistent bidirectional communication for real-time audio and events.
+**IMPORTANT**: Any application that uses a speech-to-speech verb (`openai_s2s`, `google_s2s`, `deepgram_s2s`, `ultravox_s2s`, `elevenlabs_s2s`, `s2s`, or `agent`) MUST use WebSocket transport, not webhooks. These verbs require persistent bidirectional communication for real-time audio and events.
 
 ## Schema
 
@@ -62,10 +62,10 @@ Two tools are available:
 - **gather** — Collect speech (STT) and/or DTMF input. The workhorse for interactive menus and voice input.
 
 ### AI & Real-time
-- **openai_s2s** / **google_s2s** / **deepgram_s2s** / **ultravox_s2s** — Connect the caller to a vendor-specific LLM for real-time voice conversation. These are the **preferred** verbs when the vendor is known. Each handles the full STT→LLM→TTS pipeline with the vendor pre-set.
+- **openai_s2s** / **google_s2s** / **deepgram_s2s** / **ultravox_s2s** — Connect the caller to a vendor-specific LLM for real-time voice conversation. These are the **preferred** verbs when the vendor is known. Each handles the full STT→LLM→TTS flow with the vendor pre-set.
 - **elevenlabs_s2s** — Connect the caller to an ElevenLabs Conversational AI agent. **Unlike other s2s vendors**, ElevenLabs requires a pre-configured `agent_id` (created in the ElevenLabs dashboard) rather than a model and messages. See [ElevenLabs S2S specifics](#elevenlabs-s2s-specifics) below.
 - **s2s** — Generic LLM voice conversation verb. Use only when the vendor is determined at runtime (e.g. from an env var). Requires `vendor` to be specified.
-- **pipeline** — Higher-level voice AI pipeline with integrated turn detection.
+- **agent** — Higher-level voice AI agent with integrated turn detection. Mix-and-match STT, LLM, and TTS vendors.
 - **dialogflow** — Connect the caller to a Google Dialogflow agent (ES, CX, or CES).
 - **stream** — Stream raw audio to a websocket endpoint for custom processing.
 - **transcribe** — Real-time call transcription sent to a webhook.
