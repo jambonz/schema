@@ -143,6 +143,44 @@ For any command not covered by a specific method:
 session.injectCommand('commandName', { ...data });
 ```
 
+### Targeting Specific Call Legs
+
+When bridging calls with the `dial` verb, you may need to inject commands to a specific call leg (A-leg or B-leg). By default, `injectCommand` targets the current session's call (A-leg). To target the B-leg (or any other call), pass the target `call_sid` as the third argument.
+
+**Capturing the B-leg call_sid:**
+
+Listen for `call:status` events with `direction === 'outbound'` to capture the B-leg's call_sid:
+
+```typescript
+let dialCallSid: string;
+
+session.on('call:status', (evt: Record<string, any>) => {
+  if (evt.direction === 'outbound') {
+    dialCallSid = evt.call_sid;
+  }
+});
+```
+
+**Injecting commands to specific legs:**
+
+```typescript
+// Target A-leg (current session) — omit the third argument:
+session.injectCommand('dub', {
+  action: 'sayOnTrack',
+  track: 'caller-track',
+  say: 'Message for the caller'
+});
+
+// Target B-leg — pass call_sid as third argument:
+session.injectCommand('dub', {
+  action: 'sayOnTrack',
+  track: 'callee-track',
+  say: 'Message for the callee'
+}, dialCallSid);
+```
+
+This pattern is essential for applications like real-time translation, where you need to inject translated speech to each party separately based on which leg's audio was transcribed.
+
 ## Agent Update
 
 The `updateAgent()` method sends mid-conversation updates to an active `agent` verb. Four operation types are supported:

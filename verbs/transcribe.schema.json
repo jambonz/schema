@@ -37,7 +37,8 @@
     },
     "channel": {
       "type": "number",
-      "description": "Specific audio channel to transcribe."
+      "enum": [1, 2],
+      "description": "Specific audio channel to transcribe. Channel 1 = near-end (local party's audio, i.e. caller on A-leg or callee on B-leg). Channel 2 = far-end (remote party's audio). When transcribe is nested in the dial verb, omitting channel captures both legs mixed; specifying channel: 2 isolates the B-leg's inbound audio."
     }
   },
   "examples": [

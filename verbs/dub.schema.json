@@ -3,7 +3,7 @@
   "$id": "https://jambonz.org/schema/verbs/dub",
   "minVersion": "0.9.6",
   "title": "Dub",
-  "description": "Manages audio dubbing tracks on a call. Allows adding, removing, and controlling auxiliary audio tracks that are mixed into the call audio. Used for background music, coaching whispers, or injecting audio from external sources.",
+  "description": "Manages audio dubbing tracks on a call. Allows adding, removing, and controlling auxiliary audio tracks that are mixed into the call audio. Used for background music, coaching whispers, or injecting audio from external sources.\n\n**Track Routing:** Tracks are heard by the party on whose call leg they are created. A dub verb in the main verb stack (A-leg) creates tracks heard by the caller. A dub verb nested in the dial verb's `dub` array creates tracks heard by the callee. When using injectCommand to play/say on a track from a different call leg, pass the target call's `call_sid` as the third argument to `session.injectCommand()` to route the command to the correct leg.",
   "type": "object",
   "properties": {
     "verb": {

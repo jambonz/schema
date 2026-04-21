@@ -2,12 +2,17 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://jambonz.org/schema/callbacks/call-status",
   "title": "Call Status Webhook Payload",
-  "description": "Payload sent to the call status webhook URL whenever the call state changes (e.g. trying, in-progress, completed). The status webhook is configured at the application level in jambonz. Multiple status events are sent over the life of a call. The final event (completed or failed) includes additional fields like duration and termination cause.",
+  "description": "Payload sent to the call status webhook URL whenever the call state changes (e.g. trying, in-progress, completed). The status webhook is configured at the application level in jambonz. Multiple status events are sent over the life of a call. The final event (completed or failed) includes additional fields like duration and termination cause.\n\n**Capturing B-leg call_sid:** When using the dial verb to bridge calls, status events are sent for both legs. The A-leg (original inbound call) has `direction: 'inbound'`. The B-leg (outbound dialed call) has `direction: 'outbound'`. To capture the B-leg's call_sid for later use (e.g., injecting commands to the B-leg), listen for status events where `direction === 'outbound'` and extract the `call_sid` field.",
   "allOf": [
     { "$ref": "base" }
   ],
   "type": "object",
   "properties": {
+    "direction": {
+      "type": "string",
+      "enum": ["inbound", "outbound"],
+      "description": "Call direction. 'inbound' = A-leg (original incoming call to the application). 'outbound' = B-leg (call placed by the dial verb). Use this field to identify which leg generated the status event, especially when capturing the B-leg's call_sid for mid-call control."
+    },
     "call_termination_by": {
       "type": "string",
       "enum": ["caller", "jambonz"],

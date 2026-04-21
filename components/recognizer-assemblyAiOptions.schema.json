@@ -28,15 +28,15 @@
     },
     "minEndOfTurnSilenceWhenConfident": {
       "type": "number",
-      "description": "Minimum silence duration (seconds) to trigger end-of-turn when confidence is met."
+      "description": "Minimum silence duration (milliseconds) to trigger end-of-turn when confidence is met. Default: 400."
     },
     "maxTurnSilence": {
       "type": "number",
-      "description": "Maximum silence duration (seconds) before forcing end-of-turn."
+      "description": "Maximum silence duration (milliseconds) before forcing end-of-turn. Default: 1280."
     },
     "minTurnSilence": {
       "type": "number",
-      "description": "Minimum silence duration (seconds) before allowing end-of-turn."
+      "description": "Minimum silence duration (milliseconds) before allowing end-of-turn."
     },
     "keyterms": {
       "type": "array",
