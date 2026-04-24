@@ -1,5 +1,5 @@
 const assert = require('assert');
-const {validate, validateVerb, validateApp, normalizeJambones} = require('..');
+const {validate, validateVerb, validateApp, validateCommand, normalizeJambones} = require('..');
 
 let passed = 0;
 let failed = 0;
@@ -171,6 +171,133 @@ test('validates app with gather containing object hints', () => {
       recognizer: {vendor: 'google', hints: [{phrase: 'yes', boost: 20}]}},
     {verb: 'hangup'}
   ]);
+});
+
+/* ---- agent verb: tightened llm / llmOptions ---- */
+console.log('\nagent verb — tightened llm schema');
+
+test('accepts a well-formed agent llm block', () => {
+  validateVerb('agent', {
+    llm: {
+      vendor: 'openai',
+      model: 'gpt-4o',
+      llmOptions: {
+        systemPrompt: 'You are helpful.',
+        maxTokens: 1024,
+        temperature: 0.7,
+        tools: [{name: 'lookup', description: 'x', parameters: {type: 'object'}}],
+      },
+    },
+  }, console);
+});
+
+test('accepts split vertex vendor ids', () => {
+  validateVerb('agent', {
+    llm: {vendor: 'vertex-gemini', model: 'gemini-2.5-flash'},
+  }, console);
+  validateVerb('agent', {
+    llm: {vendor: 'vertex-openai', model: 'meta/llama-4-scout-17b-16e-instruct-maas'},
+  }, console);
+});
+
+test('rejects unknown vendor', () => {
+  assertThrows(() => {
+    validateVerb('agent', {llm: {vendor: 'nonesuch', model: 'x'}}, console);
+  }, /enum|allowed/i);
+});
+
+test('rejects unknown llmOptions field (the original `instructions` typo case)', () => {
+  assertThrows(() => {
+    validateVerb('agent', {
+      llm: {
+        vendor: 'anthropic',
+        model: 'claude-sonnet-4-5-20250929',
+        llmOptions: {instructions: 'bogus'},
+      },
+    }, console);
+  }, /additional properties|additionalProperties|instructions/i);
+});
+
+test('rejects unknown top-level llm field', () => {
+  assertThrows(() => {
+    validateVerb('agent', {
+      llm: {
+        vendor: 'openai',
+        model: 'gpt-4o',
+        // typo: `labl` instead of `label`
+        labl: 'primary',
+      },
+    }, console);
+  }, /additional properties|additionalProperties|labl/i);
+});
+
+test('rejects missing vendor / model', () => {
+  assertThrows(() => {
+    validateVerb('agent', {llm: {model: 'gpt-4o'}}, console);
+  }, /vendor/);
+  assertThrows(() => {
+    validateVerb('agent', {llm: {vendor: 'openai'}}, console);
+  }, /model/);
+});
+
+/* ---- commands: llm:tool-output ---- */
+console.log('\ncommand: llm:tool-output');
+
+test('accepts a well-formed tool-output command', () => {
+  validateCommand('llm:tool-output', {
+    type: 'command',
+    command: 'llm:tool-output',
+    tool_call_id: 'toolu_abc123',
+    data: {result: 'The weather in Boston is 9.3°C.'},
+  }, console);
+});
+
+test('accepts alternate data shapes (not just {result})', () => {
+  validateCommand('llm:tool-output', {
+    type: 'command',
+    command: 'llm:tool-output',
+    tool_call_id: 'x',
+    data: {temperature: 9.3, unit: 'C'},
+  }, console);
+});
+
+test('rejects missing tool_call_id', () => {
+  assertThrows(() => {
+    validateCommand('llm:tool-output', {
+      type: 'command',
+      command: 'llm:tool-output',
+      data: {result: 'x'},
+    }, console);
+  }, /tool_call_id/);
+});
+
+test('rejects wrong type / command constants', () => {
+  assertThrows(() => {
+    validateCommand('llm:tool-output', {
+      type: 'something-else',
+      command: 'llm:tool-output',
+      tool_call_id: 'x',
+      data: {},
+    }, console);
+  }, /type|const|command/i);
+});
+
+test('rejects unknown top-level properties', () => {
+  assertThrows(() => {
+    validateCommand('llm:tool-output', {
+      type: 'command',
+      command: 'llm:tool-output',
+      tool_call_id: 'x',
+      data: {},
+      extra: 'whatever',
+    }, console);
+  }, /additional/i);
+});
+
+test('rejects unknown command name', () => {
+  assertThrows(() => {
+    validateCommand('no-such-command', {}, console);
+  }, /invalid command/);
 });
 
 /* ---- summary ---- */

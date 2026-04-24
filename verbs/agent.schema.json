@@ -86,8 +86,89 @@
     },
     "llm": {
       "type": "object",
-      "description": "LLM configuration for the agent. See the 'llm' verb schema for details.",
-      "additionalProperties": true
+      "description": "LLM configuration for the agent.",
+      "required": ["vendor", "model"],
+      "properties": {
+        "vendor": {
+          "type": "string",
+          "enum": [
+            "openai",
+            "anthropic",
+            "google",
+            "vertex-gemini",
+            "vertex-openai",
+            "bedrock",
+            "deepseek"
+          ],
+          "description": "LLM vendor id. Must match a `@jambonz/llm` registered adapter."
+        },
+        "model": {
+          "type": "string",
+          "description": "Vendor-specific model id (e.g. 'gpt-4o', 'claude-sonnet-4-5-20250929')."
+        },
+        "label": {
+          "type": "string",
+          "description": "Optional label to disambiguate when the account has multiple credentials for the same vendor."
+        },
+        "auth": {
+          "type": "object",
+          "description": "Optional inline credentials. When omitted, feature-server looks up credentials by (vendor, label) from the database.",
+          "properties": {
+            "apiKey": { "type": "string" }
+          },
+          "additionalProperties": true
+        },
+        "connectOptions": {
+          "type": "object",
+          "description": "SDK-level client options.",
+          "properties": {
+            "timeout": { "type": "number", "minimum": 0 },
+            "maxRetries": { "type": "integer", "minimum": 0 },
+            "endpoint": { "type": "string" },
+            "baseURL": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "llmOptions": {
+          "type": "object",
+          "description": "Per-call LLM configuration.",
+          "properties": {
+            "systemPrompt": {
+              "type": "string",
+              "description": "System prompt for the model. Placed vendor-appropriately (top-level for Anthropic/Bedrock, config.systemInstruction for Gemini, role:'system' for OpenAI-compatibles)."
+            },
+            "messages": {
+              "type": "array",
+              "description": "Seed conversation history. A role:'system' entry is extracted into systemPrompt internally.",
+              "items": { "$ref": "#/$defs/llmMessage" }
+            },
+            "initialMessages": {
+              "type": "array",
+              "description": "Alias of 'messages' (historical).",
+              "items": { "$ref": "#/$defs/llmMessage" }
+            },
+            "maxTokens": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum tokens the model may generate per turn."
+            },
+            "temperature": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Sampling temperature."
+            },
+            "tools": {
+              "type": "array",
+              "description": "Tool / function definitions available to the model. The MCP-flat shape `{name, description, parameters}` is canonical; the OpenAI-wrapped form `{type:'function', function:{...}}` is also accepted.",
+              "items": {
+                "type": "object"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     },
     "actionHook": {
       "$ref": "../components/actionHook",
@@ -177,6 +258,21 @@
   "required": [
     "llm"
   ],
+  "$defs": {
+    "llmMessage": {
+      "type": "object",
+      "description": "A conversation-history message. The library normalizes content to a string; adapters may carry vendor-native shapes internally.",
+      "required": ["role", "content"],
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": ["system", "user", "assistant", "tool"]
+        },
+        "content": {}
+      },
+      "additionalProperties": true
+    }
+  },
   "examples": [
     {
       "verb": "agent",
