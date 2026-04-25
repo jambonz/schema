@@ -215,6 +215,14 @@ test('accepts groq vendor id', () => {
   }, console);
 });
 
+test('accepts huggingface vendor id', () => {
+  // HF Providers takes canonical model ids and optional :provider / :fastest
+  // suffixes that pass through to the broker.
+  validateVerb('agent', {
+    llm: {vendor: 'huggingface', model: 'meta-llama/Llama-3.3-70B-Instruct'},
+  }, console);
+});
+
 test('rejects unknown vendor', () => {
   assertThrows(() => {
     validateVerb('agent', {llm: {vendor: 'nonesuch', model: 'x'}}, console);
