@@ -100,7 +100,8 @@
             "bedrock",
             "deepseek",
             "azure-openai",
-            "groq"
+            "groq",
+            "huggingface"
           ],
           "description": "LLM vendor id. Must match a `@jambonz/llm` registered adapter."
         },
