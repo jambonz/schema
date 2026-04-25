@@ -200,6 +200,15 @@ test('accepts split vertex vendor ids', () => {
   }, console);
 });
 
+test('accepts azure-openai vendor id', () => {
+  // For Azure, `model` is the deployment name (arbitrary user string), not the
+  // underlying model id — Azure ignores the wire `model` field because the
+  // deployment in the URL determines which model runs.
+  validateVerb('agent', {
+    llm: {vendor: 'azure-openai', model: 'prod-gpt-4o-mini'},
+  }, console);
+});
+
 test('rejects unknown vendor', () => {
   assertThrows(() => {
     validateVerb('agent', {llm: {vendor: 'nonesuch', model: 'x'}}, console);
