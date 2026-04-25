@@ -99,7 +99,8 @@
             "vertex-openai",
             "bedrock",
             "deepseek",
-            "azure-openai"
+            "azure-openai",
+            "groq"
           ],
           "description": "LLM vendor id. Must match a `@jambonz/llm` registered adapter."
         },
