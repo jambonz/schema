@@ -209,6 +209,12 @@ test('accepts azure-openai vendor id', () => {
   }, console);
 });
 
+test('accepts groq vendor id', () => {
+  validateVerb('agent', {
+    llm: {vendor: 'groq', model: 'llama-3.3-70b-versatile'},
+  }, console);
+});
+
 test('rejects unknown vendor', () => {
   assertThrows(() => {
     validateVerb('agent', {llm: {vendor: 'nonesuch', model: 'x'}}, console);
