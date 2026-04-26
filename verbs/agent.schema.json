@@ -22,8 +22,11 @@
       "description": "Text-to-speech configuration for the agent."
     },
     "autoLockLanguage": {
-      "type": "boolean",
-      "description": "When using Deepgram Flux Multilingual, automatically lock STT to the detected language after first utterance and switch TTS voice if configured in languageConfig. Default: false.",
+      "oneOf": [
+        { "type": "boolean" },
+        { "type": "string", "enum": ["always"] }
+      ],
+      "description": "When using Deepgram Flux Multilingual, automatically adjust STT language hints and switch TTS voice based on detected language. Values: false (disabled), true (lock on first utterance), 'always' (continuously adapt on every turn). Default: false.",
       "default": false
     },
     "languageConfig": {

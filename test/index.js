@@ -323,10 +323,24 @@ test('rejects non-string items in languageHints', () => {
 /* ---- agent verb: autoLockLanguage and languageConfig ---- */
 console.log('\nagent verb — autoLockLanguage and languageConfig');
 
-test('accepts autoLockLanguage boolean', () => {
+test('accepts autoLockLanguage boolean true', () => {
   validateVerb('agent', {
     llm: {vendor: 'openai', model: 'gpt-4o'},
     autoLockLanguage: true
+  }, console);
+});
+
+test('accepts autoLockLanguage boolean false', () => {
+  validateVerb('agent', {
+    llm: {vendor: 'openai', model: 'gpt-4o'},
+    autoLockLanguage: false
+  }, console);
+});
+
+test('accepts autoLockLanguage string "always"', () => {
+  validateVerb('agent', {
+    llm: {vendor: 'openai', model: 'gpt-4o'},
+    autoLockLanguage: 'always'
   }, console);
 });
 
@@ -349,10 +363,17 @@ test('accepts empty languageConfig', () => {
   }, console);
 });
 
-test('rejects non-boolean autoLockLanguage', () => {
+test('rejects invalid autoLockLanguage string', () => {
   assertThrows(() => validateVerb('agent', {
     llm: {vendor: 'openai', model: 'gpt-4o'},
     autoLockLanguage: 'yes'
+  }, console));
+});
+
+test('rejects invalid autoLockLanguage type', () => {
+  assertThrows(() => validateVerb('agent', {
+    llm: {vendor: 'openai', model: 'gpt-4o'},
+    autoLockLanguage: 123
   }, console));
 });
 
