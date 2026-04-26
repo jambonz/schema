@@ -141,6 +141,11 @@
     "eagerEotThreshold": {
       "type": "number",
       "description": "Eager end-of-turn threshold for faster response."
+    },
+    "languageHints": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Language hints for Deepgram Flux Multilingual. BCP-47 codes (e.g. 'en', 'es', 'fr'). Biases transcription toward specified languages."
     }
   },
   "additionalProperties": false

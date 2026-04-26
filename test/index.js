@@ -263,6 +263,108 @@ test('rejects missing vendor / model', () => {
   }, /model/);
 });
 
+/* ---- Deepgram Flux Multilingual: languageHints ---- */
+console.log('\nDeepgram Flux Multilingual: languageHints');
+
+test('accepts languageHints array in deepgramOptions', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'deepgram',
+      deepgramOptions: {
+        model: 'flux-general-multi',
+        languageHints: ['en', 'es', 'fr']
+      }
+    }
+  }, console);
+});
+
+test('accepts empty languageHints array', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'deepgram',
+      deepgramOptions: {
+        model: 'flux-general-multi',
+        languageHints: []
+      }
+    }
+  }, console);
+});
+
+test('rejects non-array languageHints', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'deepgram',
+      deepgramOptions: {
+        languageHints: 'en'
+      }
+    }
+  }, console));
+});
+
+test('rejects non-string items in languageHints', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'deepgram',
+      deepgramOptions: {
+        languageHints: [123]
+      }
+    }
+  }, console));
+});
+
+/* ---- agent verb: autoLockLanguage and languageConfig ---- */
+console.log('\nagent verb — autoLockLanguage and languageConfig');
+
+test('accepts autoLockLanguage boolean', () => {
+  validateVerb('agent', {
+    llm: {vendor: 'openai', model: 'gpt-4o'},
+    autoLockLanguage: true
+  }, console);
+});
+
+test('accepts languageConfig with TTS overrides', () => {
+  validateVerb('agent', {
+    llm: {vendor: 'openai', model: 'gpt-4o'},
+    autoLockLanguage: true,
+    languageConfig: {
+      es: {tts: {vendor: 'cartesia', voice: 'spanish-voice'}},
+      fr: {tts: {vendor: 'elevenlabs', voice: 'french-voice'}}
+    }
+  }, console);
+});
+
+test('accepts empty languageConfig', () => {
+  validateVerb('agent', {
+    llm: {vendor: 'openai', model: 'gpt-4o'},
+    autoLockLanguage: true,
+    languageConfig: {}
+  }, console);
+});
+
+test('rejects non-boolean autoLockLanguage', () => {
+  assertThrows(() => validateVerb('agent', {
+    llm: {vendor: 'openai', model: 'gpt-4o'},
+    autoLockLanguage: 'yes'
+  }, console));
+});
+
+test('rejects languageConfig with unknown properties', () => {
+  assertThrows(() => validateVerb('agent', {
+    llm: {vendor: 'openai', model: 'gpt-4o'},
+    languageConfig: {
+      es: {tts: {voice: 'x'}, unknownProp: true}
+    }
+  }, console));
+});
+
 /* ---- commands: llm:tool-output ---- */
 console.log('\ncommand: llm:tool-output');
 
