@@ -21,6 +21,25 @@
       "$ref": "../components/synthesizer",
       "description": "Text-to-speech configuration for the agent."
     },
+    "autoLockLanguage": {
+      "type": "boolean",
+      "description": "When using Deepgram Flux Multilingual, automatically lock STT to the detected language after first utterance and switch TTS voice if configured in languageConfig. Default: false.",
+      "default": false
+    },
+    "languageConfig": {
+      "type": "object",
+      "description": "Per-language overrides for TTS. Keys are BCP-47 language codes. When autoLockLanguage detects a language switch, the agent uses the corresponding config.",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "tts": {
+            "$ref": "../components/synthesizer",
+            "description": "TTS config override for this language. Merged with default tts."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
     "turnDetection": {
       "oneOf": [
         {
