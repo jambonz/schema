@@ -278,6 +278,10 @@
         "required": ["url"]
       },
       "description": "External MCP servers that provide tools to the LLM. The agent connects at startup via SSE, discovers available tools, and makes them callable by the LLM."
+    },
+    "actionHookDelayAction": {
+      "$ref": "../components/actionHookDelayAction",
+      "description": "Filler audio (say/play) played to the caller while a tool call is in flight, so the user is not left in silence during long-running tool execution. Same shape as gather's actionHookDelayAction."
     }
   },
   "required": [
