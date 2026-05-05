@@ -136,6 +136,51 @@ test('rejects object hints missing phrase', () => {
   }, console));
 });
 
+/* ---- recognizer googleOptions ---- */
+console.log('\nrecognizer googleOptions');
+
+test('accepts googleOptions with parentPath', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'google',
+      googleOptions: {parentPath: 'projects/my-proj/locations/global'}
+    }
+  }, console);
+});
+
+test('accepts googleOptions with parentPath alongside recognizerId', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'google',
+      googleOptions: {
+        serviceVersion: 'v2',
+        recognizerId: 'my-recognizer',
+        parentPath: 'projects/my-proj/locations/us-central1'
+      }
+    }
+  }, console);
+});
+
+test('rejects non-string parentPath', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'google', googleOptions: {parentPath: 123}}
+  }, console));
+});
+
+test('rejects unknown property in googleOptions', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'google', googleOptions: {bogusField: 'x'}}
+  }, console));
+});
+
 /* ---- error messages ---- */
 console.log('\nerror messages');
 

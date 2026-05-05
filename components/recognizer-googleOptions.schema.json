@@ -14,6 +14,10 @@
       "type": "string",
       "description": "ID of a Google Speech recognizer resource (v2 only)."
     },
+    "parentPath": {
+      "type": "string",
+      "description": "Parent resource path for the Google Speech recognizer (v2 only), e.g. 'projects/{project}/locations/{location}'."
+    },
     "speechStartTimeoutMs": {
       "type": "number",
       "description": "Timeout in milliseconds to wait for speech to start."
