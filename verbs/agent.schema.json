@@ -121,6 +121,7 @@
             "vertex-openai",
             "bedrock",
             "deepseek",
+            "baseten",
             "azure-openai",
             "groq",
             "huggingface"
