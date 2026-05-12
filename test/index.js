@@ -268,6 +268,17 @@ test('accepts huggingface vendor id', () => {
   }, console);
 });
 
+test('accepts baseten vendor id', () => {
+  // Baseten is an OpenAI-compatible alias (Model APIs). Model ids are
+  // HuggingFace-style org/name strings forwarded verbatim.
+  validateVerb('agent', {
+    llm: {vendor: 'baseten', model: 'zai-org/GLM-4.7'},
+  }, console);
+  validateVerb('agent', {
+    llm: {vendor: 'baseten', model: 'deepseek-ai/DeepSeek-V3.1'},
+  }, console);
+});
+
 test('rejects unknown vendor', () => {
   assertThrows(() => {
     validateVerb('agent', {llm: {vendor: 'nonesuch', model: 'x'}}, console);
