@@ -442,6 +442,109 @@ test('rejects languageConfig with unknown properties', () => {
   }, console));
 });
 
+/* ---- agent verb: toolFiller ---- */
+console.log('\nagent verb — toolFiller');
+
+test('accepts toolFiller with type=audio and url', () => {
+  validateVerb('agent', {
+    llm: {vendor: 'openai', model: 'gpt-4o'},
+    toolFiller: {
+      type: 'audio',
+      startDelaySecs: 1.5,
+      url: 'https://example.com/thinking-sounds.mp3'
+    }
+  }, console);
+});
+
+test('accepts toolFiller with type=backchannel and style', () => {
+  validateVerb('agent', {
+    llm: {vendor: 'openai', model: 'gpt-4o'},
+    toolFiller: {
+      type: 'backchannel',
+      startDelaySecs: 2,
+      style: 'casual and friendly',
+      escalationSecs: 8
+    }
+  }, console);
+});
+
+test('accepts toolFiller with type=backchannel minimal config', () => {
+  validateVerb('agent', {
+    llm: {vendor: 'openai', model: 'gpt-4o'},
+    toolFiller: {
+      type: 'backchannel'
+    }
+  }, console);
+});
+
+test('accepts toolFiller: false to disable', () => {
+  validateVerb('agent', {
+    llm: {vendor: 'openai', model: 'gpt-4o'},
+    toolFiller: false
+  }, console);
+});
+
+test('rejects toolFiller type=audio without url', () => {
+  assertThrows(() => validateVerb('agent', {
+    llm: {vendor: 'openai', model: 'gpt-4o'},
+    toolFiller: {
+      type: 'audio',
+      startDelaySecs: 2
+    }
+  }, console), /url|required/i);
+});
+
+test('rejects toolFiller with invalid type', () => {
+  assertThrows(() => validateVerb('agent', {
+    llm: {vendor: 'openai', model: 'gpt-4o'},
+    toolFiller: {
+      type: 'invalid'
+    }
+  }, console), /enum|type/i);
+});
+
+test('rejects toolFiller: true (only false or config object allowed)', () => {
+  assertThrows(() => validateVerb('agent', {
+    llm: {vendor: 'openai', model: 'gpt-4o'},
+    toolFiller: true
+  }, console));
+});
+
+test('accepts per-tool filler override in llmOptions.tools', () => {
+  validateVerb('agent', {
+    llm: {
+      vendor: 'openai',
+      model: 'gpt-4o',
+      llmOptions: {
+        tools: [
+          {
+            name: 'fast_lookup',
+            description: 'Quick database lookup',
+            parameters: {type: 'object'},
+            filler: false
+          },
+          {
+            name: 'external_api',
+            description: 'Slow external service',
+            parameters: {type: 'object'},
+            filler: {
+              type: 'backchannel',
+              startDelaySecs: 3,
+              style: 'apologetic',
+              escalationSecs: 15
+            }
+          }
+        ]
+      }
+    },
+    toolFiller: {
+      type: 'backchannel',
+      startDelaySecs: 2,
+      style: 'professional'
+    }
+  }, console);
+});
+
 /* ---- commands: llm:tool-output ---- */
 console.log('\ncommand: llm:tool-output');
 

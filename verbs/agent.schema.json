@@ -279,6 +279,13 @@
         "required": ["url"]
       },
       "description": "External MCP servers that provide tools to the LLM. The agent connects at startup via SSE, discovers available tools, and makes them callable by the LLM."
+    },
+    "toolFiller": {
+      "oneOf": [
+        { "type": "boolean", "const": false },
+        { "$ref": "#/$defs/toolFillerConfig" }
+      ],
+      "description": "Configuration for playing filler audio while tool calls are in progress. Prevents silence during long-running tool executions."
     }
   },
   "required": [
@@ -297,6 +304,44 @@
         "content": {}
       },
       "additionalProperties": true
+    },
+    "toolFillerConfig": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["audio", "backchannel"],
+          "description": "Filler mode. 'audio' plays a looping audio file (killed immediately when tool returns). 'backchannel' uses TTS to speak short phrases like 'one moment...' or 'checking that...' (allowed to complete before next action)."
+        },
+        "startDelaySecs": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Seconds to wait after tool invocation before playing filler. Prevents filler on fast tools. Default: 2",
+          "default": 2
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Audio file URL (for type='audio'). Should be loopable. Playback stops immediately when tool returns."
+        },
+        "style": {
+          "type": "string",
+          "description": "Free-form style hint for LLM-generated phrases (for type='backchannel'). Examples: 'casual', 'professional', 'friendly and patient'. The LLM interprets this when generating filler phrases at call start."
+        },
+        "escalationSecs": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Seconds from tool invocation before generating a longer explanatory response (for type='backchannel'). Useful for tools that may take 10+ seconds. Default: 10",
+          "default": 10
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "audio" } } },
+          "then": { "required": ["url"] }
+        }
+      ]
     }
   },
   "examples": [
