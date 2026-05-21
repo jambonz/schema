@@ -53,6 +53,22 @@
         "silence_duration_ms": { "type": "number", "description": "Milliseconds of silence to detect end of speech." }
       },
       "required": ["type"]
+    },
+    "vadMode": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 3,
+      "description": "Local VAD aggressiveness (0-3). Used only with 'gpt-realtime-whisper'."
+    },
+    "vadSilenceMs": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Milliseconds of silence to detect end-of-speech for local VAD. Used only with 'gpt-realtime-whisper'."
+    },
+    "vadVoiceMs": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Milliseconds of voice to detect start-of-speech for local VAD. Used only with 'gpt-realtime-whisper'."
     }
   },
   "additionalProperties": false

@@ -181,6 +181,81 @@ test('rejects unknown property in googleOptions', () => {
   }, console));
 });
 
+/* ---- recognizer openaiOptions ---- */
+console.log('\nrecognizer openaiOptions');
+
+test('accepts openaiOptions with local VAD knobs', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'openai',
+      openaiOptions: {
+        model: 'gpt-realtime-whisper',
+        vadMode: 2,
+        vadSilenceMs: 500,
+        vadVoiceMs: 250
+      }
+    }
+  }, console);
+});
+
+test('accepts vadMode=0 (minimum)', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'openai', openaiOptions: {vadMode: 0}}
+  }, console);
+});
+
+test('accepts vadMode=3 (maximum)', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'openai', openaiOptions: {vadMode: 3}}
+  }, console);
+});
+
+test('rejects vadMode out of range (4)', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'openai', openaiOptions: {vadMode: 4}}
+  }, console));
+});
+
+test('rejects vadMode below range (-1)', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'openai', openaiOptions: {vadMode: -1}}
+  }, console));
+});
+
+test('rejects non-integer vadSilenceMs', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'openai', openaiOptions: {vadSilenceMs: 'soon'}}
+  }, console));
+});
+
+test('rejects vadVoiceMs=0 (below minimum)', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'openai', openaiOptions: {vadVoiceMs: 0}}
+  }, console));
+});
+
+test('rejects unknown property in openaiOptions', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'openai', openaiOptions: {bogusField: 'x'}}
+  }, console));
+});
+
 /* ---- error messages ---- */
 console.log('\nerror messages');
 
