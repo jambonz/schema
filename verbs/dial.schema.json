@@ -163,6 +163,11 @@
     "forwardPAI": {
       "type": "boolean",
       "description": "If true, forward the P-Asserted-Identity header from the inbound call to the outbound call."
+    },
+    "srtpEncryption": {
+      "type": "string",
+      "enum": ["sdes", "dtls"],
+      "description": "SRTP encryption mode to use for the outbound call."
     }
   },
   "required": [
