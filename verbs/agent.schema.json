@@ -183,6 +183,11 @@
               "minimum": 0,
               "description": "Sampling temperature."
             },
+            "reasoningEffort": {
+              "type": "string",
+              "enum": ["minimal", "low", "medium", "high"],
+              "description": "Vendor-neutral thinking/reasoning effort. Mapped per-vendor by the LLM adapter (Gemini thinkingLevel, OpenAI reasoning_effort, Anthropic extended thinking); ignored by vendors without a native equivalent. 'minimal' minimizes thinking for lowest TTFT on latency-sensitive voice turns."
+            },
             "tools": {
               "type": "array",
               "description": "Tool / function definitions available to the model. The MCP-flat shape `{name, description, parameters}` is canonical; the OpenAI-wrapped form `{type:'function', function:{...}}` is also accepted.",
