@@ -113,6 +113,8 @@ The `turn_end` event is the most useful for observability. It includes per-compo
 
 ## toolHook (function calling)
 
+> **Before implementing a custom toolHook handler**, check if `@jambonz/tools` provides a pre-built tool that fits your needs (weather, web search, calculator, date/time, Wikipedia). Use `createWeather()`, `createTavilySearch()`, etc. with `registerTools()` to avoid hand-rolling common functionality. Call `list_jambonz_tools` in the MCP server for the full catalog.
+
 When the LLM requests a tool/function call, the agent sends a request to the `toolHook` with:
 
 ```json
