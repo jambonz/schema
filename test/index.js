@@ -620,6 +620,37 @@ test('accepts per-tool filler override in llmOptions.tools', () => {
   }, console);
 });
 
+/* ---- agent verb: bargeIn strategy ---- */
+console.log('\nagent verb — bargeIn strategy');
+
+test('accepts bargeIn with interruptPrediction strategy', () => {
+  validateVerb('agent', {
+    llm: {vendor: 'openai', model: 'gpt-4o'},
+    bargeIn: {enable: true, strategy: 'interruptPrediction', vendor: 'krisp', threshold: 0.6}
+  }, console);
+});
+
+test('accepts bargeIn with default (vad) strategy', () => {
+  validateVerb('agent', {
+    llm: {vendor: 'openai', model: 'gpt-4o'},
+    bargeIn: {enable: true, strategy: 'vad', minSpeechDuration: 0.3}
+  }, console);
+});
+
+test('rejects bargeIn with unknown strategy', () => {
+  assertThrows(() => validateVerb('agent', {
+    llm: {vendor: 'openai', model: 'gpt-4o'},
+    bargeIn: {strategy: 'asr'}
+  }, console));
+});
+
+test('rejects bargeIn threshold above 1', () => {
+  assertThrows(() => validateVerb('agent', {
+    llm: {vendor: 'openai', model: 'gpt-4o'},
+    bargeIn: {strategy: 'interruptPrediction', threshold: 1.5}
+  }, console));
+});
+
 /* ---- commands: llm:tool-output ---- */
 console.log('\ncommand: llm:tool-output');
 

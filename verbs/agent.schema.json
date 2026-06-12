@@ -86,10 +86,26 @@
           "description": "Allow the user to interrupt the assistant while it is speaking. Default: true.",
           "default": true
         },
+        "strategy": {
+          "type": "string",
+          "enum": ["vad", "interruptPrediction"],
+          "default": "vad",
+          "description": "How interruptions are detected. 'vad' (default): speech onset tentatively interrupts the assistant and is confirmed after minSpeechDuration of sustained speech, otherwise the assistant resumes. 'interruptPrediction': an ML model scores whether caller speech is a genuine interruption attempt vs backchannel (e.g. 'uh-huh'), so the assistant is never tentatively paused and backchannel does not cut it off; requires a provisioned vendor API key."
+        },
+        "vendor": {
+          "type": "string",
+          "description": "Detection vendor for strategy 'interruptPrediction'; defaults to 'krisp' (currently the only option). Not used with strategy 'vad'."
+        },
+        "threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Probability threshold for interruptPrediction (0-1). Higher values require stronger evidence before interrupting the assistant. Default: 0.5."
+        },
         "minSpeechDuration": {
           "type": "number",
           "minimum": 0,
-          "description": "Seconds of detected speech required before confirming an interruption. Prevents brief noises from cutting off the assistant. Default: 0.5",
+          "description": "Seconds of detected speech required before confirming an interruption. Prevents brief noises from cutting off the assistant. Applies to strategy 'vad' only. Default: 0.5",
           "default": 0.5
         },
         "sticky": {
