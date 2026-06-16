@@ -51,9 +51,51 @@
       "type": "boolean",
       "description": "Filter profanity from results."
     },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Soniox v5 recognition context to improve accuracy (max ~8000 tokens). See https://soniox.com/docs/stt/concepts/context. When supplied this takes precedence outright over the 'speechContext' and 'hints' shortcuts.",
+      "properties": {
+        "general": {
+          "type": "array",
+          "description": "Structured key/value metadata describing the domain, topic, participants, setting, etc.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "key": { "type": "string" },
+              "value": { "type": "string" }
+            },
+            "required": ["key", "value"]
+          }
+        },
+        "text": {
+          "type": "string",
+          "description": "Free-form background text (history of prior interactions, reference documents, meeting notes, summaries)."
+        },
+        "terms": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Domain-specific vocabulary to boost recognition."
+        },
+        "translation_terms": {
+          "type": "array",
+          "description": "Source/target term mappings; only used when translation is enabled.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source": { "type": "string" },
+              "target": { "type": "string" }
+            },
+            "required": ["source", "target"]
+          }
+        }
+      }
+    },
     "speechContext": {
       "type": "string",
-      "description": "Free-text background context for improved recognition (v5 context.text). The generic recognizer 'hints' are sent as the v5 context.terms vocabulary-boost list."
+      "description": "Shortcut for context.text (free-text background). Ignored when the full 'context' object is supplied. The generic recognizer 'hints' are likewise sent as context.terms unless 'context' is supplied."
     },
     "clientRequestReference": {
       "type": "string",
