@@ -18,6 +18,10 @@
       "items": { "type": "string" },
       "description": "Language hints for the v5 multilingual model, as ISO language codes (e.g. ['en','es']). Improves accuracy and speeds up language detection."
     },
+    "enableLanguageIdentification": {
+      "type": "boolean",
+      "description": "Enable language identification (v5); each recognized token is tagged with its detected language."
+    },
     "enableSpeakerDiarization": {
       "type": "boolean",
       "description": "Enable speaker diarization (v5); each recognized token is tagged with a speaker."
@@ -26,13 +30,30 @@
       "type": "boolean",
       "description": "Enable endpoint detection."
     },
+    "endpointSensitivity": {
+      "type": "number",
+      "minimum": -1,
+      "maximum": 1,
+      "description": "Endpoint detection sensitivity (v5), -1.0 to 1.0 (default 0.0). Higher values finalize endpoints faster; lower values are more conservative."
+    },
+    "maxEndpointDelayMs": {
+      "type": "integer",
+      "minimum": 500,
+      "maximum": 3000,
+      "description": "Maximum delay in milliseconds before an endpoint is forced (v5), 500-3000 (default 2000)."
+    },
+    "maxNonFinalTokensDurationMs": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Maximum duration in milliseconds that tokens may remain non-final before forced finalization (v5)."
+    },
     "profanityFilter": {
       "type": "boolean",
       "description": "Filter profanity from results."
     },
     "speechContext": {
       "type": "string",
-      "description": "Speech context for improved recognition."
+      "description": "Free-text background context for improved recognition (v5 context.text). The generic recognizer 'hints' are sent as the v5 context.terms vocabulary-boost list."
     },
     "clientRequestReference": {
       "type": "string",
