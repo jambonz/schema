@@ -11,7 +11,16 @@
     },
     "model": {
       "type": "string",
-      "description": "Soniox recognition model."
+      "description": "Soniox recognition model (e.g. 'stt-rt-v5')."
+    },
+    "languageHints": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Language hints for the v5 multilingual model, as ISO language codes (e.g. ['en','es']). Improves accuracy and speeds up language detection."
+    },
+    "enableSpeakerDiarization": {
+      "type": "boolean",
+      "description": "Enable speaker diarization (v5); each recognized token is tagged with a speaker."
     },
     "endpointDetection": {
       "type": "boolean",
