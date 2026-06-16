@@ -311,6 +311,57 @@ test('accepts a well-formed agent llm block', () => {
   }, console);
 });
 
+test('accepts each valid reasoningEffort value', () => {
+  for (const reasoningEffort of ['minimal', 'low', 'medium', 'high']) {
+    validateVerb('agent', {
+      llm: {
+        vendor: 'google',
+        model: 'gemini-3.5-flash',
+        llmOptions: {reasoningEffort},
+      },
+    }, console);
+  }
+});
+
+test('accepts reasoningEffort alongside other llmOptions', () => {
+  validateVerb('agent', {
+    llm: {
+      vendor: 'openai',
+      model: 'gpt-5',
+      llmOptions: {
+        systemPrompt: 'You are helpful.',
+        maxTokens: 512,
+        temperature: 0.5,
+        reasoningEffort: 'minimal',
+      },
+    },
+  }, console);
+});
+
+test('rejects invalid reasoningEffort value', () => {
+  assertThrows(() => {
+    validateVerb('agent', {
+      llm: {
+        vendor: 'google',
+        model: 'gemini-3.5-flash',
+        llmOptions: {reasoningEffort: 'extreme'},
+      },
+    }, console);
+  }, /enum|allowed|reasoningEffort/i);
+});
+
+test('rejects reasoningEffort of wrong type', () => {
+  assertThrows(() => {
+    validateVerb('agent', {
+      llm: {
+        vendor: 'google',
+        model: 'gemini-3.5-flash',
+        llmOptions: {reasoningEffort: 2},
+      },
+    }, console);
+  }, /type|string|reasoningEffort/i);
+});
+
 test('accepts split vertex vendor ids', () => {
   validateVerb('agent', {
     llm: {vendor: 'vertex-gemini', model: 'gemini-2.5-flash'},
