@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/components/recognizer-cartesiaOptions",
+  "title": "Cartesia Recognizer Options",
+  "description": "Cartesia-specific STT options. Only applies when recognizer vendor is 'cartesia'.",
+  "type": "object",
+  "properties": {
+    "turnDetection": {
+      "type": "boolean",
+      "description": "Enable Cartesia's server-side turn detection (uses the /stt/turns/websocket endpoint, ink-2 model, English only). When enabled the stream emits native turn-taking events (start/eager-end/resume/end) used for low-latency turn taking in the agent and gather verbs."
+    }
+  },
+  "additionalProperties": false
+}

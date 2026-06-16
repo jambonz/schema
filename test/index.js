@@ -451,6 +451,71 @@ test('rejects non-string items in languageHints', () => {
   }, console));
 });
 
+/* ---- Cartesia: cartesiaOptions.turnDetection ---- */
+console.log('\nCartesia: cartesiaOptions.turnDetection');
+
+test('accepts cartesiaOptions.turnDetection true', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'cartesia',
+      cartesiaOptions: {
+        turnDetection: true
+      }
+    }
+  }, console);
+});
+
+test('accepts cartesiaOptions.turnDetection false', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'cartesia',
+      cartesiaOptions: {
+        turnDetection: false
+      }
+    }
+  }, console);
+});
+
+test('accepts cartesia recognizer with no cartesiaOptions', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'cartesia'
+    }
+  }, console);
+});
+
+test('rejects non-boolean cartesiaOptions.turnDetection', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'cartesia',
+      cartesiaOptions: {
+        turnDetection: 'yes'
+      }
+    }
+  }, console));
+});
+
+test('rejects unknown property in cartesiaOptions', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'cartesia',
+      cartesiaOptions: {
+        bogus: true
+      }
+    }
+  }, console));
+});
+
 /* ---- agent verb: autoLockLanguage and languageConfig ---- */
 console.log('\nagent verb — autoLockLanguage and languageConfig');
 
