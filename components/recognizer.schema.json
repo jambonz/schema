@@ -207,6 +207,7 @@
     "gladiaOptions": { "$ref": "recognizer-gladiaOptions" },
     "elevenlabsOptions": { "$ref": "recognizer-elevenlabsOptions" },
     "verbioOptions": { "$ref": "recognizer-verbioOptions" },
+    "cartesiaOptions": { "$ref": "recognizer-cartesiaOptions" },
     "customOptions": { "$ref": "recognizer-customOptions" }
   },
   "required": ["vendor"],
