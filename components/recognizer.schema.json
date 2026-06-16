@@ -8,7 +8,7 @@
     "vendor": {
       "type": "string",
       "description": "The STT vendor to use. Must match a vendor configured in the jambonz platform.",
-      "examples": ["google", "aws", "microsoft", "deepgram", "nuance", "ibm", "nvidia", "soniox", "cobalt", "assemblyai", "speechmatics", "openai", "houndify", "gladia", "elevenlabs", "verbio", "custom"]
+      "examples": ["google", "aws", "microsoft", "deepgram", "nuance", "ibm", "nvidia", "soniox", "cobalt", "assemblyai", "speechmatics", "openai", "houndify", "gladia", "elevenlabs", "verbio", "cartesia", "custom"]
     },
     "label": {
       "type": "string",
