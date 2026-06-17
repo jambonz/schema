@@ -8,7 +8,7 @@
     "vendor": {
       "type": "string",
       "description": "The TTS vendor to use. Must match a vendor configured in the jambonz platform.",
-      "examples": ["google", "aws", "microsoft", "elevenlabs", "cartesia", "deepgram", "ibm", "nuance", "nvidia", "wellsaid", "whisper", "verbio", "custom"]
+      "examples": ["google", "aws", "microsoft", "elevenlabs", "cartesia", "deepgram", "ibm", "nvidia", "wellsaid", "whisper", "custom"]
     },
     "label": {
       "type": "string",
