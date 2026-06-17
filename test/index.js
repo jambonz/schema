@@ -762,6 +762,856 @@ test('rejects unknown command name', () => {
   }, /invalid command/);
 });
 
+/* ================================================================
+ * TRANSFER + HANDOFF — integrated from the former transfer.test.js
+ *
+ * The 2 stale "unknown-top-level-key-fails" tests have been REMOVED.
+ * transferOptions root no longer has additionalProperties:false — it is
+ * composable via allOf. The inner confirm/disposition sub-objects still
+ * carry additionalProperties:false; those tests are kept intact.
+ *
+ * NEW: verb-level coverage via the public validateVerb API, plus
+ * handoff coverage via agent + openai_s2s verbs.
+ *
+ * AJV bootstrap below mirrors lib/validator.js getAjv() so that
+ * component and callback schemas (not reachable via validateVerb) can
+ * be tested in isolation.
+ * ================================================================ */
+
+{
+  const Ajv = require('ajv');
+  const {readFileSync, readdirSync} = require('fs');
+  const {resolve, join} = require('path');
+
+  const schemaDir = resolve(__dirname, '..');
+
+  function loadSchema(relativePath) {
+    return JSON.parse(readFileSync(join(schemaDir, relativePath), 'utf-8'));
+  }
+
+  function discoverSchemas(subdir) {
+    try {
+      return readdirSync(join(schemaDir, subdir))
+        .filter((f) => f.endsWith('.schema.json'))
+        .map((f) => f.replace('.schema.json', ''));
+    } catch {
+      return [];
+    }
+  }
+
+  const ajv = new Ajv({
+    allErrors: false,
+    strict: false,
+    validateSchema: false,
+    logger: false,
+  });
+
+  for (const name of discoverSchemas('components')) {
+    ajv.addSchema(loadSchema(`components/${name}.schema.json`));
+  }
+  for (const name of discoverSchemas('callbacks')) {
+    ajv.addSchema(loadSchema(`callbacks/${name}.schema.json`));
+  }
+  for (const name of discoverSchemas('verbs')) {
+    ajv.addSchema(loadSchema(`verbs/${name}.schema.json`));
+  }
+  for (const name of discoverSchemas('commands')) {
+    ajv.addSchema(loadSchema(`commands/${name}.schema.json`));
+  }
+
+  /**
+   * Assert that a compiled AJV validate function rejects data.
+   * Checks: (a) validate returns false, (b) at least one error exists,
+   * (c) if errorPattern is given, at least one error message matches it.
+   */
+  function assertInvalid(validate, data, errorPattern) {
+    const valid = validate(data);
+    assert.strictEqual(valid, false,
+      `expected validation to fail but it passed for: ${JSON.stringify(data)}`);
+    const errors = validate.errors;
+    assert.ok(errors && errors.length > 0,
+      'expected at least one AJV error but validate.errors was empty/null');
+    if (errorPattern) {
+      const matched = errors.some((e) => errorPattern.test(e.message || ''));
+      assert.ok(matched,
+        `expected an error matching ${errorPattern} but got: ${errors.map((e) => e.message).join('; ')}`);
+    }
+  }
+
+  /**
+   * Assert that a compiled AJV validate function accepts data.
+   * Checks: validate returns EXACTLY true (not just truthy).
+   */
+  function assertValid(validate, data) {
+    const valid = validate(data);
+    assert.strictEqual(valid, true,
+      `expected validation to pass but it failed for: ${JSON.stringify(data)}\n` +
+      `  errors: ${JSON.stringify(validate.errors)}`);
+  }
+
+  /* ---- AJV bootstrap ---- */
+  console.log('\nTransfer/Handoff — AJV bootstrap: schema discovery and $id resolution');
+
+  test('no throw during addSchema for all discovered *.schema.json files', () => {
+    const fn = ajv.getSchema('https://jambonz.org/schema/components/transferOptions');
+    assert.strictEqual(typeof fn, 'function',
+      'expected getSchema to return a compiled validate function, got: ' + typeof fn);
+  });
+
+  test('components/transferOptions $id resolves to a compiled validator', () => {
+    const fn = ajv.getSchema('https://jambonz.org/schema/components/transferOptions');
+    assert.strictEqual(typeof fn, 'function',
+      'getSchema("https://jambonz.org/schema/components/transferOptions") must return a function');
+  });
+
+  test('callbacks/transfer $id resolves to a compiled validator', () => {
+    const fn = ajv.getSchema('https://jambonz.org/schema/callbacks/transfer');
+    assert.strictEqual(typeof fn, 'function',
+      'getSchema("https://jambonz.org/schema/callbacks/transfer") must return a function');
+  });
+
+  /* ---- components/transferOptions: valid objects ---- */
+  console.log('\ncomponents/transferOptions — valid objects');
+
+  const validateTransferOptions = ajv.compile({'$ref': 'https://jambonz.org/schema/components/transferOptions'});
+
+  const VALID_TARGET = [{type: 'phone', number: '+15085551212'}];
+
+  test('transferOptions: minimal blind transfer passes', () => {
+    assertValid(validateTransferOptions, {
+      mode: 'blind',
+      target: [{type: 'phone', number: '+15085551212'}],
+    });
+  });
+
+  test('transferOptions: blind with blindMethod=refer passes', () => {
+    assertValid(validateTransferOptions, {
+      mode: 'blind',
+      blindMethod: 'refer',
+      target: [{type: 'phone', number: '+15085551212'}],
+    });
+  });
+
+  test('transferOptions: blind with blindMethod=dial passes', () => {
+    assertValid(validateTransferOptions, {
+      mode: 'blind',
+      blindMethod: 'dial',
+      target: [{type: 'phone', number: '+15085551212'}],
+    });
+  });
+
+  test('transferOptions: warm transfer with callerPresent + confirm + disposition passes', () => {
+    assertValid(validateTransferOptions, {
+      mode: 'warm',
+      callerPresent: true,
+      target: [{type: 'phone', number: '+15085551212'}],
+      confirm: {prompt: 'Press 1 to accept', digit: '1'},
+      disposition: {onNoAnswer: 'return'},
+    });
+  });
+
+  test('transferOptions: warm callerPresent=false passes', () => {
+    assertValid(validateTransferOptions, {
+      mode: 'warm',
+      callerPresent: false,
+      target: [{type: 'phone', number: '+15085551212'}],
+    });
+  });
+
+  test('transferOptions: sip target passes', () => {
+    assertValid(validateTransferOptions, {
+      mode: 'blind',
+      target: [{type: 'sip', sipUri: 'sip:agent@pbx.example.com'}],
+    });
+  });
+
+  test('transferOptions: multiple targets pass', () => {
+    assertValid(validateTransferOptions, {
+      mode: 'blind',
+      target: [
+        {type: 'phone', number: '+15085551212'},
+        {type: 'sip', sipUri: 'sip:backup@pbx.example.com'},
+      ],
+    });
+  });
+
+  test('transferOptions: callerId string passes', () => {
+    assertValid(validateTransferOptions, {
+      mode: 'blind',
+      target: [{type: 'phone', number: '+15085551212'}],
+      callerId: '+14155559999',
+    });
+  });
+
+  test('transferOptions: timeout number passes', () => {
+    assertValid(validateTransferOptions, {
+      mode: 'blind',
+      target: [{type: 'phone', number: '+15085551212'}],
+      timeout: 60,
+    });
+  });
+
+  test('transferOptions: timeout=0 (boundary) passes', () => {
+    assertValid(validateTransferOptions, {
+      mode: 'blind',
+      target: [{type: 'phone', number: '+15085551212'}],
+      timeout: 0,
+    });
+  });
+
+  test('transferOptions: all disposition=return passes', () => {
+    assertValid(validateTransferOptions, {
+      mode: 'blind',
+      target: [{type: 'phone', number: '+15085551212'}],
+      disposition: {onNoAnswer: 'return', onBusy: 'return', onDecline: 'return', onFailure: 'return'},
+    });
+  });
+
+  test('transferOptions: all disposition=voicemail WITH voicemailUrl passes', () => {
+    assertValid(validateTransferOptions, {
+      mode: 'blind',
+      target: [{type: 'phone', number: '+15085551212'}],
+      disposition: {
+        onNoAnswer: 'voicemail', onBusy: 'voicemail', onDecline: 'voicemail', onFailure: 'voicemail',
+        voicemailUrl: 'https://vm.example.com/leave-message',
+      },
+    });
+  });
+
+  /* Documents the composable design: root additionalProperties removed so that
+   * allOf composition by transfer verb and handoff component works cleanly.
+   * An unknown top-level key on transferOptions in isolation now PASSES. */
+  test('transferOptions: unknown top-level key now PASSES (root additionalProperties removed for composability)', () => {
+    assertValid(validateTransferOptions, {
+      mode: 'blind',
+      target: [{type: 'phone', number: '+1'}],
+      foo: 1,
+    });
+  });
+
+  test('transferOptions: unknown top-level key "transferType" now PASSES (root additionalProperties removed)', () => {
+    assertValid(validateTransferOptions, {
+      mode: 'blind',
+      target: [{type: 'phone', number: '+1'}],
+      transferType: 'cold',
+    });
+  });
+
+  /* ---- components/transferOptions: required fields ---- */
+  console.log('\ncomponents/transferOptions — required fields');
+
+  test('transferOptions: missing mode fails', () => {
+    assertInvalid(validateTransferOptions,
+      {target: [{type: 'phone', number: '+15085551212'}]},
+      /required/i);
+  });
+
+  test('transferOptions: missing target fails', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: 'blind'},
+      /required/i);
+  });
+
+  test('transferOptions: both mode and target missing fails', () => {
+    assertInvalid(validateTransferOptions, {}, /required/i);
+  });
+
+  /* ---- components/transferOptions: enum violations ---- */
+  console.log('\ncomponents/transferOptions — enum violations');
+
+  test('transferOptions: mode=transfer (invalid enum) fails', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: 'transfer', target: [{type: 'phone', number: '+1'}]},
+      /allowed values|enum/i);
+  });
+
+  test('transferOptions: mode=null fails', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: null, target: [{type: 'phone', number: '+1'}]},
+      /string|type|enum/i);
+  });
+
+  test('transferOptions: blindMethod=fax (invalid enum) fails', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: 'blind', target: [{type: 'phone', number: '+1'}], blindMethod: 'fax'},
+      /allowed values|enum/i);
+  });
+
+  test('transferOptions: disposition.onNoAnswer=forward fails', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: 'blind', target: [{type: 'phone', number: '+1'}], disposition: {onNoAnswer: 'forward'}},
+      /allowed values|enum/i);
+  });
+
+  test('transferOptions: disposition.onBusy=bounce fails', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: 'blind', target: [{type: 'phone', number: '+1'}], disposition: {onBusy: 'bounce'}},
+      /allowed values|enum/i);
+  });
+
+  test('transferOptions: disposition.onDecline=retry fails', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: 'blind', target: [{type: 'phone', number: '+1'}], disposition: {onDecline: 'retry'}},
+      /allowed values|enum/i);
+  });
+
+  test('transferOptions: disposition.onFailure=ignore fails', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: 'blind', target: [{type: 'phone', number: '+1'}], disposition: {onFailure: 'ignore'}},
+      /allowed values|enum/i);
+  });
+
+  /* ---- components/transferOptions: type violations ---- */
+  console.log('\ncomponents/transferOptions — type violations');
+
+  test('transferOptions: timeout as string fails', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: 'blind', target: [{type: 'phone', number: '+1'}], timeout: '30'},
+      /number|type/i);
+  });
+
+  test('transferOptions: timeout as boolean fails', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: 'blind', target: [{type: 'phone', number: '+1'}], timeout: true},
+      /number|type/i);
+  });
+
+  test('transferOptions: callerPresent as string fails', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: 'warm', target: [{type: 'phone', number: '+1'}], callerPresent: 'yes'},
+      /boolean|type/i);
+  });
+
+  test('transferOptions: callerId as number fails', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: 'blind', target: [{type: 'phone', number: '+1'}], callerId: 15085551212},
+      /string|type/i);
+  });
+
+  /* ---- components/transferOptions: inner additionalProperties:false still enforced ---- */
+  console.log('\ncomponents/transferOptions — inner additionalProperties:false (confirm + disposition)');
+
+  test('transferOptions: disposition unknown key fails (inner additionalProperties:false)', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: 'blind', target: [{type: 'phone', number: '+1'}], disposition: {onNoAnswer: 'return', badKey: 'x'}},
+      /additional properties/i);
+  });
+
+  /* ---- components/transferOptions: target array ---- */
+  console.log('\ncomponents/transferOptions — target array constraints');
+
+  test('transferOptions: empty target array fails (minItems:1)', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: 'blind', target: []},
+      /fewer than 1|minItems/i);
+  });
+
+  test('transferOptions: target as string fails', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: 'blind', target: 'phone:+15085551212'},
+      /array|type/i);
+  });
+
+  test('transferOptions: target as null fails', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: 'blind', target: null},
+      /array|type/i);
+  });
+
+  /* ---- components/transferOptions: confirm sub-object ---- */
+  console.log('\ncomponents/transferOptions — confirm sub-object');
+
+  test('transferOptions: confirm missing digit fails', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: 'warm', target: [{type: 'phone', number: '+1'}], confirm: {prompt: 'Press 1'}},
+      /required/i);
+  });
+
+  test('transferOptions: confirm missing prompt fails', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: 'warm', target: [{type: 'phone', number: '+1'}], confirm: {digit: '1'}},
+      /required/i);
+  });
+
+  test('transferOptions: confirm unknown key fails (inner additionalProperties:false)', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: 'warm', target: [{type: 'phone', number: '+1'}], confirm: {prompt: 'p', digit: '1', extra: 'x'}},
+      /additional properties/i);
+  });
+
+  test('transferOptions: confirm with prompt+digit passes', () => {
+    assertValid(validateTransferOptions, {
+      mode: 'warm',
+      target: [{type: 'phone', number: '+15085551212'}],
+      confirm: {prompt: 'Press 1 to accept this call', digit: '1'},
+    });
+  });
+
+  /* ---- components/transferOptions: conditional voicemailUrl ---- */
+  console.log('\ncomponents/transferOptions — conditional voicemailUrl');
+
+  test('transferOptions: onNoAnswer=voicemail WITHOUT voicemailUrl fails', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: 'blind', target: VALID_TARGET, disposition: {onNoAnswer: 'voicemail'}},
+      /required/i);
+  });
+
+  test('transferOptions: onNoAnswer=voicemail WITH voicemailUrl passes', () => {
+    assertValid(validateTransferOptions, {
+      mode: 'blind', target: VALID_TARGET,
+      disposition: {onNoAnswer: 'voicemail', voicemailUrl: 'https://x/vm'},
+    });
+  });
+
+  test('transferOptions: onBusy=voicemail WITHOUT voicemailUrl fails', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: 'blind', target: VALID_TARGET, disposition: {onBusy: 'voicemail'}},
+      /required/i);
+  });
+
+  test('transferOptions: onBusy=voicemail WITH voicemailUrl passes', () => {
+    assertValid(validateTransferOptions, {
+      mode: 'blind', target: VALID_TARGET,
+      disposition: {onBusy: 'voicemail', voicemailUrl: 'https://x/vm'},
+    });
+  });
+
+  test('transferOptions: onDecline=voicemail WITHOUT voicemailUrl fails', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: 'blind', target: VALID_TARGET, disposition: {onDecline: 'voicemail'}},
+      /required/i);
+  });
+
+  test('transferOptions: onDecline=voicemail WITH voicemailUrl passes', () => {
+    assertValid(validateTransferOptions, {
+      mode: 'blind', target: VALID_TARGET,
+      disposition: {onDecline: 'voicemail', voicemailUrl: 'https://x/vm'},
+    });
+  });
+
+  test('transferOptions: onFailure=voicemail WITHOUT voicemailUrl fails', () => {
+    assertInvalid(validateTransferOptions,
+      {mode: 'blind', target: VALID_TARGET, disposition: {onFailure: 'voicemail'}},
+      /required/i);
+  });
+
+  test('transferOptions: onFailure=voicemail WITH voicemailUrl passes', () => {
+    assertValid(validateTransferOptions, {
+      mode: 'blind', target: VALID_TARGET,
+      disposition: {onFailure: 'voicemail', voicemailUrl: 'https://x/vm'},
+    });
+  });
+
+  test('transferOptions: all four=return WITHOUT voicemailUrl passes', () => {
+    assertValid(validateTransferOptions, {
+      mode: 'blind', target: VALID_TARGET,
+      disposition: {onNoAnswer: 'return', onBusy: 'return', onDecline: 'return', onFailure: 'return'},
+    });
+  });
+
+  test('transferOptions: voicemailUrl present but no outcome=voicemail passes (url is additive)', () => {
+    assertValid(validateTransferOptions, {
+      mode: 'blind', target: VALID_TARGET,
+      disposition: {onNoAnswer: 'hangup', voicemailUrl: 'https://x/vm'},
+    });
+  });
+
+  /* ================================================================
+   * verb transfer — via public validateVerb
+   * ================================================================ */
+  console.log('\nverb transfer — via public validateVerb');
+
+  test('transfer verb: minimal blind passes', () => {
+    validateVerb('transfer', {
+      mode: 'blind',
+      target: [{type: 'phone', number: '+15085551212'}],
+    }, console);
+  });
+
+  test('transfer verb: warm with callerPresent + brief passes', () => {
+    validateVerb('transfer', {
+      mode: 'warm',
+      callerPresent: true,
+      target: [{type: 'phone', number: '+15085551212'}],
+      brief: {text: 'Caller is Jane, order 4471'},
+    }, console);
+  });
+
+  test('transfer verb: explicit verb property in data still passes', () => {
+    validateVerb('transfer', {
+      verb: 'transfer',
+      mode: 'blind',
+      target: [{type: 'phone', number: '+15085551212'}],
+    }, console);
+  });
+
+  test('transfer verb: missing target THROWS', () => {
+    assertThrows(
+      () => validateVerb('transfer', {mode: 'blind'}, console),
+      /target|required/i
+    );
+  });
+
+  test('transfer verb: missing mode THROWS', () => {
+    assertThrows(
+      () => validateVerb('transfer', {target: [{type: 'phone', number: '+15085551212'}]}, console),
+      /mode|required/i
+    );
+  });
+
+  test('transfer verb: bad mode enum THROWS', () => {
+    assertThrows(
+      () => validateVerb('transfer', {mode: 'invalid', target: [{type: 'phone', number: '+15085551212'}]}, console),
+      /enum|allowed/i
+    );
+  });
+
+  test('transfer verb: brief missing text THROWS (required)', () => {
+    assertThrows(
+      () => validateVerb('transfer', {mode: 'warm', target: VALID_TARGET, brief: {}}, console),
+      /text|required/i
+    );
+  });
+
+  test('transfer verb: brief extra key THROWS (brief.additionalProperties:false)', () => {
+    assertThrows(
+      () => validateVerb('transfer', {
+        mode: 'warm', target: VALID_TARGET, brief: {text: 'x', extra: 1},
+      }, console),
+      /additional properties|additionalProperties/i
+    );
+  });
+
+  test('transfer verb: disposition.onBusy=voicemail without voicemailUrl THROWS', () => {
+    assertThrows(
+      () => validateVerb('transfer', {
+        mode: 'blind', target: VALID_TARGET,
+        disposition: {onBusy: 'voicemail'},
+      }, console),
+      /voicemailUrl|required/i
+    );
+  });
+
+  test('transfer verb: disposition.onBusy=voicemail WITH voicemailUrl passes', () => {
+    validateVerb('transfer', {
+      mode: 'blind', target: VALID_TARGET,
+      disposition: {onBusy: 'voicemail', voicemailUrl: 'https://vm.example.com/leave'},
+    }, console);
+  });
+
+  test('transfer verb: empty target array THROWS', () => {
+    assertThrows(
+      () => validateVerb('transfer', {mode: 'blind', target: []}, console),
+      /minItems|fewer than 1/i
+    );
+  });
+
+  test('transfer verb: id string field passes', () => {
+    validateVerb('transfer', {
+      id: 'xfr-001',
+      mode: 'blind',
+      target: [{type: 'phone', number: '+15085551212'}],
+    }, console);
+  });
+
+  /* ================================================================
+   * agent verb handoff — via public validateVerb
+   * ================================================================ */
+  console.log('\nagent verb — handoff property');
+
+  test('agent: handoff warm transfer passes', () => {
+    validateVerb('agent', {
+      llm: {vendor: 'openai', model: 'gpt-4o'},
+      handoff: {mode: 'warm', target: [{type: 'phone', number: '+15085551212'}]},
+    }, console);
+  });
+
+  test('agent: handoff blind transfer passes', () => {
+    validateVerb('agent', {
+      llm: {vendor: 'openai', model: 'gpt-4o'},
+      handoff: {mode: 'blind', target: [{type: 'phone', number: '+15085551212'}]},
+    }, console);
+  });
+
+  test('agent: handoff brief=auto passes', () => {
+    validateVerb('agent', {
+      llm: {vendor: 'openai', model: 'gpt-4o'},
+      handoff: {mode: 'blind', target: VALID_TARGET, brief: 'auto'},
+    }, console);
+  });
+
+  test('agent: handoff brief=none passes', () => {
+    validateVerb('agent', {
+      llm: {vendor: 'openai', model: 'gpt-4o'},
+      handoff: {mode: 'blind', target: VALID_TARGET, brief: 'none'},
+    }, console);
+  });
+
+  test('agent: handoff brief={template:...} passes', () => {
+    validateVerb('agent', {
+      llm: {vendor: 'openai', model: 'gpt-4o'},
+      handoff: {mode: 'blind', target: VALID_TARGET, brief: {template: 'Summarize the issue'}},
+    }, console);
+  });
+
+  test('agent: handoff brief=sometimes THROWS (not in enum)', () => {
+    assertThrows(
+      () => validateVerb('agent', {
+        llm: {vendor: 'openai', model: 'gpt-4o'},
+        handoff: {mode: 'blind', target: VALID_TARGET, brief: 'sometimes'},
+      }, console),
+      /enum|allowed|brief/i
+    );
+  });
+
+  test('agent: handoff brief={template:1} THROWS (template must be string)', () => {
+    assertThrows(
+      () => validateVerb('agent', {
+        llm: {vendor: 'openai', model: 'gpt-4o'},
+        handoff: {mode: 'blind', target: VALID_TARGET, brief: {template: 1}},
+      }, console),
+      /string|type/i
+    );
+  });
+
+  test('agent: handoff brief={notTemplate:"x"} THROWS (additionalProperties:false on brief object)', () => {
+    assertThrows(
+      () => validateVerb('agent', {
+        llm: {vendor: 'openai', model: 'gpt-4o'},
+        handoff: {mode: 'blind', target: VALID_TARGET, brief: {notTemplate: 'x'}},
+      }, console),
+      /additional properties|additionalProperties|template|required/i
+    );
+  });
+
+  test('agent: handoff with toolName + toolDescription strings passes', () => {
+    validateVerb('agent', {
+      llm: {vendor: 'openai', model: 'gpt-4o'},
+      handoff: {
+        mode: 'warm',
+        target: VALID_TARGET,
+        toolName: 'escalate_to_human',
+        toolDescription: 'Transfers the call to a human agent',
+      },
+    }, console);
+  });
+
+  test('agent: handoff missing target THROWS', () => {
+    assertThrows(
+      () => validateVerb('agent', {
+        llm: {vendor: 'openai', model: 'gpt-4o'},
+        handoff: {mode: 'warm'},
+      }, console),
+      /target|required/i
+    );
+  });
+
+  test('agent: handoff missing mode THROWS', () => {
+    assertThrows(
+      () => validateVerb('agent', {
+        llm: {vendor: 'openai', model: 'gpt-4o'},
+        handoff: {target: VALID_TARGET},
+      }, console),
+      /mode|required/i
+    );
+  });
+
+  /* ================================================================
+   * openai_s2s + llm verbs — handoff propagated via llm-base $ref
+   *
+   * validateVerb looks up the schema by the exact verb name passed —
+   * it does NOT normalize aliases. The openai_s2s schema extends
+   * llm-base which declares `handoff` via $ref handoff. The llm verb
+   * schema also extends llm-base.
+   *
+   * Note: openai_s2s requires `llmOptions` to be present.
+   * ================================================================ */
+  console.log('\nopenai_s2s + llm verbs — handoff propagated via llm-base');
+
+  test('openai_s2s: handoff warm transfer passes (llm-base propagation)', () => {
+    validateVerb('openai_s2s', {
+      model: 'gpt-4o-realtime',
+      llmOptions: {messages: [{role: 'system', content: 'You are helpful.'}]},
+      handoff: {mode: 'warm', target: [{type: 'phone', number: '+15085551212'}]},
+    }, console);
+  });
+
+  test('openai_s2s: handoff blind transfer passes', () => {
+    validateVerb('openai_s2s', {
+      model: 'gpt-4o-realtime',
+      llmOptions: {},
+      handoff: {mode: 'blind', target: VALID_TARGET},
+    }, console);
+  });
+
+  test('openai_s2s: handoff brief=auto passes', () => {
+    validateVerb('openai_s2s', {
+      model: 'gpt-4o-realtime',
+      llmOptions: {},
+      handoff: {mode: 'blind', target: VALID_TARGET, brief: 'auto'},
+    }, console);
+  });
+
+  test('llm verb: handoff warm transfer passes (llm-base propagation)', () => {
+    validateVerb('llm', {
+      vendor: 'openai',
+      llmOptions: {},
+      handoff: {mode: 'warm', target: VALID_TARGET},
+    }, console);
+  });
+
+  test('llm verb: handoff blind transfer passes', () => {
+    validateVerb('llm', {
+      vendor: 'openai',
+      llmOptions: {},
+      handoff: {mode: 'blind', target: VALID_TARGET},
+    }, console);
+  });
+
+  test('llm verb: handoff brief={template:...} passes', () => {
+    validateVerb('llm', {
+      vendor: 'openai',
+      llmOptions: {},
+      handoff: {mode: 'blind', target: VALID_TARGET, brief: {template: 'Summarize the caller issue.'}},
+    }, console);
+  });
+
+  /* ================================================================
+   * callbacks/transfer — valid and invalid payloads
+   * ================================================================ */
+  console.log('\ncallbacks/transfer — valid payloads');
+
+  const validateTransferCallback = ajv.compile({'$ref': 'https://jambonz.org/schema/callbacks/transfer'});
+
+  test('transfer callback: bridged + completed payload passes', () => {
+    assertValid(validateTransferCallback, {
+      call_sid: 'cs-abc123',
+      transfer_result: 'bridged',
+      transfer_reason: 'completed',
+      dial_call_sid: 'cs-dest456',
+      sip_status: 200,
+    });
+  });
+
+  test('transfer callback: returned + no-answer payload passes', () => {
+    assertValid(validateTransferCallback, {
+      call_sid: 'cs-abc123',
+      transfer_result: 'returned',
+      transfer_reason: 'no-answer',
+      sip_status: 408,
+    });
+  });
+
+  test('transfer callback: voicemail + no-answer payload passes', () => {
+    assertValid(validateTransferCallback, {
+      call_sid: 'cs-abc123',
+      transfer_result: 'voicemail',
+      transfer_reason: 'no-answer',
+    });
+  });
+
+  test('transfer callback: failed + error payload passes', () => {
+    assertValid(validateTransferCallback, {
+      call_sid: 'cs-abc123',
+      transfer_result: 'failed',
+      transfer_reason: 'error',
+      sip_status: 500,
+    });
+  });
+
+  test('transfer callback: payload with base fields (from+to+call_id) passes', () => {
+    assertValid(validateTransferCallback, {
+      call_sid: 'cs-abc123',
+      from: '+14155551234',
+      to: '+15085551212',
+      call_id: 'sip-call-id-xyz',
+      transfer_result: 'bridged',
+      transfer_reason: 'completed',
+      sip_status: 200,
+    });
+  });
+
+  test('transfer callback: payload with only call_sid passes (no required fields)', () => {
+    assertValid(validateTransferCallback, {
+      call_sid: 'cs-abc123',
+    });
+  });
+
+  test('transfer callback: extra unknown field passes (additionalProperties:true)', () => {
+    assertValid(validateTransferCallback, {
+      call_sid: 'cs-abc123',
+      transfer_result: 'bridged',
+      custom_field: 'provider-specific',
+    });
+  });
+
+  test('transfer callback: caller-abandoned reason passes', () => {
+    assertValid(validateTransferCallback, {
+      call_sid: 'cs-abc123',
+      transfer_result: 'returned',
+      transfer_reason: 'caller-abandoned',
+    });
+  });
+
+  test('transfer callback: declined reason passes', () => {
+    assertValid(validateTransferCallback, {
+      call_sid: 'cs-abc123',
+      transfer_result: 'returned',
+      transfer_reason: 'declined',
+    });
+  });
+
+  console.log('\ncallbacks/transfer — invalid payloads');
+
+  test('transfer callback: transfer_result=nope fails', () => {
+    assertInvalid(validateTransferCallback,
+      {call_sid: 'x', transfer_result: 'nope'},
+      /allowed values|enum/i);
+  });
+
+  test('transfer callback: transfer_result=success fails', () => {
+    assertInvalid(validateTransferCallback,
+      {call_sid: 'x', transfer_result: 'success'},
+      /allowed values|enum/i);
+  });
+
+  test('transfer callback: transfer_reason=abandoned fails', () => {
+    assertInvalid(validateTransferCallback,
+      {call_sid: 'x', transfer_result: 'bridged', transfer_reason: 'abandoned'},
+      /allowed values|enum/i);
+  });
+
+  test('transfer callback: transfer_reason=timeout fails', () => {
+    assertInvalid(validateTransferCallback,
+      {call_sid: 'x', transfer_reason: 'timeout'},
+      /allowed values|enum/i);
+  });
+
+  test('transfer callback: sip_status as string fails', () => {
+    assertInvalid(validateTransferCallback,
+      {call_sid: 'x', transfer_result: 'bridged', sip_status: '200'},
+      /integer|type/i);
+  });
+
+  test('transfer callback: sip_status as float fails', () => {
+    assertInvalid(validateTransferCallback,
+      {call_sid: 'x', transfer_result: 'bridged', sip_status: 200.5},
+      /integer|type/i);
+  });
+
+  test('transfer callback: dial_call_sid as number fails', () => {
+    assertInvalid(validateTransferCallback,
+      {call_sid: 'x', dial_call_sid: 99},
+      /string|type/i);
+  });
+
+  test('transfer callback: transfer_result as null fails', () => {
+    assertInvalid(validateTransferCallback,
+      {call_sid: 'x', transfer_result: null},
+      /string|type|enum/i);
+  });
+}
+
 /* ---- summary ---- */
 console.log(`\n${passed} passed, ${failed} failed\n`);
 if (failed > 0) process.exit(1);

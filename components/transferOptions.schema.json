@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/components/transferOptions",
+  "title": "Transfer Options",
+  "description": "Shared configuration block for blind and warm transfer choreography, including destination targeting, caller handling, confirmation gates, and failure dispositions. Reused by the transfer verb and the handoff component.",
+  "type": "object",
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": ["blind", "warm"],
+      "description": "Transfer mode: 'blind' hands off immediately without waiting for the destination to accept; 'warm' allows the agent to brief the destination before connecting the caller."
+    },
+    "blindMethod": {
+      "type": "string",
+      "enum": ["refer", "dial"],
+      "default": "refer",
+      "description": "blind only: 'refer' sends a SIP REFER to the remote end; 'dial' places a bridged outbound call. Not auto-detected — must be set explicitly when the default 'refer' is not appropriate."
+    },
+    "callerPresent": {
+      "type": "boolean",
+      "default": false,
+      "description": "warm only: when true the caller is added to a three-way conference and can hear the brief; when false the caller is parked (on hold) and does not hear the conversation between agent and destination."
+    },
+    "target": {
+      "type": "array",
+      "items": { "$ref": "target" },
+      "minItems": 1,
+      "description": "One or more call destinations. All targets are rung simultaneously; the first to answer wins."
+    },
+    "callerId": {
+      "type": "string",
+      "description": "Caller ID presented to the transfer destination."
+    },
+    "onHoldHook": {
+      "$ref": "actionHook",
+      "description": "warm/parked only: verbs to execute for the parked caller while the agent briefs the destination (e.g. play hold music). Only invoked when callerPresent is false."
+    },
+    "timeout": {
+      "type": "number",
+      "default": 30,
+      "description": "Seconds to wait for the destination to answer before applying the onNoAnswer disposition."
+    },
+    "confirm": {
+      "type": "object",
+      "description": "Optional human-side acceptance gate. The destination hears a prompt and must press the specified digit to accept. A wrong digit, timeout, or hangup is treated as a 'decline' disposition.",
+      "properties": {
+        "prompt": { "type": "string", "description": "Text or URL of the prompt played to the destination." },
+        "digit": { "type": "string", "description": "Single DTMF digit the destination must press to accept the transfer." }
+      },
+      "required": ["prompt", "digit"],
+      "additionalProperties": false
+    },
+    "amd": {
+      "$ref": "amd",
+      "description": "warm only: optional answering-machine detection run on the destination leg. Off by default; a 'machine' result is treated as a 'decline' disposition."
+    },
+    "disposition": {
+      "type": "object",
+      "description": "Per-outcome fallback actions when the transfer does not complete normally.",
+      "properties": {
+        "onNoAnswer": {
+          "type": "string",
+          "enum": ["return", "voicemail", "hangup"],
+          "default": "return",
+          "description": "Action when the destination does not answer within timeout."
+        },
+        "onBusy": {
+          "type": "string",
+          "enum": ["return", "voicemail", "hangup"],
+          "default": "return",
+          "description": "Action when the destination returns a busy signal."
+        },
+        "onDecline": {
+          "type": "string",
+          "enum": ["return", "voicemail", "hangup"],
+          "default": "return",
+          "description": "Action when the destination declines the transfer (confirm gate failed, AMD detected machine, or explicit rejection)."
+        },
+        "onFailure": {
+          "type": "string",
+          "enum": ["return", "voicemail", "hangup"],
+          "default": "return",
+          "description": "Action when a protocol-level error occurs on the destination leg."
+        },
+        "voicemailUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "SIP URI or HTTP URL to route the caller to voicemail. Required when any disposition value is 'voicemail'."
+        }
+      },
+      "additionalProperties": false
+    },
+    "actionHook": {
+      "$ref": "actionHook",
+      "description": "Fires when the transfer resolves — whether the call was bridged, returned to the caller, sent to voicemail, or failed."
+    },
+    "eventHook": {
+      "$ref": "actionHook",
+      "description": "Optional hook for in-progress transfer events (e.g. destination ringing, brief started)."
+    }
+  },
+  "required": ["mode", "target"],
+  "allOf": [
+    {
+      "if": {
+        "required": ["disposition"],
+        "properties": {
+          "disposition": {
+            "required": ["onNoAnswer"],
+            "properties": {
+              "onNoAnswer": { "const": "voicemail" }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "disposition": { "required": ["voicemailUrl"] }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["disposition"],
+        "properties": {
+          "disposition": {
+            "required": ["onBusy"],
+            "properties": {
+              "onBusy": { "const": "voicemail" }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "disposition": { "required": ["voicemailUrl"] }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["disposition"],
+        "properties": {
+          "disposition": {
+            "required": ["onDecline"],
+            "properties": {
+              "onDecline": { "const": "voicemail" }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "disposition": { "required": ["voicemailUrl"] }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["disposition"],
+        "properties": {
+          "disposition": {
+            "required": ["onFailure"],
+            "properties": {
+              "onFailure": { "const": "voicemail" }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "disposition": { "required": ["voicemailUrl"] }
+        }
+      }
+    }
+  ]
+}
