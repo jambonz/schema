@@ -8,7 +8,7 @@
     "vendor": {
       "type": "string",
       "description": "The STT vendor to use. Must match a vendor configured in the jambonz platform.",
-      "examples": ["google", "aws", "microsoft", "deepgram", "nuance", "ibm", "nvidia", "soniox", "cobalt", "assemblyai", "speechmatics", "openai", "houndify", "gladia", "elevenlabs", "verbio", "custom"]
+      "examples": ["google", "aws", "microsoft", "deepgram", "ibm", "nvidia", "soniox", "assemblyai", "speechmatics", "openai", "houndify", "gladia", "elevenlabs", "custom"]
     },
     "label": {
       "type": "string",
@@ -195,18 +195,15 @@
     "googleOptions": { "$ref": "recognizer-googleOptions" },
     "awsOptions": { "$ref": "recognizer-awsOptions" },
     "azureOptions": { "$ref": "recognizer-azureOptions" },
-    "nuanceOptions": { "$ref": "recognizer-nuanceOptions" },
     "ibmOptions": { "$ref": "recognizer-ibmOptions" },
     "nvidiaOptions": { "$ref": "recognizer-nvidiaOptions" },
     "sonioxOptions": { "$ref": "recognizer-sonioxOptions" },
-    "cobaltOptions": { "$ref": "recognizer-cobaltOptions" },
     "assemblyAiOptions": { "$ref": "recognizer-assemblyAiOptions" },
     "speechmaticsOptions": { "$ref": "recognizer-speechmaticsOptions" },
     "openaiOptions": { "$ref": "recognizer-openaiOptions" },
     "houndifyOptions": { "$ref": "recognizer-houndifyOptions" },
     "gladiaOptions": { "$ref": "recognizer-gladiaOptions" },
     "elevenlabsOptions": { "$ref": "recognizer-elevenlabsOptions" },
-    "verbioOptions": { "$ref": "recognizer-verbioOptions" },
     "customOptions": { "$ref": "recognizer-customOptions" }
   },
   "required": ["vendor"],
