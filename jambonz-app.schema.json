@@ -30,7 +30,6 @@
         { "$ref": "verbs/dialogflow" },
         { "$ref": "verbs/agent" },
         { "$ref": "verbs/conference" },
-        { "$ref": "verbs/room" },
         { "$ref": "verbs/transcribe" },
         { "$ref": "verbs/enqueue" },
         { "$ref": "verbs/dequeue" },
