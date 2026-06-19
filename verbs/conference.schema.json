@@ -83,7 +83,12 @@
     },
     "listen": {
       "type": "object",
-      "description": "Audio streaming configuration for the conference.",
+      "description": "Audio streaming configuration for the conference. `stream` is the preferred synonym.",
+      "additionalProperties": true
+    },
+    "stream": {
+      "type": "object",
+      "description": "Fork the room's mixed audio to a WebSocket (preferred synonym for `listen`).",
       "additionalProperties": true
     },
     "distributeDtmf": {
