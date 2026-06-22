@@ -788,6 +788,32 @@ test('rejects unknown command name', () => {
   function loadSchema(relativePath) {
     return JSON.parse(readFileSync(join(schemaDir, relativePath), 'utf-8'));
   }
+/* ---- room (synonym for conference) ---- */
+console.log('\nroom verb (conference synonym)');
+
+test('room validates with a name (same shape as conference)', () => {
+  validateVerb('room', {name: 'r1'}, console);
+});
+
+test('room requires name (inherited from conference)', () => {
+  assertThrows(() => validateVerb('room', {}, console));
+});
+
+test('room accepts the full conference shape', () => {
+  validateVerb('room', {
+    name: 'r1', beep: true, startConferenceOnEnter: true, endConferenceOnExit: false,
+    statusHook: '/room-events', statusEvents: ['say-start', 'say-done', 'play-start', 'play-done']
+  }, console);
+});
+
+test('an app mixing room and conference verbs validates (exactly one oneOf match each)', () => {
+  const result = validateApp([
+    {verb: 'answer'},
+    {verb: 'room', name: 'r1'},
+    {verb: 'conference', name: 'c1'}
+  ], console);
+  assert.strictEqual(result.valid, true, JSON.stringify(result.errors));
+});
 
   function discoverSchemas(subdir) {
     try {

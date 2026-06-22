@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/verbs/room",
+  "minVersion": "0.9.6",
+  "title": "Room",
+  "description": "Places the caller into a multi-party room. `room` is a synonym for `conference` with identical shape and behavior, using the Voice-AI-friendly name; prefer `room` in new applications. The shape is defined entirely by the conference verb (referenced here) so the two never drift.",
+  "$ref": "conference"
+}

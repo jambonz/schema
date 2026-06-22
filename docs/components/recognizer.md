@@ -65,14 +65,6 @@ See [Voice Agent API documentation](https://docs.speechmatics.com/private/voice-
 
 - [STT Models](https://soniox.com/docs/stt/models)
 
-### Verbio
-
-- [Supported Languages](https://www.verbio.com/supported-languages)
-
 ### Gladia
 
 - [Supported Languages](https://docs.gladia.io/chapters/language/supported-languages)
-
-### Nuance
-
-- [ASR gRPC API](https://docs.mix.nuance.com/asr-grpc/v1/) (Nuance is now part of Microsoft; Azure Speech Service is the successor)
