@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/components/handoff",
+  "title": "Handoff",
+  "description": "Declarative transfer-to-human config for conversational verbs (agent and s2s); runtime injects a transfer-to-human tool and runs the packaged choreography when the model calls it.",
+  "type": "object",
+  "allOf": [
+    { "$ref": "transferOptions" }
+  ],
+  "properties": {
+    "brief": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": ["auto", "none"]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "template": {
+              "type": "string"
+            }
+          },
+          "required": ["template"],
+          "additionalProperties": false
+        }
+      ],
+      "default": "auto",
+      "description": "'auto' = LLM writes the summary; 'none' = no spoken brief; {template} = guidance for the LLM's summary."
+    },
+    "briefSynthesizer": {
+      "$ref": "synthesizer",
+      "description": "Optional voice/vendor for the spoken brief. Defaults to the session synthesizer."
+    },
+    "toolName": {
+      "type": "string",
+      "default": "transfer_to_human",
+      "description": "Override the injected tool name."
+    },
+    "toolDescription": {
+      "type": "string",
+      "description": "Override the injected tool description shown to the LLM."
+    }
+  }
+}

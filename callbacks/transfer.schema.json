@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/callbacks/transfer",
+  "title": "Transfer ActionHook Payload",
+  "description": "Payload sent to the actionHook when a transfer verb resolves. Extends the base callback payload with transfer-specific outcome fields.",
+  "allOf": [
+    { "$ref": "base" }
+  ],
+  "type": "object",
+  "properties": {
+    "transfer_result": {
+      "type": "string",
+      "enum": ["bridged", "returned", "voicemail", "failed"],
+      "description": "Outcome of the transfer: 'bridged' means the destination answered and the call was connected; 'returned' means the call was handed back to the caller flow; 'voicemail' means the caller was routed to voicemail; 'failed' means a protocol-level error occurred."
+    },
+    "transfer_reason": {
+      "type": "string",
+      "enum": ["completed", "no-answer", "busy", "declined", "caller-abandoned", "error"],
+      "description": "Why the transfer ended with its result: 'completed' means it ran to completion; 'no-answer' means the destination did not answer in time; 'busy' means the destination returned a busy response; 'declined' means the confirm gate or AMD rejected the call; 'caller-abandoned' means the caller hung up before bridging; 'error' means a protocol-level failure occurred."
+    },
+    "dial_call_sid": {
+      "type": "string",
+      "description": "Call SID of the destination (human) leg, when one was created during the transfer attempt."
+    },
+    "sip_status": {
+      "type": "integer",
+      "description": "SIP status code from the destination leg, when applicable (e.g. 200, 486, 487)."
+    }
+  },
+  "additionalProperties": true
+}

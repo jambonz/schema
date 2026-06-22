@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/verbs/transfer",
+  "minVersion": "10.3.0",
+  "title": "Transfer",
+  "description": "Packages blind and warm parked/three-way transfer with built-in failure handling. Composes transferOptions for the shared transfer choreography and adds a verb identifier, an optional instance id, and a brief object for warm transfers where the app author supplies the literal spoken summary delivered to the destination.",
+  "type": "object",
+  "allOf": [
+    { "$ref": "../components/transferOptions" }
+  ],
+  "properties": {
+    "verb": {
+      "const": "transfer",
+      "description": "The verb name."
+    },
+    "id": {
+      "type": "string",
+      "description": "An optional unique identifier for this verb instance."
+    },
+    "brief": {
+      "type": "object",
+      "description": "warm only. The spoken summary delivered to the destination (human).",
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "The spoken briefing text."
+        },
+        "synthesizer": {
+          "$ref": "../components/synthesizer",
+          "description": "Optional voice/vendor for the brief. Defaults to the session synthesizer."
+        }
+      },
+      "required": ["text"],
+      "additionalProperties": false
+    }
+  },
+  "examples": [
+    {
+      "verb": "transfer",
+      "mode": "blind",
+      "target": [
+        {
+          "type": "phone",
+          "number": "+15085551212"
+        }
+      ]
+    },
+    {
+      "verb": "transfer",
+      "mode": "warm",
+      "callerPresent": false,
+      "target": [
+        {
+          "type": "phone",
+          "number": "+15085559876"
+        }
+      ],
+      "brief": {
+        "text": "Hello, I have a customer on the line who needs help with their account."
+      },
+      "onHoldHook": "/hold-music",
+      "disposition": {
+        "onNoAnswer": "return",
+        "onBusy": "return"
+      }
+    },
+    {
+      "verb": "transfer",
+      "mode": "warm",
+      "callerPresent": true,
+      "target": [
+        {
+          "type": "phone",
+          "number": "+15085559876"
+        }
+      ],
+      "brief": {
+        "text": "Connecting you now — the customer is on the line and can hear us.",
+        "synthesizer": {
+          "vendor": "google",
+          "language": "en-US"
+        }
+      },
+      "confirm": {
+        "prompt": "Press 1 to accept the transfer.",
+        "digit": "1"
+      },
+      "actionHook": "/transfer-complete"
+    }
+  ]
+}

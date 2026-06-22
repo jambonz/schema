@@ -301,6 +301,10 @@
       },
       "description": "External MCP servers that provide tools to the LLM. The agent connects at startup via SSE, discovers available tools, and makes them callable by the LLM."
     },
+    "handoff": {
+      "$ref": "../components/handoff",
+      "description": "Declarative transfer-to-human config. When present, the runtime injects a 'transfer_to_human' tool into the agent's toolset and runs the packaged transfer choreography (blind/warm) when the LLM calls it."
+    },
     "toolFiller": {
       "oneOf": [
         { "type": "boolean", "const": false },

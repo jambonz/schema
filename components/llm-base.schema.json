@@ -85,6 +85,10 @@
       "$ref": "actionHook",
       "description": "A webhook invoked when the LLM calls a tool/function. Receives the tool name and arguments, and should return the tool result."
     },
+    "handoff": {
+      "$ref": "handoff",
+      "description": "Declarative transfer-to-human config for s2s verbs. When present, the runtime injects a 'transfer_to_human' tool and runs the packaged transfer choreography when the model calls it."
+    },
     "events": {
       "type": "array",
       "items": { "type": "string" },

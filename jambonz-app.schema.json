@@ -29,6 +29,7 @@
         { "$ref": "verbs/ultravox_s2s" },
         { "$ref": "verbs/dialogflow" },
         { "$ref": "verbs/agent" },
+        { "$ref": "verbs/transfer" },
         { "$ref": "verbs/conference" },
         { "$ref": "verbs/transcribe" },
         { "$ref": "verbs/enqueue" },
