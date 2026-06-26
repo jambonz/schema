@@ -93,6 +93,21 @@
       "type": "array",
       "items": { "type": "string" },
       "description": "List of event types to receive via the eventHook."
+    },
+    "responseTimeoutMs": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Opt-in per-response stall watchdog (s2s vendors that support app-driven turn-taking, e.g. openai). Milliseconds to wait for a solicited response to be acknowledged before declaring a stall. When the timer expires a '{type:\"response.timeout\"}' event is sent to the eventHook. Omit or set to 0 to disable (the default)."
+    },
+    "cancelOnResponseTimeout": {
+      "type": "boolean",
+      "default": false,
+      "description": "When a response stall is detected (see responseTimeoutMs), cancel the in-progress server-side response so the next turn does not collide with an active response. Has no effect unless responseTimeoutMs is set."
+    },
+    "cancelOnBargeIn": {
+      "type": "boolean",
+      "default": false,
+      "description": "On caller barge-in, cancel the in-progress server-side response. Intended for app-driven turn-taking configurations where the vendor does not cancel the response itself (server-VAD configurations are unaffected)."
     }
   }
 }
