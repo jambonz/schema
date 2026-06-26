@@ -1503,6 +1503,45 @@ test('an app mixing room and conference verbs validates (exactly one oneOf match
   });
 
   /* ================================================================
+   * llm-base — per-response watchdog options (feature-server #120)
+   * ================================================================ */
+  console.log('\nllm verb — response watchdog options');
+
+  test('llm verb: responseTimeoutMs + cancel flags pass', () => {
+    validateVerb('llm', {
+      vendor: 'openai',
+      llmOptions: {},
+      responseTimeoutMs: 5000,
+      cancelOnResponseTimeout: true,
+      cancelOnBargeIn: true,
+    }, console);
+  });
+
+  test('llm verb: responseTimeoutMs as a string fails', () => {
+    assertThrows(() => validateVerb('llm', {
+      vendor: 'openai',
+      llmOptions: {},
+      responseTimeoutMs: '5000',
+    }, console));
+  });
+
+  test('llm verb: responseTimeoutMs < 1 fails', () => {
+    assertThrows(() => validateVerb('llm', {
+      vendor: 'openai',
+      llmOptions: {},
+      responseTimeoutMs: 0,
+    }, console));
+  });
+
+  test('llm verb: cancelOnBargeIn as a non-boolean fails', () => {
+    assertThrows(() => validateVerb('llm', {
+      vendor: 'openai',
+      llmOptions: {},
+      cancelOnBargeIn: 'yes',
+    }, console));
+  });
+
+  /* ================================================================
    * callbacks/transfer — valid and invalid payloads
    * ================================================================ */
   console.log('\ncallbacks/transfer — valid payloads');
