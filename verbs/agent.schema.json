@@ -140,7 +140,9 @@
             "baseten",
             "azure-openai",
             "groq",
-            "huggingface"
+            "huggingface",
+            "moonshot",
+            "zai"
           ],
           "description": "LLM vendor id. Must match a `@jambonz/llm` registered adapter."
         },

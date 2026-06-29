@@ -405,6 +405,20 @@ test('accepts baseten vendor id', () => {
   }, console);
 });
 
+test('accepts moonshot vendor id', () => {
+  // Moonshot (Kimi) is OpenAI-compatible; reached via a baseURL override.
+  validateVerb('agent', {
+    llm: {vendor: 'moonshot', model: 'kimi-k2-0711-preview'},
+  }, console);
+});
+
+test('accepts zai vendor id', () => {
+  // Z.ai (GLM) is OpenAI-compatible; reached via a baseURL override.
+  validateVerb('agent', {
+    llm: {vendor: 'zai', model: 'glm-4.6'},
+  }, console);
+});
+
 test('rejects unknown vendor', () => {
   assertThrows(() => {
     validateVerb('agent', {llm: {vendor: 'nonesuch', model: 'x'}}, console);
