@@ -89,6 +89,10 @@
       "$ref": "handoff",
       "description": "Declarative transfer-to-human config for s2s verbs. When present, the runtime injects a 'transfer_to_human' tool and runs the packaged transfer choreography when the model calls it."
     },
+    "hangup": {
+      "$ref": "hangup",
+      "description": "Enable the built-in hangup tool for s2s verbs. When present, the runtime injects a 'hangup' tool; when the model calls it, the call is ended with a reason placed in an X-Reason SIP header (LLM-supplied reason wins, falling back to hangup.reason)."
+    },
     "events": {
       "type": "array",
       "items": { "type": "string" },

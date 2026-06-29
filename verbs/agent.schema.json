@@ -140,7 +140,9 @@
             "baseten",
             "azure-openai",
             "groq",
-            "huggingface"
+            "huggingface",
+            "moonshot",
+            "zai"
           ],
           "description": "LLM vendor id. Must match a `@jambonz/llm` registered adapter."
         },
@@ -304,6 +306,10 @@
     "handoff": {
       "$ref": "../components/handoff",
       "description": "Declarative transfer-to-human config. When present, the runtime injects a 'transfer_to_human' tool into the agent's toolset and runs the packaged transfer choreography (blind/warm) when the LLM calls it."
+    },
+    "hangup": {
+      "$ref": "../components/hangup",
+      "description": "Enable the built-in hangup tool. When present, the runtime injects a 'hangup' tool into the agent's toolset; when the LLM calls it, the call is ended with a reason placed in an X-Reason SIP header (LLM-supplied reason wins, falling back to hangup.reason)."
     },
     "toolFiller": {
       "oneOf": [

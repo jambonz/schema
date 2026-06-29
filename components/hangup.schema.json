@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/components/hangup",
+  "title": "Hangup",
+  "description": "Enable the built-in hangup tool for conversational verbs (agent and s2s). When present, the runtime injects a 'hangup' tool; when the model calls it, the call is ended with a reason placed in an X-Reason SIP header. The LLM-supplied reason wins, falling back to the app-supplied default below.",
+  "type": "object",
+  "properties": {
+    "reason": {
+      "type": "string",
+      "description": "Default reason placed in the X-Reason SIP header when the call is hung up. Used as a fallback when the LLM does not supply its own reason."
+    }
+  },
+  "additionalProperties": false
+}
