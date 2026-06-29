@@ -1456,6 +1456,55 @@ test('an app mixing room and conference verbs validates (exactly one oneOf match
     );
   });
 
+  /* ----------------------------------------------------------------
+   * agent verb hangup — built-in hangup tool config
+   * -------------------------------------------------------------- */
+  console.log('\nagent verb — hangup property');
+
+  test('agent: empty hangup object passes', () => {
+    validateVerb('agent', {
+      llm: {vendor: 'openai', model: 'gpt-4o'},
+      hangup: {},
+    }, console);
+  });
+
+  test('agent: hangup with reason default passes', () => {
+    validateVerb('agent', {
+      llm: {vendor: 'openai', model: 'gpt-4o'},
+      hangup: {reason: 'agent ended the call'},
+    }, console);
+  });
+
+  test('agent: hangup with unknown property THROWS (additionalProperties:false)', () => {
+    assertThrows(
+      () => validateVerb('agent', {
+        llm: {vendor: 'openai', model: 'gpt-4o'},
+        hangup: {toolName: 'end_call'},
+      }, console),
+      /additional|properties|toolName/i
+    );
+  });
+
+  test('agent: hangup with non-string reason THROWS', () => {
+    assertThrows(
+      () => validateVerb('agent', {
+        llm: {vendor: 'openai', model: 'gpt-4o'},
+        hangup: {reason: 1},
+      }, console),
+      /string|reason/i
+    );
+  });
+
+  test('agent: hangup as boolean THROWS (must be object)', () => {
+    assertThrows(
+      () => validateVerb('agent', {
+        llm: {vendor: 'openai', model: 'gpt-4o'},
+        hangup: true,
+      }, console),
+      /object|type/i
+    );
+  });
+
   /* ================================================================
    * openai_s2s + llm verbs — handoff propagated via llm-base $ref
    *
@@ -1514,6 +1563,30 @@ test('an app mixing room and conference verbs validates (exactly one oneOf match
       llmOptions: {},
       handoff: {mode: 'blind', target: VALID_TARGET, brief: {template: 'Summarize the caller issue.'}},
     }, console);
+  });
+
+  test('llm verb: empty hangup object passes (llm-base propagation)', () => {
+    validateVerb('llm', {
+      vendor: 'openai',
+      llmOptions: {},
+      hangup: {},
+    }, console);
+  });
+
+  test('llm verb: hangup with reason default passes', () => {
+    validateVerb('llm', {
+      vendor: 'openai',
+      llmOptions: {},
+      hangup: {reason: 'agent ended the call'},
+    }, console);
+  });
+
+  test('llm verb: hangup with unknown property THROWS', () => {
+    assertThrows(() => validateVerb('llm', {
+      vendor: 'openai',
+      llmOptions: {},
+      hangup: {bogus: true},
+    }, console), /additional|properties|bogus/i);
   });
 
   /* ================================================================
