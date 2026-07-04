@@ -256,6 +256,44 @@ test('rejects unknown property in openaiOptions', () => {
   }, console));
 });
 
+/* ---- recognizer xaiOptions ---- */
+console.log('\nrecognizer xaiOptions');
+
+test('accepts xaiOptions with valid fields', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'xai',
+      xaiOptions: {
+        apiKey: 'my-key',
+        endpointing: 500,
+        diarize: true,
+        fillerWords: false,
+        keyterms: ['foo', 'bar'],
+        smartTurn: 0.5,
+        smartTurnTimeout: 2000
+      }
+    }
+  }, console);
+});
+
+test('rejects non-integer endpointing in xaiOptions', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'xai', xaiOptions: {endpointing: 'soon'}}
+  }, console));
+});
+
+test('rejects unknown property in xaiOptions', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'xai', xaiOptions: {bogusField: 'x'}}
+  }, console));
+});
+
 /* ---- error messages ---- */
 console.log('\nerror messages');
 

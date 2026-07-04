@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/components/recognizer-xaiOptions",
+  "title": "xAI Recognizer Options",
+  "description": "xAI-specific STT options. Only applies when recognizer vendor is 'xai'.",
+  "type": "object",
+  "properties": {
+    "apiKey": {
+      "type": "string",
+      "description": "xAI API key. Overrides the key configured in jambonz."
+    },
+    "endpointing": {
+      "type": "integer",
+      "description": "Milliseconds of silence before an utterance is considered final. Range 0-5000."
+    },
+    "diarize": {
+      "type": "boolean",
+      "description": "Enable speaker diarization."
+    },
+    "fillerWords": {
+      "type": "boolean",
+      "description": "Include filler words (um, uh) in transcript."
+    },
+    "keyterms": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Key terms to boost recognition for."
+    },
+    "smartTurn": {
+      "type": "number",
+      "description": "End-of-turn confidence threshold, between 0.0 and 1.0."
+    },
+    "smartTurnTimeout": {
+      "type": "integer",
+      "description": "Maximum milliseconds of silence to wait before forcing an end-of-turn final result. Range 1-5000."
+    }
+  },
+  "additionalProperties": false
+}

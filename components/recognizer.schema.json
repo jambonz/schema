@@ -8,7 +8,7 @@
     "vendor": {
       "type": "string",
       "description": "The STT vendor to use. Must match a vendor configured in the jambonz platform.",
-      "examples": ["google", "aws", "microsoft", "deepgram", "ibm", "nvidia", "soniox", "assemblyai", "speechmatics", "openai", "houndify", "gladia", "elevenlabs", "custom"]
+      "examples": ["google", "aws", "microsoft", "deepgram", "ibm", "nvidia", "soniox", "xai", "assemblyai", "speechmatics", "openai", "houndify", "gladia", "elevenlabs", "custom"]
     },
     "label": {
       "type": "string",
@@ -198,6 +198,7 @@
     "ibmOptions": { "$ref": "recognizer-ibmOptions" },
     "nvidiaOptions": { "$ref": "recognizer-nvidiaOptions" },
     "sonioxOptions": { "$ref": "recognizer-sonioxOptions" },
+    "xaiOptions": { "$ref": "recognizer-xaiOptions" },
     "assemblyAiOptions": { "$ref": "recognizer-assemblyAiOptions" },
     "speechmaticsOptions": { "$ref": "recognizer-speechmaticsOptions" },
     "openaiOptions": { "$ref": "recognizer-openaiOptions" },
