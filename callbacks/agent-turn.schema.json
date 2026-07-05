@@ -62,6 +62,16 @@
             }
           },
           "additionalProperties": false
+        },
+        "vendor_metadata": {
+          "type": "object",
+          "description": "Vendor-side LLM diagnostics extracted from the upstream response (request id, rate-limit remaining, region/routing, cache token counts, etc.). Present only when the vendor/model path exposes allowlisted headers; shape is vendor-specific.",
+          "additionalProperties": true
+        },
+        "stt_metadata": {
+          "type": "object",
+          "description": "STT recognizer metadata for this turn (detected languages, language hints). Present only when the recognizer exposes it; shape is vendor-specific.",
+          "additionalProperties": true
         }
       },
       "required": ["type", "transcript", "response", "interrupted", "latency"],
