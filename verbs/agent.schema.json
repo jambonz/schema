@@ -129,21 +129,6 @@
       "properties": {
         "vendor": {
           "type": "string",
-          "enum": [
-            "openai",
-            "anthropic",
-            "google",
-            "vertex-gemini",
-            "vertex-openai",
-            "bedrock",
-            "deepseek",
-            "baseten",
-            "azure-openai",
-            "groq",
-            "huggingface",
-            "moonshot",
-            "zai"
-          ],
           "description": "LLM vendor id. Must match a `@jambonz/llm` registered adapter."
         },
         "model": {
