@@ -142,7 +142,8 @@
             "groq",
             "huggingface",
             "moonshot",
-            "zai"
+            "zai",
+            "xai"
           ],
           "description": "LLM vendor id. Must match a `@jambonz/llm` registered adapter."
         },
