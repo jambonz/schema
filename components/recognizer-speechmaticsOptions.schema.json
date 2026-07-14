@@ -50,7 +50,11 @@
             "sensitivity": { "type": "number" }
           }
         },
-        "operating_point": { "type": "string", "description": "Operating point (standard or enhanced)." },
+        "operating_point": { "type": "string", "description": "Deprecated by Speechmatics in favor of 'model'. Operating point (standard or enhanced)." },
+        "model": {
+          "type": "string",
+          "description": "Model selection (replaces operating_point), e.g. standard, enhanced, or melia-1."
+        },
         "enable_entities": { "type": "boolean", "description": "Enable entity detection." },
         "audio_filtering_config": {
           "type": "object",
@@ -62,9 +66,22 @@
         "transcript_filtering_config": {
           "type": "object",
           "properties": {
-            "remove_disfluencies": { "type": "boolean" }
+            "remove_disfluencies": { "type": "boolean" },
+            "replacements": {
+              "type": "array",
+              "description": "Word replacement rules applied to the transcript. 'from' accepts a plain word or a /regex/.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "from": { "type": "string" },
+                  "to": { "type": "string" }
+                },
+                "required": ["from", "to"],
+                "additionalProperties": false
+              }
+            }
           },
-          "required": ["remove_disfluencies"]
+          "additionalProperties": false
         }
       }
     },

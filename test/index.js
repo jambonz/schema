@@ -181,6 +181,113 @@ test('rejects unknown property in googleOptions', () => {
   }, console));
 });
 
+/* ---- recognizer speechmaticsOptions ---- */
+console.log('\nrecognizer speechmaticsOptions');
+
+test('accepts speechmaticsOptions with model', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'speechmatics',
+      speechmaticsOptions: {
+        transcription_config: {model: 'enhanced'}
+      }
+    }
+  }, console);
+});
+
+test('accepts speechmaticsOptions with model melia-1', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'speechmatics',
+      speechmaticsOptions: {
+        transcription_config: {model: 'melia-1'}
+      }
+    }
+  }, console);
+});
+
+test('accepts speechmaticsOptions with a future model name (no enum)', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'speechmatics',
+      speechmaticsOptions: {
+        transcription_config: {model: 'melia-2'}
+      }
+    }
+  }, console);
+});
+
+test('still accepts deprecated operating_point', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'speechmatics',
+      speechmaticsOptions: {
+        transcription_config: {operating_point: 'enhanced'}
+      }
+    }
+  }, console);
+});
+
+test('accepts transcript_filtering_config with replacements only', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'speechmatics',
+      speechmaticsOptions: {
+        transcription_config: {
+          transcript_filtering_config: {
+            replacements: [{from: 'foo', to: 'bar'}, {from: '/[Bb]anana/', to: 'apple'}]
+          }
+        }
+      }
+    }
+  }, console);
+});
+
+test('accepts transcript_filtering_config with remove_disfluencies and replacements', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'speechmatics',
+      speechmaticsOptions: {
+        transcription_config: {
+          transcript_filtering_config: {
+            remove_disfluencies: true,
+            replacements: [{from: 'foo', to: 'bar'}]
+          }
+        }
+      }
+    }
+  }, console);
+});
+
+test('rejects replacements entry missing "to"', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'speechmatics',
+      speechmaticsOptions: {
+        transcription_config: {
+          transcript_filtering_config: {
+            replacements: [{from: 'foo'}]
+          }
+        }
+      }
+    }
+  }, console));
+});
+
 /* ---- recognizer openaiOptions ---- */
 console.log('\nrecognizer openaiOptions');
 
