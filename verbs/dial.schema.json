@@ -163,6 +163,11 @@
     "forwardPAI": {
       "type": "boolean",
       "description": "If true, forward the P-Asserted-Identity header from the inbound call to the outbound call."
+    },
+    "srtpEncryption": {
+      "type": "string",
+      "enum": ["sdes", "dtls"],
+      "description": "Request SRTP (encrypted media) on the outbound call. 'sdes' negotiates keys via SDES crypto attributes in the SDP (used with sips:/TLS SIP targets such as LiveKit); 'dtls' negotiates keys via DTLS-SRTP. Applies to SIP URI targets."
     }
   },
   "required": [

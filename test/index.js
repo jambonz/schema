@@ -1909,6 +1909,36 @@ test('an app mixing room and conference verbs validates (exactly one oneOf match
   });
 }
 
+/* ---- dial verb: srtpEncryption ---- */
+console.log('\ndial verb — srtpEncryption');
+
+test('accepts dial with srtpEncryption=sdes', () => {
+  validateVerb('dial', {
+    target: [{type: 'sip', sipUri: 'sips:alice@example.com;transport=tls'}],
+    srtpEncryption: 'sdes'
+  }, console);
+});
+
+test('accepts dial with srtpEncryption=dtls', () => {
+  validateVerb('dial', {
+    target: [{type: 'sip', sipUri: 'sips:alice@example.com;transport=tls'}],
+    srtpEncryption: 'dtls'
+  }, console);
+});
+
+test('accepts dial without srtpEncryption (optional)', () => {
+  validateVerb('dial', {
+    target: [{type: 'sip', sipUri: 'sip:alice@example.com'}]
+  }, console);
+});
+
+test('rejects dial with invalid srtpEncryption value', () => {
+  assertThrows(() => validateVerb('dial', {
+    target: [{type: 'sip', sipUri: 'sips:alice@example.com'}],
+    srtpEncryption: 'aes'
+  }, console), /enum|srtpEncryption/i);
+});
+
 /* ---- summary ---- */
 console.log(`\n${passed} passed, ${failed} failed\n`);
 if (failed > 0) process.exit(1);
