@@ -124,16 +124,15 @@
     },
     "llm": {
       "type": "object",
-      "description": "LLM configuration for the agent.",
-      "required": ["vendor", "model"],
+      "description": "LLM configuration for the agent. Optional: when omitted, or when `vendor`/`model` are omitted, they fall back to the application's configured default LLM (like `stt`/`tts`).",
       "properties": {
         "vendor": {
           "type": "string",
-          "description": "LLM vendor id. Must match a `@jambonz/llm` registered adapter."
+          "description": "LLM vendor id. Must match a `@jambonz/llm` registered adapter. Optional: falls back to the application's default LLM vendor."
         },
         "model": {
           "type": "string",
-          "description": "Vendor-specific model id (e.g. 'gpt-4o', 'claude-sonnet-4-5-20250929')."
+          "description": "Vendor-specific model id (e.g. 'gpt-4o', 'claude-sonnet-4-5-20250929'). Optional: falls back to the application's default LLM model."
         },
         "label": {
           "type": "string",
@@ -304,9 +303,6 @@
       "description": "Configuration for playing filler audio while tool calls are in progress. Prevents silence during long-running tool executions."
     }
   },
-  "required": [
-    "llm"
-  ],
   "$defs": {
     "llmMessage": {
       "type": "object",

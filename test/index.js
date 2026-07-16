@@ -595,13 +595,16 @@ test('rejects unknown top-level llm field', () => {
   }, /additional properties|additionalProperties|labl/i);
 });
 
-test('rejects missing vendor / model', () => {
-  assertThrows(() => {
-    validateVerb('agent', {llm: {model: 'gpt-4o'}}, console);
-  }, /vendor/);
-  assertThrows(() => {
-    validateVerb('agent', {llm: {vendor: 'openai'}}, console);
-  }, /model/);
+test('accepts missing vendor / model (falls back to the application default LLM)', () => {
+  // vendor/model are optional, like stt/tts: the server resolves them from
+  // the application's configured default LLM when the verb omits them.
+  validateVerb('agent', {llm: {model: 'gpt-4o'}}, console);
+  validateVerb('agent', {llm: {vendor: 'openai'}}, console);
+});
+
+test('accepts an omitted llm block (falls back to the application default LLM)', () => {
+  validateVerb('agent', {}, console);
+  validateVerb('agent', {llm: {llmOptions: {systemPrompt: 'You are helpful.'}}}, console);
 });
 
 /* ---- Deepgram Flux Multilingual: languageHints ---- */
