@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/verbs/qwen_s2s",
+  "minVersion": "0.4.0",
+  "title": "Qwen S2S",
+  "description": "Shortcut for 'llm' with vendor automatically set to 'qwen'. Connects the caller to an Alibaba Qwen Omni-Realtime model (e.g. qwen3.5-omni-plus-realtime, qwen3.5-omni-flash-realtime) for real-time speech-to-speech voice conversation. auth takes the DashScope apiKey (required; keys are region-bound) and an optional host — default dashscope-intl.aliyuncs.com (international); set a workspace-scoped host (ws-<workspaceId>.<region>.maas.aliyuncs.com) or dashscope.aliyuncs.com for the China (Beijing) region.",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "../components/llm-base"
+    }
+  ],
+  "properties": {
+    "verb": {
+      "const": "qwen_s2s",
+      "description": "The verb name."
+    },
+    "vendor": {
+      "type": "string",
+      "const": "qwen",
+      "description": "The LLM vendor (always 'qwen' for this shortcut)."
+    }
+  },
+  "required": [
+    "llmOptions"
+  ],
+  "examples": [
+    {
+      "verb": "qwen_s2s",
+      "model": "qwen3.5-omni-flash-realtime",
+      "auth": {
+        "apiKey": "sk-...",
+        "host": "ws-abc123.ap-southeast-1.maas.aliyuncs.com"
+      },
+      "llmOptions": {
+        "session_update": {
+          "voice": "Ethan",
+          "instructions": "You are a helpful voice assistant.",
+          "turn_detection": { "type": "semantic_vad" }
+        }
+      },
+      "actionHook": "/s2s-complete"
+    }
+  ]
+}
