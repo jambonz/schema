@@ -51,6 +51,12 @@ test('applies verb transforms (openai_s2s -> llm with vendor)', () => {
   assert.strictEqual(result[0].llm.vendor, 'openai');
 });
 
+test('applies verb transforms (qwen_s2s -> llm with vendor)', () => {
+  const result = normalizeJambones(console, [{verb: 'qwen_s2s', model: 'qwen3.5-omni-flash-realtime'}]);
+  assert.strictEqual(Object.keys(result[0])[0], 'llm');
+  assert.strictEqual(result[0].llm.vendor, 'qwen');
+});
+
 test('rejects non-array input', () => {
   assertThrows(() => normalizeJambones(console, 'not an array'), /must be array/);
 });
