@@ -63,6 +63,10 @@
       "$ref": "../components/actionHook",
       "description": "A webhook invoked for Dialogflow events during the conversation."
     },
+    "toolHook": {
+      "$ref": "../components/actionHook",
+      "description": "A webhook invoked when the agent requests a client-side tool call (CX). Respond with {outputParameters} (or {error}) to resume the conversation."
+    },
     "events": {
       "type": "array",
       "items": {
