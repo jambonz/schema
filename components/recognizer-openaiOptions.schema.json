@@ -29,6 +29,22 @@
       "type": "string",
       "description": "Language code for recognition."
     },
+    "languages": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "Language hints for 'gpt-live-transcribe', which takes a list rather than a single code (e.g. ['en','fr']). Overrides the recognizer language; do not combine with 'language'."
+    },
+    "keywords": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Literal term hints (product names, acronyms, medications) for 'gpt-live-transcribe'. Hints, not required output. Defaults to the recognizer's 'hints' when unset."
+    },
+    "delay": {
+      "type": "string",
+      "enum": ["minimal", "low", "medium", "high", "xhigh"],
+      "description": "Latency/accuracy trade-off for 'gpt-live-transcribe': lower emits partial text sooner, higher gives the model more audio context and can improve accuracy."
+    },
     "input_audio_noise_reduction": {
       "type": "string",
       "enum": ["near_field", "far_field"],
@@ -58,17 +74,17 @@
       "type": "integer",
       "minimum": 0,
       "maximum": 3,
-      "description": "Local VAD aggressiveness (0-3). Used only with 'gpt-realtime-whisper'."
+      "description": "Local VAD aggressiveness (0-3). Used only with the client-endpointed models ('gpt-live-transcribe', 'gpt-realtime-whisper'), which reject server turn detection and rely on jambonz to end each turn."
     },
     "vadSilenceMs": {
       "type": "integer",
       "minimum": 1,
-      "description": "Milliseconds of silence to detect end-of-speech for local VAD. Used only with 'gpt-realtime-whisper'."
+      "description": "Milliseconds of silence to detect end-of-speech for local VAD. Used only with the client-endpointed models."
     },
     "vadVoiceMs": {
       "type": "integer",
       "minimum": 1,
-      "description": "Milliseconds of voice to detect start-of-speech for local VAD. Used only with 'gpt-realtime-whisper'."
+      "description": "Milliseconds of voice to detect start-of-speech for local VAD. Used only with the client-endpointed models."
     }
   },
   "additionalProperties": false
