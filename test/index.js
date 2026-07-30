@@ -350,7 +350,7 @@ test('rejects an unsupported delay value', () => {
     input: ['speech'],
     actionHook: '/test',
     recognizer: {vendor: 'openai', openaiOptions: {delay: 'ultra'}}
-  }, console));
+  }, console), /openaiOptions\/delay.*allowed values/);
 });
 
 test('rejects keywords as a bare string', () => {
@@ -358,7 +358,7 @@ test('rejects keywords as a bare string', () => {
     input: ['speech'],
     actionHook: '/test',
     recognizer: {vendor: 'openai', openaiOptions: {keywords: 'jambonz'}}
-  }, console));
+  }, console), /openaiOptions\/keywords.*must be array/);
 });
 
 test('rejects an empty languages list', () => {
@@ -366,7 +366,7 @@ test('rejects an empty languages list', () => {
     input: ['speech'],
     actionHook: '/test',
     recognizer: {vendor: 'openai', openaiOptions: {languages: []}}
-  }, console));
+  }, console), /openaiOptions\/languages.*fewer than 1 items/);
 });
 
 test('rejects vadMode out of range (4)', () => {
