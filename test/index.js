@@ -570,10 +570,8 @@ test('accepts zai vendor id', () => {
   }, console);
 });
 
-test('rejects unknown vendor', () => {
-  assertThrows(() => {
-    validateVerb('agent', {llm: {vendor: 'nonesuch', model: 'x'}}, console);
-  }, /enum|allowed/i);
+test('accepts an unregistered vendor id (no enum; validated at runtime by @jambonz/llm)', () => {
+  validateVerb('agent', {llm: {vendor: 'nonesuch', model: 'x'}}, console);
 });
 
 test('rejects unknown llmOptions field (the original `instructions` typo case)', () => {
