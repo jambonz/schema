@@ -329,6 +329,46 @@ test('accepts vadMode=3 (maximum)', () => {
   }, console);
 });
 
+test('accepts gpt-live-transcribe keywords, delay and languages', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'openai',
+      openaiOptions: {
+        model: 'gpt-live-transcribe',
+        keywords: ['jambonz', 'drachtio'],
+        delay: 'low',
+        languages: ['en', 'fr']
+      }
+    }
+  }, console);
+});
+
+test('rejects an unsupported delay value', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'openai', openaiOptions: {delay: 'ultra'}}
+  }, console), /openaiOptions\/delay.*allowed values/);
+});
+
+test('rejects keywords as a bare string', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'openai', openaiOptions: {keywords: 'jambonz'}}
+  }, console), /openaiOptions\/keywords.*must be array/);
+});
+
+test('rejects an empty languages list', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'openai', openaiOptions: {languages: []}}
+  }, console), /openaiOptions\/languages.*fewer than 1 items/);
+});
+
 test('rejects vadMode out of range (4)', () => {
   assertThrows(() => validateVerb('gather', {
     input: ['speech'],
