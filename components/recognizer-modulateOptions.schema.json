@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/components/recognizer-modulateOptions",
+  "title": "Modulate Recognizer Options",
+  "description": "Modulate-specific STT options. Only applies when recognizer vendor is 'modulate'. Modulate does not return confidence scores; transcripts are reported with confidence 1.0. The model is selected with the top-level recognizer 'model' property: 'velma-2-stt-streaming' (multilingual, the default) or 'velma-2-stt-streaming-english-v2' (low-latency English).",
+  "type": "object",
+  "properties": {
+    "apiKey": {
+      "type": "string",
+      "description": "Modulate API key. Overrides the key configured in jambonz."
+    },
+    "endpointing": {
+      "type": "boolean",
+      "description": "Only applies to model 'velma-2-stt-streaming-english-v2': emit a final transcript for each pause-delimited speech segment. Defaults to true in jambonz; set false to receive a single final transcript when the stream ends."
+    },
+    "emotionSignal": {
+      "type": "boolean",
+      "description": "Only applies to model 'velma-2-stt-streaming': detect the speaker's emotional tone for each utterance."
+    },
+    "accentSignal": {
+      "type": "boolean",
+      "description": "Only applies to model 'velma-2-stt-streaming': identify the speaker's accent for each utterance."
+    },
+    "deepfakeSignal": {
+      "type": "boolean",
+      "description": "Only applies to model 'velma-2-stt-streaming': score each utterance for synthetic (deepfake) voice likelihood."
+    },
+    "piiPhiTagging": {
+      "type": "boolean",
+      "description": "Only applies to model 'velma-2-stt-streaming': wrap detected PII/PHI in tags within the transcript text."
+    },
+    "modulateSttUri": {
+      "type": "string",
+      "description": "Custom host to connect to instead of platform.modulate.ai."
+    },
+    "modulateSttUseTls": {
+      "type": "boolean",
+      "description": "Use TLS when connecting to a custom host. Default true."
+    }
+  },
+  "additionalProperties": false
+}

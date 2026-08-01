@@ -447,6 +447,46 @@ test('rejects unknown property in xaiOptions', () => {
   }, console));
 });
 
+/* ---- recognizer modulateOptions ---- */
+console.log('\nrecognizer modulateOptions');
+
+test('accepts modulateOptions with valid fields', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'modulate',
+      model: 'velma-2-stt-streaming',
+      modulateOptions: {
+        apiKey: 'my-key',
+        endpointing: true,
+        emotionSignal: true,
+        accentSignal: false,
+        deepfakeSignal: true,
+        piiPhiTagging: false,
+        modulateSttUri: 'modulate.example.com',
+        modulateSttUseTls: true
+      }
+    }
+  }, console);
+});
+
+test('rejects non-boolean endpointing in modulateOptions', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'modulate', modulateOptions: {endpointing: 'soon'}}
+  }, console));
+});
+
+test('rejects unknown property in modulateOptions', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'modulate', modulateOptions: {customTerms: ['x']}}
+  }, console));
+});
+
 /* ---- error messages ---- */
 console.log('\nerror messages');
 
