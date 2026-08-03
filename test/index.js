@@ -57,6 +57,12 @@ test('applies verb transforms (qwen_s2s -> llm with vendor)', () => {
   assert.strictEqual(result[0].llm.vendor, 'qwen');
 });
 
+test('applies verb transforms (gptlive_s2s -> llm with vendor)', () => {
+  const result = normalizeJambones(console, [{verb: 'gptlive_s2s', model: 'gpt-live-1-boulder-alpha'}]);
+  assert.strictEqual(Object.keys(result[0])[0], 'llm');
+  assert.strictEqual(result[0].llm.vendor, 'gptlive');
+});
+
 test('rejects non-array input', () => {
   assertThrows(() => normalizeJambones(console, 'not an array'), /must be array/);
 });
@@ -2024,6 +2030,91 @@ test('rejects dial with invalid srtpEncryption value', () => {
     target: [{type: 'sip', sipUri: 'sips:alice@example.com'}],
     srtpEncryption: 'aes'
   }, console), /enum|srtpEncryption/i);
+});
+
+/* ---- gptlive_s2s (OpenAI GPT Live alpha) ---- */
+console.log('\ngptlive_s2s verb');
+
+test('gptlive_s2s validates with a client delegation', () => {
+  validateVerb('gptlive_s2s', {
+    model: 'gpt-live-1-boulder-alpha',
+    auth: {apiKey: 'sk-...'},
+    llmOptions: {
+      session_update: {
+        instructions: 'Be concise.',
+        audio: {output: {voice: 'marin'}},
+        delegation: {type: 'client'}
+      }
+    },
+    actionHook: '/s2s-complete'
+  }, console);
+});
+
+test('gptlive_s2s validates with a responses delegation carrying tools', () => {
+  validateVerb('gptlive_s2s', {
+    auth: {apiKey: 'sk-...'},
+    llmOptions: {
+      session_update: {
+        delegation: {
+          type: 'responses',
+          model: 'gpt-5.5',
+          tools: [{type: 'function', name: 'get_weather', parameters: {type: 'object', properties: {}}}]
+        }
+      }
+    },
+    toolHook: '/s2s-tool-call'
+  }, console);
+});
+
+test('gptlive_s2s requires llmOptions', () => {
+  assertThrows(() => validateVerb('gptlive_s2s', {auth: {apiKey: 'sk-...'}}, console));
+});
+
+/* The three constraints the task enforces at run time must fail validation here
+ * instead, so a developer sees them up front rather than as a dropped call. */
+test('gptlive_s2s requires auth.apiKey', () => {
+  assertThrows(() => validateVerb('gptlive_s2s', {
+    llmOptions: {session_update: {instructions: 'hi'}}
+  }, console));
+  assertThrows(() => validateVerb('gptlive_s2s', {
+    auth: {}, llmOptions: {session_update: {instructions: 'hi'}}
+  }, console));
+});
+
+test('gptlive_s2s requires llmOptions.session_update', () => {
+  assertThrows(() => validateVerb('gptlive_s2s', {
+    auth: {apiKey: 'sk-...'}, llmOptions: {}
+  }, console));
+});
+
+test('gptlive_s2s rejects a model inside session_update (it belongs in the URL)', () => {
+  assertThrows(() => validateVerb('gptlive_s2s', {
+    auth: {apiKey: 'sk-...'},
+    llmOptions: {session_update: {model: 'gpt-live-1-boulder-alpha'}}
+  }, console));
+});
+
+test('gptlive_s2s rejects an unknown delegation type', () => {
+  assertThrows(() => validateVerb('gptlive_s2s', {
+    auth: {apiKey: 'sk-...'},
+    llmOptions: {session_update: {delegation: {type: 'webhook'}}}
+  }, console));
+});
+
+test('gptlive_s2s rejects a vendor other than gptlive', () => {
+  assertThrows(() => validateVerb('gptlive_s2s', {
+    vendor: 'openai',
+    auth: {apiKey: 'sk-...'},
+    llmOptions: {session_update: {}}
+  }, console), /const|vendor/i);
+});
+
+test('an app using gptlive_s2s validates (exactly one oneOf match)', () => {
+  const result = validateApp([
+    {verb: 'answer'},
+    {verb: 'gptlive_s2s', auth: {apiKey: 'sk-...'}, llmOptions: {session_update: {instructions: 'hi'}}}
+  ], console);
+  assert.strictEqual(result.valid, true, JSON.stringify(result.errors));
 });
 
 /* ---- summary ---- */
