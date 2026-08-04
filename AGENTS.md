@@ -172,7 +172,18 @@ OpenAI's GPT Live API (limited-access alpha) is a different wire protocol from t
 - Work the model wants done arrives as a **delegation**, selected by `session_update.delegation.type`:
   - `client` — the model asks your app for free-form text context. Answer with an `llm:update` carrying `delegation.context.append` (max 500 tokens, exactly one `input_text` part).
   - `responses` — the model runs a Responses API turn whose `response.*` events stream inline. Function calls are answered with `delegation.function_call_output.create`.
-- Tools — `mcpServers`, `handoff` and `hangup` — only work with `delegation.type: "responses"`; with a `client` delegation there is no function-calling protocol to declare them on.
+- A `responses` delegation carries a **required nested object** whose `model` is **mandatory**, and tools go INSIDE it:
+  ```json
+  "delegation": {
+    "type": "responses",
+    "responses": {
+      "model": "gpt-5.5",
+      "tools": [{ "type": "function", "name": "get_weather", "description": "...", "parameters": {} }]
+    }
+  }
+  ```
+  Tools placed at `delegation.tools` are rejected by the server. `delegation.responses.model` is the Responses-side model, separate from the GPT Live voice model in the verb's `model` property.
+- Tools — `mcpServers`, `handoff` and `hangup` — only work with `delegation.type: "responses"` **and** `delegation.responses.model` set; with a `client` delegation there is no function-calling protocol to declare them on, and the verb is rejected.
 - Mid-call `llm:update` accepts only `session.update`, `session.context.append`, `delegation.context.append`, `delegation.function_call_output.create` and `session.close`. Realtime events (`response.create`, `response.cancel`, `input_audio_buffer.*`, `conversation.item.create`) are rejected.
 - A later `session.update` is sparse (omitted fields keep their values), but replacing `delegation` requires the complete delegation object.
 

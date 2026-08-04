@@ -2134,6 +2134,49 @@ test('gptlive_s2s rejects a vendor other than gptlive', () => {
   }, console), /const|vendor/i);
 });
 
+/* Review found these three shapes validated clean and then dropped the call at
+ * runtime. The schema exists precisely to catch them earlier. */
+test('gptlive_s2s rejects tools at delegation.tools (they belong under responses)', () => {
+  assertThrows(() => validateVerb('gptlive_s2s', {
+    auth: {apiKey: 'sk-...'},
+    llmOptions: {
+      session_update: {
+        delegation: {
+          type: 'responses',
+          responses: {model: 'gpt-5.5'},
+          tools: [{type: 'function', name: 'get_weather'}]
+        }
+      }
+    }
+  }, console));
+});
+
+test('gptlive_s2s rejects handoff/hangup/mcpServers without a responses delegation', () => {
+  const base = {auth: {apiKey: 'sk-...'}};
+  const clientDelegation = {session_update: {delegation: {type: 'client'}}};
+  const validHandoff = {mode: 'blind', target: [{type: 'user', name: 'agent@example.com'}]};
+  for (const extra of [{hangup: {}}, {handoff: validHandoff}, {mcpServers: [{url: 'https://m/sse'}]}]) {
+    /* a client delegation has no function-calling channel */
+    assertThrows(() => validateVerb('gptlive_s2s',
+      {...base, ...extra, llmOptions: clientDelegation}, console));
+    /* ...and neither does an absent delegation */
+    assertThrows(() => validateVerb('gptlive_s2s',
+      {...base, ...extra, llmOptions: {session_update: {instructions: 'hi'}}}, console));
+  }
+  /* with a proper responses delegation they are all fine */
+  validateVerb('gptlive_s2s', {
+    ...base, hangup: {}, handoff: validHandoff, mcpServers: [{url: 'https://m/sse'}],
+    llmOptions: {session_update: {delegation: {type: 'responses', responses: {model: 'gpt-5.5'}}}}
+  }, console);
+});
+
+test('gptlive_s2s rejects an empty apiKey', () => {
+  assertThrows(() => validateVerb('gptlive_s2s', {
+    auth: {apiKey: ''},
+    llmOptions: {session_update: {instructions: 'hi'}}
+  }, console));
+});
+
 test('an app using gptlive_s2s validates (exactly one oneOf match)', () => {
   const result = validateApp([
     {verb: 'answer'},
