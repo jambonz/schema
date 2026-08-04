@@ -35,7 +35,7 @@ The verb schemas and JSON structure are identical in both modes. The difference 
 - **Webhook**: Simple IVR, call routing, voicemail, basic gather-and-respond patterns.
 - **WebSocket**: LLM-powered voice agents, real-time audio streaming, complex conversational flows, anything requiring bidirectional communication, or asynchronous logic, or streaming tts.
 
-**IMPORTANT**: Any application that uses a speech-to-speech verb (`openai_s2s`, `google_s2s`, `deepgram_s2s`, `ultravox_s2s`, `elevenlabs_s2s`, `s2s`, or `agent`) MUST use WebSocket transport, not webhooks. These verbs require persistent bidirectional communication for real-time audio and events.
+**IMPORTANT**: Any application that uses a speech-to-speech verb (`openai_s2s`, `gptlive_s2s`, `google_s2s`, `deepgram_s2s`, `ultravox_s2s`, `qwen_s2s`, `elevenlabs_s2s`, `s2s`, or `agent`) MUST use WebSocket transport, not webhooks. These verbs require persistent bidirectional communication for real-time audio and events.
 
 ## Schema
 
@@ -62,7 +62,8 @@ Two tools are available:
 - **gather** — Collect speech (STT) and/or DTMF input. The workhorse for interactive menus and voice input.
 
 ### AI & Real-time
-- **openai_s2s** / **google_s2s** / **deepgram_s2s** / **ultravox_s2s** — Connect the caller to a vendor-specific LLM for real-time voice conversation. These are the **preferred** verbs when the vendor is known. Each handles the full STT→LLM→TTS flow with the vendor pre-set.
+- **openai_s2s** / **google_s2s** / **deepgram_s2s** / **ultravox_s2s** / **qwen_s2s** — Connect the caller to a vendor-specific LLM for real-time voice conversation. These are the **preferred** verbs when the vendor is known. Each handles the full STT→LLM→TTS flow with the vendor pre-set.
+- **gptlive_s2s** — Connect the caller to OpenAI's GPT Live API (limited-access alpha). A different wire protocol from `openai_s2s` (Realtime): `llmOptions` carries only a `session_update`, there is no `response_create`, and tool calls arrive via a Responses-targeted *delegation*. See [GPT Live S2S specifics](#gpt-live-s2s-specifics) below.
 - **elevenlabs_s2s** — Connect the caller to an ElevenLabs Conversational AI agent. **Unlike other s2s vendors**, ElevenLabs requires a pre-configured `agent_id` (created in the ElevenLabs dashboard) rather than a model and messages. See [ElevenLabs S2S specifics](#elevenlabs-s2s-specifics) below.
 - **s2s** — Generic LLM voice conversation verb. Use only when the vendor is determined at runtime (e.g. from an env var). Requires `vendor` to be specified.
 - **agent** — Higher-level voice AI agent with integrated turn detection. Mix-and-match STT, LLM, and TTS vendors.
@@ -98,7 +99,7 @@ Two tools are available:
 **IMPORTANT — Code generation rules:**
 
 1. **Always use `stream`, never `listen`** — they are synonyms; `stream` is the preferred name.
-2. **Always use the vendor-specific shortcut when the LLM vendor is known** — use `openai_s2s`, `google_s2s`, `elevenlabs_s2s`, `deepgram_s2s`, or `ultravox_s2s`. Do NOT use `llm` or `s2s` with a `vendor` property when a shortcut exists.
+2. **Always use the vendor-specific shortcut when the LLM vendor is known** — use `openai_s2s`, `gptlive_s2s`, `google_s2s`, `elevenlabs_s2s`, `deepgram_s2s`, `qwen_s2s`, or `ultravox_s2s`. Do NOT use `llm` or `s2s` with a `vendor` property when a shortcut exists.
 3. **Use `s2s` (not `llm`) when the vendor is dynamic** — e.g. the vendor comes from an env var or runtime config. Both `s2s` and `llm` are synonyms, but prefer `s2s`.
 4. **Never use `llm` in generated code** — it is a legacy name. Use either a vendor shortcut or `s2s`.
 
@@ -154,6 +155,51 @@ ElevenLabs works differently from other s2s vendors. Instead of passing a model 
       "api_key": "your-api-key"
     },
     "llmOptions": {},
+    "actionHook": "/s2s-complete",
+    "eventHook": "/event",
+    "events": ["all"]
+  }
+]
+```
+
+### GPT Live S2S Specifics
+
+OpenAI's GPT Live API (limited-access alpha) is a different wire protocol from the OpenAI Realtime API behind `openai_s2s`, so it has its own verb and its own `llmOptions` shape.
+
+**Key differences from `openai_s2s`:**
+- `llmOptions` takes only `session_update` — there is **no** `response_create`. The model starts and drives the conversation itself.
+- Do NOT put `model` inside `session_update`; the model travels in the connection URL (set the verb's `model` property instead, default `gpt-live-1-boulder-alpha`).
+- Work the model wants done arrives as a **delegation**, selected by `session_update.delegation.type`:
+  - `client` — the model asks your app for free-form text context. Answer with an `llm:update` carrying `delegation.context.append` (max 500 tokens, exactly one `input_text` part).
+  - `responses` — the model runs a Responses API turn whose `response.*` events stream inline. Function calls are answered with `delegation.function_call_output.create`.
+- A `responses` delegation carries a **required nested object** whose `model` is **mandatory**, and tools go INSIDE it:
+  ```json
+  "delegation": {
+    "type": "responses",
+    "responses": {
+      "model": "gpt-5.5",
+      "tools": [{ "type": "function", "name": "get_weather", "description": "...", "parameters": {} }]
+    }
+  }
+  ```
+  Tools placed at `delegation.tools` are rejected by the server. `delegation.responses.model` is the Responses-side model, separate from the GPT Live voice model in the verb's `model` property.
+- Tools — `mcpServers`, `handoff` and `hangup` — only work with `delegation.type: "responses"` **and** `delegation.responses.model` set; with a `client` delegation there is no function-calling protocol to declare them on, and the verb is rejected.
+- Mid-call `llm:update` accepts only `session.update`, `session.context.append`, `delegation.context.append`, `delegation.function_call_output.create` and `session.close`. Realtime events (`response.create`, `response.cancel`, `input_audio_buffer.*`, `conversation.item.create`) are rejected.
+- A later `session.update` is sparse (omitted fields keep their values), but replacing `delegation` requires the complete delegation object.
+
+```json
+[
+  {
+    "verb": "gptlive_s2s",
+    "model": "gpt-live-1-boulder-alpha",
+    "auth": { "apiKey": "sk-..." },
+    "llmOptions": {
+      "session_update": {
+        "instructions": "You are a helpful voice assistant. Be concise.",
+        "audio": { "output": { "voice": "marin" } },
+        "delegation": { "type": "client" }
+      }
+    },
     "actionHook": "/s2s-complete",
     "eventHook": "/event",
     "events": ["all"]

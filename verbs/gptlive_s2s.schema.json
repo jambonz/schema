@@ -1,0 +1,240 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/verbs/gptlive_s2s",
+  "minVersion": "11.1.0",
+  "title": "GPT Live S2S",
+  "description": "Shortcut for 'llm' with vendor automatically set to 'gptlive'. Connects the caller to OpenAI's GPT Live API (limited-access alpha, e.g. model gpt-live-1-boulder-alpha) for real-time speech-to-speech voice conversation. This is a different wire protocol from the OpenAI Realtime API used by 'openai_s2s': llmOptions takes only a session_update (there is no response_create \u2014 the model starts and drives the conversation itself), and work the model wants done arrives as a delegation. Set session_update.delegation.type to 'client' to be asked for free-form text context (answer with a delegation.context.append via llm:update), or to 'responses' to run a Responses API turn that can make function calls (answer with delegation.function_call_output.create). A 'responses' delegation carries a required nested object, delegation.responses, whose 'model' is mandatory and whose 'tools' take the flat Responses function shape. Tool support \u2014 mcpServers, handoff and hangup \u2014 requires delegation.type 'responses' with delegation.responses.model set. auth takes the OpenAI apiKey; the model is carried in the connection URL, so do not set session_update.model.",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "../components/llm-base"
+    },
+    {
+      "$comment": "handoff, hangup and mcpServers need a function-calling channel, which only a Responses delegation provides. The feature-server throws when the verb executes otherwise, dropping the call \u2014 catch it at validation instead.",
+      "if": {
+        "anyOf": [
+          {
+            "required": [
+              "handoff"
+            ]
+          },
+          {
+            "required": [
+              "hangup"
+            ]
+          },
+          {
+            "required": [
+              "mcpServers"
+            ]
+          }
+        ]
+      },
+      "then": {
+        "properties": {
+          "llmOptions": {
+            "properties": {
+              "session_update": {
+                "properties": {
+                  "delegation": {
+                    "properties": {
+                      "type": {
+                        "const": "responses"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "responses"
+                    ]
+                  }
+                },
+                "required": [
+                  "delegation"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "properties": {
+    "verb": {
+      "const": "gptlive_s2s",
+      "description": "The verb name."
+    },
+    "vendor": {
+      "type": "string",
+      "const": "gptlive",
+      "description": "The LLM vendor (always 'gptlive' for this shortcut)."
+    },
+    "auth": {
+      "type": "object",
+      "description": "OpenAI credentials.",
+      "properties": {
+        "apiKey": {
+          "type": "string",
+          "description": "The OpenAI API key. Required \u2014 the session cannot be authenticated without it.",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "apiKey"
+      ],
+      "additionalProperties": true
+    },
+    "llmOptions": {
+      "type": "object",
+      "properties": {
+        "session_update": {
+          "type": "object",
+          "description": "Startup configuration, sent as the first session.update client event. Required: the server withholds session.started \u2014 and therefore caller audio \u2014 until it arrives.",
+          "properties": {
+            "model": {
+              "not": {},
+              "description": "Not allowed: the model travels in the connection URL. Set the verb's top-level 'model' property instead."
+            },
+            "delegation": {
+              "type": "object",
+              "description": "How the model delegates work it cannot do itself. Replacing this mid-call requires the complete object.",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "client",
+                    "responses"
+                  ],
+                  "description": "'client' asks the application for free-form text context; 'responses' runs a Responses API turn that can make function calls. Tools \u2014 mcpServers, handoff, hangup \u2014 require 'responses'."
+                },
+                "responses": {
+                  "type": "object",
+                  "description": "Configuration for a Responses-targeted delegation. Required when type is 'responses'.",
+                  "properties": {
+                    "model": {
+                      "type": "string",
+                      "description": "The Responses-side model the delegated turns run on (e.g. gpt-5.5). Required by the server, and distinct from the GPT Live voice model in the connection URL.",
+                      "examples": [
+                        "gpt-5.5"
+                      ]
+                    },
+                    "tools": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      },
+                      "description": "Function tools in the flat Responses shape: {type:'function', name, description, parameters}. jambonz prepends the injected handoff/hangup/MCP tools here."
+                    },
+                    "instructions": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "model"
+                  ],
+                  "additionalProperties": true
+                },
+                "tools": {
+                  "not": {},
+                  "description": "Not allowed here: a Responses delegation's tools belong at delegation.responses.tools. Tools placed at this level are rejected by the server at session start."
+                }
+              },
+              "additionalProperties": true,
+              "if": {
+                "properties": {
+                  "type": {
+                    "const": "responses"
+                  }
+                },
+                "required": [
+                  "type"
+                ]
+              },
+              "then": {
+                "required": [
+                  "responses"
+                ]
+              }
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "session_update"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "auth",
+    "llmOptions"
+  ],
+  "examples": [
+    {
+      "verb": "gptlive_s2s",
+      "model": "gpt-live-1-boulder-alpha",
+      "auth": {
+        "apiKey": "sk-..."
+      },
+      "llmOptions": {
+        "session_update": {
+          "instructions": "You are a helpful voice assistant. Be concise.",
+          "audio": {
+            "output": {
+              "voice": "marin"
+            }
+          },
+          "delegation": {
+            "type": "client"
+          }
+        }
+      },
+      "eventHook": "/s2s-event",
+      "actionHook": "/s2s-complete"
+    },
+    {
+      "verb": "gptlive_s2s",
+      "model": "gpt-live-1-boulder-alpha",
+      "auth": {
+        "apiKey": "sk-..."
+      },
+      "llmOptions": {
+        "session_update": {
+          "instructions": "You are a helpful voice assistant. Be concise.",
+          "audio": {
+            "output": {
+              "voice": "marin"
+            }
+          },
+          "delegation": {
+            "type": "responses",
+            "responses": {
+              "model": "gpt-5.5",
+              "tools": [
+                {
+                  "type": "function",
+                  "name": "get_weather",
+                  "description": "Get the current weather for a city",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "city": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "city"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "toolHook": "/s2s-tool-call",
+      "eventHook": "/s2s-event",
+      "actionHook": "/s2s-complete"
+    }
+  ]
+}
