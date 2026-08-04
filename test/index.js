@@ -2057,12 +2057,37 @@ test('gptlive_s2s validates with a responses delegation carrying tools', () => {
       session_update: {
         delegation: {
           type: 'responses',
-          model: 'gpt-5.5',
-          tools: [{type: 'function', name: 'get_weather', parameters: {type: 'object', properties: {}}}]
+          responses: {
+            model: 'gpt-5.5',
+            tools: [{type: 'function', name: 'get_weather', parameters: {type: 'object', properties: {}}}]
+          }
         }
       }
     },
     toolHook: '/s2s-tool-call'
+  }, console);
+});
+
+/* Verified against the alpha: the server rejects a responses delegation with no
+ * nested responses object, and one without a model. */
+test('gptlive_s2s requires delegation.responses when type is responses', () => {
+  assertThrows(() => validateVerb('gptlive_s2s', {
+    auth: {apiKey: 'sk-...'},
+    llmOptions: {session_update: {delegation: {type: 'responses'}}}
+  }, console));
+});
+
+test('gptlive_s2s requires delegation.responses.model', () => {
+  assertThrows(() => validateVerb('gptlive_s2s', {
+    auth: {apiKey: 'sk-...'},
+    llmOptions: {session_update: {delegation: {type: 'responses', responses: {}}}}
+  }, console));
+});
+
+test('gptlive_s2s client delegation needs no responses object', () => {
+  validateVerb('gptlive_s2s', {
+    auth: {apiKey: 'sk-...'},
+    llmOptions: {session_update: {delegation: {type: 'client'}}}
   }, console);
 });
 

@@ -3,7 +3,7 @@
   "$id": "https://jambonz.org/schema/verbs/gptlive_s2s",
   "minVersion": "11.1.0",
   "title": "GPT Live S2S",
-  "description": "Shortcut for 'llm' with vendor automatically set to 'gptlive'. Connects the caller to OpenAI's GPT Live API (limited-access alpha, e.g. model gpt-live-1-boulder-alpha) for real-time speech-to-speech voice conversation. This is a different wire protocol from the OpenAI Realtime API used by 'openai_s2s': llmOptions takes only a session_update (there is no response_create — the model starts and drives the conversation itself), and work the model wants done arrives as a delegation. Set session_update.delegation.type to 'client' to be asked for free-form text context (answer with a delegation.context.append via llm:update), or to 'responses' to run a Responses API turn that can make function calls (answer with delegation.function_call_output.create). Tool support — mcpServers, handoff and hangup — requires delegation.type 'responses'. auth takes the OpenAI apiKey; the model is carried in the connection URL, so do not set session_update.model.",
+  "description": "Shortcut for 'llm' with vendor automatically set to 'gptlive'. Connects the caller to OpenAI's GPT Live API (limited-access alpha, e.g. model gpt-live-1-boulder-alpha) for real-time speech-to-speech voice conversation. This is a different wire protocol from the OpenAI Realtime API used by 'openai_s2s': llmOptions takes only a session_update (there is no response_create — the model starts and drives the conversation itself), and work the model wants done arrives as a delegation. Set session_update.delegation.type to 'client' to be asked for free-form text context (answer with a delegation.context.append via llm:update), or to 'responses' to run a Responses API turn that can make function calls (answer with delegation.function_call_output.create). A 'responses' delegation carries a required nested object, delegation.responses, whose 'model' is mandatory and whose 'tools' take the flat Responses function shape. Tool support — mcpServers, handoff and hangup — requires delegation.type 'responses' with delegation.responses.model set. auth takes the OpenAI apiKey; the model is carried in the connection URL, so do not set session_update.model.",
   "type": "object",
   "allOf": [
     {
@@ -51,9 +51,32 @@
                   "type": "string",
                   "enum": ["client", "responses"],
                   "description": "'client' asks the application for free-form text context; 'responses' runs a Responses API turn that can make function calls. Tools — mcpServers, handoff, hangup — require 'responses'."
+                },
+                "responses": {
+                  "type": "object",
+                  "description": "Configuration for a Responses-targeted delegation. Required when type is 'responses'.",
+                  "properties": {
+                    "model": {
+                      "type": "string",
+                      "description": "The Responses-side model the delegated turns run on (e.g. gpt-5.5). Required by the server, and distinct from the GPT Live voice model in the connection URL.",
+                      "examples": ["gpt-5.5"]
+                    },
+                    "tools": {
+                      "type": "array",
+                      "items": {"type": "object"},
+                      "description": "Function tools in the flat Responses shape: {type:'function', name, description, parameters}. jambonz prepends the injected handoff/hangup/MCP tools here."
+                    },
+                    "instructions": {"type": "string"},
+                    "tool_choice": {},
+                    "max_output_tokens": {"type": ["integer", "null"]}
+                  },
+                  "required": ["model"],
+                  "additionalProperties": true
                 }
               },
-              "additionalProperties": true
+              "additionalProperties": true,
+              "if": {"properties": {"type": {"const": "responses"}}, "required": ["type"]},
+              "then": {"required": ["responses"]}
             }
           },
           "additionalProperties": true
@@ -106,23 +129,25 @@
           },
           "delegation": {
             "type": "responses",
-            "model": "gpt-5.5",
-            "tools": [
-              {
-                "type": "function",
-                "name": "get_weather",
-                "description": "Get the current weather for a city",
-                "parameters": {
-                  "type": "object",
-                  "properties": {
-                    "city": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["city"]
+            "responses": {
+              "model": "gpt-5.5",
+              "tools": [
+                {
+                  "type": "function",
+                  "name": "get_weather",
+                  "description": "Get the current weather for a city",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "city": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["city"]
+                  }
                 }
-              }
-            ]
+              ]
+            }
           }
         }
       },
