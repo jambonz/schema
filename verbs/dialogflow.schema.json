@@ -32,11 +32,15 @@
     },
     "agent": {
       "type": "string",
-      "description": "The Dialogflow agent ID. Required for CX agents."
+      "description": "The Dialogflow agent ID for CX, or the app ID for CES. Required for both."
     },
     "environment": {
       "type": "string",
-      "description": "The Dialogflow environment to use."
+      "description": "The Dialogflow environment to use (CX)."
+    },
+    "deployment": {
+      "type": "string",
+      "description": "The deployment to use (CES). Omit to use the app's default."
     },
     "region": {
       "type": "string",
@@ -65,7 +69,7 @@
     },
     "toolHook": {
       "$ref": "../components/actionHook",
-      "description": "A webhook invoked when the agent requests a client-side tool call (CX). Respond with {outputParameters} (or {error}) to resume the conversation."
+      "description": "A webhook invoked when the agent requests a client-side tool call (CX and CES). Respond with {outputParameters} (or {error}) to resume the conversation. The posted tool_call is each model's native shape: CX sends {tool, action, input_parameters}; CES sends {id, display_name, tool, args}. CES echoes its per-call id automatically, so you need not return it."
     },
     "events": {
       "type": "array",
