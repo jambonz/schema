@@ -5,6 +5,7 @@ Refer to vendor documentation for supported models, voices, and vendor-specific 
 ### Deepgram
 
 - [TTS Models](https://developers.deepgram.com/docs/tts-models)
+- [Flux TTS](https://developers.deepgram.com/docs/flux-tts/overview) (vendor `deepgramflux`)
 
 ### Google
 
