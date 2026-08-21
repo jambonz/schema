@@ -19,7 +19,8 @@
       "description": "Current call state."
     },
     "sip_status": { "type": "integer", "description": "SIP response code (e.g. 200, 486)." },
-    "sip_reason": { "type": "string", "description": "SIP reason phrase (e.g. 'OK', 'Busy Here')." },
+    "sip_reason": { "type": "string", "description": "SIP reason phrase from the SIP status line (e.g. 'OK', 'Busy Here'). Not the RFC 3326 Reason header - see sip_reason_header." },
+    "sip_reason_header": { "type": "string", "description": "RFC 3326 Reason header of the SIP message that caused this status change (e.g. 'Q.850;cause=18'), if it carried one; absent otherwise. Carriers fronting ISDN/E1 PRI trunks put the authoritative disconnect cause here rather than in the status line, and the same SIP status can carry different causes - a 503 may be cause=38 (network out of order) or cause=41 (temporary failure) - so the status code alone cannot classify the outcome. Present on whichever event observed it: a final failure response, a BYE, or a CANCEL. Two caveats: the header is re-serialized in transit, which normalizes the optional whitespace RFC 3326 allows around ';' (a carrier's 'Q.850 ;cause=18' arrives as 'Q.850;cause=18'), so parse tolerantly rather than string-matching; and a message may carry more than one Reason header, in which case they arrive comma-separated - split on commas outside quotes, since a text=\"...\" value may contain one." },
     "trace_id": { "type": "string", "description": "Distributed tracing identifier for correlating logs across jambonz components." },
     "originating_sip_ip": { "type": "string", "description": "IP address of the originating SIP trunk." },
     "originating_sip_trunk_name": { "type": "string", "description": "Name of the originating SIP trunk as configured in jambonz." },
