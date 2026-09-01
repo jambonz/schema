@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://jambonz.org/schema/verbs/gptlive_s2s",
-  "minVersion": "11.1.0",
+  "minVersion": "11.0.4",
   "title": "GPT Live S2S",
   "description": "Shortcut for 'llm' with vendor automatically set to 'gptlive'. Connects the caller to OpenAI's GPT Live API (limited-access alpha, e.g. model gpt-live-1-boulder-alpha) for real-time speech-to-speech voice conversation. This is a different wire protocol from the OpenAI Realtime API used by 'openai_s2s': llmOptions takes only a session_update (there is no response_create \u2014 the model starts and drives the conversation itself), and work the model wants done arrives as a delegation. Set session_update.delegation.type to 'client' to be asked for free-form text context (answer with a delegation.context.append via llm:update), or to 'responses' to run a Responses API turn that can make function calls (answer with delegation.function_call_output.create). A 'responses' delegation carries a required nested object, delegation.responses, whose 'model' is mandatory and whose 'tools' take the flat Responses function shape. Tool support \u2014 mcpServers, handoff and hangup \u2014 requires delegation.type 'responses' with delegation.responses.model set. auth takes the OpenAI apiKey; the model is carried in the connection URL, so do not set session_update.model.",
   "type": "object",
