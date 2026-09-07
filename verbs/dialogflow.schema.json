@@ -59,6 +59,11 @@
       "type": "string",
       "description": "The language code for the conversation (e.g. 'en-US')."
     },
+    "sessionId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,200}$",
+      "description": "Names the conversation on the Dialogflow side. Reuse the same value on a later dialogflow verb in the same call to return the caller to the same conversation, with the history the agent had built up - for example after handing the caller to a dial leg and back. Defaults to the call sid."
+    },
     "actionHook": {
       "$ref": "../components/actionHook",
       "description": "A webhook invoked when the Dialogflow session ends."
