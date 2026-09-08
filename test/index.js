@@ -185,6 +185,46 @@ test('rejects non-string parentPath', () => {
   }, console));
 });
 
+test('accepts googleOptions for the gemini transcription models', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'google',
+      model: 'gemini-3.5-transcribe-live',
+      googleOptions: {
+        apiMode: 'gemini',
+        mode: 'SMART',
+        customVocabulary: ['jambonz', 'drachtio']
+      }
+    }
+  }, console);
+});
+
+test('rejects unknown apiMode', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'google', googleOptions: {apiMode: 'v3'}}
+  }, console));
+});
+
+test('rejects unknown gemini transcription mode', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'google', googleOptions: {mode: 'smart'}}
+  }, console));
+});
+
+test('rejects non-string customVocabulary entries', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'google', googleOptions: {customVocabulary: [123]}}
+  }, console));
+});
+
 test('rejects unknown property in googleOptions', () => {
   assertThrows(() => validateVerb('gather', {
     input: ['speech'],
