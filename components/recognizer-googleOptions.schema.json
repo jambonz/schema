@@ -10,6 +10,11 @@
       "enum": ["v1", "v2", "gemini"],
       "description": "Which Google speech API to use: the Cloud Speech-to-Text v1 or v2 recognizer, or 'gemini' for the Gemini Live transcription models. Normally inferred from the model name (a 'gemini-' prefix selects 'gemini'); set this only to override that inference."
     },
+    "geminiPlatform": {
+      "type": "string",
+      "enum": ["studio", "vertex"],
+      "description": "Which Gemini interface to use (apiMode 'gemini' only): 'studio' is the preview Gemini Developer API and requires an api key on the credential; 'vertex' is the GA Vertex AI interface and authenticates as the credential's service account, taking the project from it and the region from parentPath. Inferred from the credential when unset — an api key selects studio, a bare service account selects vertex."
+    },
     "mode": {
       "type": "string",
       "enum": ["VERBATIM", "SMART"],
@@ -32,7 +37,7 @@
     },
     "parentPath": {
       "type": "string",
-      "description": "Parent resource path for the Google Speech recognizer (v2 only), e.g. 'projects/{project}/locations/{location}'."
+      "description": "Parent resource path, e.g. 'projects/{project}/locations/{location}'. Used by STT v2 for the recognizer resource, and by the gemini vertex interface for the region."
     },
     "speechStartTimeoutMs": {
       "type": "number",
