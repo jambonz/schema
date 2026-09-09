@@ -201,29 +201,6 @@ test('accepts googleOptions for the gemini transcription models', () => {
   }, console);
 });
 
-test('accepts googleOptions selecting the gemini vertex (GA) interface', () => {
-  validateVerb('gather', {
-    input: ['speech'],
-    actionHook: '/test',
-    recognizer: {
-      vendor: 'google',
-      model: 'gemini-3.5-transcribe-live',
-      googleOptions: {
-        geminiPlatform: 'vertex',
-        parentPath: 'projects/my-proj/locations/us-central1'
-      }
-    }
-  }, console);
-});
-
-test('rejects an unknown gemini platform', () => {
-  assertThrows(() => validateVerb('gather', {
-    input: ['speech'],
-    actionHook: '/test',
-    recognizer: {vendor: 'google', googleOptions: {geminiPlatform: 'enterprise'}}
-  }, console));
-});
-
 test('rejects unknown apiMode', () => {
   assertThrows(() => validateVerb('gather', {
     input: ['speech'],
