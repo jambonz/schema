@@ -5,10 +5,21 @@
   "description": "Google Speech-to-Text specific options. Only applies when recognizer vendor is 'google'.",
   "type": "object",
   "properties": {
+    "mode": {
+      "type": "string",
+      "enum": ["VERBATIM", "SMART"],
+      "description": "Gemini transcription style; applies only to the gemini models. VERBATIM transcribes as spoken; SMART cleans up disfluencies and applies formatting."
+    },
+    "customVocabulary": {
+      "type": "array",
+      "items": {"type": "string"},
+      "maxItems": 1000,
+      "description": "Up to 1000 terms, acronyms, brand names or proper nouns to bias recognition towards; applies only to the gemini models."
+    },
     "serviceVersion": {
       "type": "string",
       "enum": ["v1", "v2"],
-      "description": "Google Speech-to-Text API version."
+      "description": "Cloud Speech-to-Text API version. Ignored by the gemini models, which are a different API."
     },
     "recognizerId": {
       "type": "string",
@@ -16,7 +27,7 @@
     },
     "parentPath": {
       "type": "string",
-      "description": "Parent resource path for the Google Speech recognizer (v2 only), e.g. 'projects/{project}/locations/{location}'."
+      "description": "Parent resource path for the Cloud Speech-to-Text v2 recognizer resource, e.g. 'projects/{project}/locations/{location}'. A location other than global also routes the request to that region's endpoint."
     },
     "speechStartTimeoutMs": {
       "type": "number",
