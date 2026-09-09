@@ -193,20 +193,11 @@ test('accepts googleOptions for the gemini transcription models', () => {
       vendor: 'google',
       model: 'gemini-3.5-transcribe-live',
       googleOptions: {
-        apiMode: 'gemini',
         mode: 'SMART',
         customVocabulary: ['jambonz', 'drachtio']
       }
     }
   }, console);
-});
-
-test('rejects unknown apiMode', () => {
-  assertThrows(() => validateVerb('gather', {
-    input: ['speech'],
-    actionHook: '/test',
-    recognizer: {vendor: 'google', googleOptions: {apiMode: 'v3'}}
-  }, console));
 });
 
 test('rejects unknown gemini transcription mode', () => {

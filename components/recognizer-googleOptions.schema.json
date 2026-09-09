@@ -5,26 +5,21 @@
   "description": "Google Speech-to-Text specific options. Only applies when recognizer vendor is 'google'.",
   "type": "object",
   "properties": {
-    "apiMode": {
-      "type": "string",
-      "enum": ["v1", "v2", "gemini"],
-      "description": "Which Google speech API to use: the Cloud Speech-to-Text v1 or v2 recognizer, or 'gemini' for the Gemini Live transcription models. Normally inferred from the model name (a 'gemini-' prefix selects 'gemini'); set this only to override that inference."
-    },
     "mode": {
       "type": "string",
       "enum": ["VERBATIM", "SMART"],
-      "description": "Gemini transcription style (apiMode 'gemini' only). VERBATIM transcribes as spoken; SMART cleans up disfluencies and applies formatting."
+      "description": "Gemini transcription style; applies only to the gemini models. VERBATIM transcribes as spoken; SMART cleans up disfluencies and applies formatting."
     },
     "customVocabulary": {
       "type": "array",
       "items": {"type": "string"},
       "maxItems": 1000,
-      "description": "Up to 1000 terms, acronyms, brand names or proper nouns to bias recognition towards (apiMode 'gemini' only)."
+      "description": "Up to 1000 terms, acronyms, brand names or proper nouns to bias recognition towards; applies only to the gemini models."
     },
     "serviceVersion": {
       "type": "string",
       "enum": ["v1", "v2"],
-      "description": "Google Speech-to-Text API version. Ignored when apiMode is 'gemini'."
+      "description": "Cloud Speech-to-Text API version. Ignored by the gemini models, which are a different API."
     },
     "recognizerId": {
       "type": "string",
