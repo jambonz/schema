@@ -27,7 +27,7 @@
     },
     "parentPath": {
       "type": "string",
-      "description": "Parent resource path, e.g. 'projects/{project}/locations/{location}'. Used by STT v2 for the recognizer resource, and by the gemini vertex interface for the region."
+      "description": "Parent resource path for the Cloud Speech-to-Text v2 recognizer resource, e.g. 'projects/{project}/locations/{location}'. A location other than global also routes the request to that region's endpoint."
     },
     "speechStartTimeoutMs": {
       "type": "number",
