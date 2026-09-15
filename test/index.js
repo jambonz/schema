@@ -2087,6 +2087,25 @@ test('rejects dial with an empty codecs list', () => {
   }, console), /codecs|minItems|fewer/i);
 });
 
+/* ---- rest_dial: codecs ---- */
+console.log('\nrest_dial — codecs');
+
+test('accepts rest_dial with a codecs list', () => {
+  validateVerb('rest_dial', {
+    from: '16175551212',
+    to: {type: 'phone', number: '15083084809'},
+    codecs: ['G722', 'PCMU']
+  }, console);
+});
+
+test('rejects rest_dial with an empty codecs list', () => {
+  assertThrows(() => validateVerb('rest_dial', {
+    from: '16175551212',
+    to: {type: 'phone', number: '15083084809'},
+    codecs: []
+  }, console), /codecs|minItems|fewer/i);
+});
+
 /* ---- gptlive_s2s (OpenAI GPT Live alpha) ---- */
 console.log('\ngptlive_s2s verb');
 
