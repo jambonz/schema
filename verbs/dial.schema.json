@@ -88,6 +88,12 @@
       "type": "boolean",
       "description": "If true, keep media anchored through the jambonz media server even if a direct media path is possible. Required for features like recording, listen, and DTMF capture during bridged calls."
     },
+    "codecs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "Codec names, in preference order, to offer on the outbound INVITE (e.g. [\"G722\", \"PCMU\"]). Names are case-insensitive. When omitted, the media server offers its defaults with the inbound leg's codec first so the bridged legs match. If any name is not supported by the media server the whole list is ignored, an error is logged and an alert is written, and default negotiation is used."
+    },
     "exitMediaPath": {
       "type": "boolean",
       "description": "If true, remove jambonz from the media path after the call is bridged. Reduces latency but disables mid-call features like recording and DTMF capture."
