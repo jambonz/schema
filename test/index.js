@@ -2063,6 +2063,30 @@ test('rejects dial with invalid srtpEncryption value', () => {
   }, console), /enum|srtpEncryption/i);
 });
 
+/* ---- dial verb: codecs ---- */
+console.log('\ndial verb — codecs');
+
+test('accepts dial with a codecs list', () => {
+  validateVerb('dial', {
+    target: [{type: 'phone', number: '15083084809'}],
+    codecs: ['G722', 'PCMU']
+  }, console);
+});
+
+test('rejects dial with a non-array codecs', () => {
+  assertThrows(() => validateVerb('dial', {
+    target: [{type: 'phone', number: '15083084809'}],
+    codecs: 'G722'
+  }, console), /codecs|array/i);
+});
+
+test('rejects dial with an empty codecs list', () => {
+  assertThrows(() => validateVerb('dial', {
+    target: [{type: 'phone', number: '15083084809'}],
+    codecs: []
+  }, console), /codecs|minItems|fewer/i);
+});
+
 /* ---- gptlive_s2s (OpenAI GPT Live alpha) ---- */
 console.log('\ngptlive_s2s verb');
 
