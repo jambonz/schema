@@ -2091,7 +2091,7 @@ test('rejects dial with an empty codecs list', () => {
 console.log('\nrest_dial — codecs');
 
 test('accepts rest_dial with a codecs list', () => {
-  validateVerb('rest_dial', {
+  validateVerb('rest:dial', {
     from: '16175551212',
     to: {type: 'phone', number: '15083084809'},
     codecs: ['G722', 'PCMU']
@@ -2099,7 +2099,7 @@ test('accepts rest_dial with a codecs list', () => {
 });
 
 test('rejects rest_dial with an empty codecs list', () => {
-  assertThrows(() => validateVerb('rest_dial', {
+  assertThrows(() => validateVerb('rest:dial', {
     from: '16175551212',
     to: {type: 'phone', number: '15083084809'},
     codecs: []
