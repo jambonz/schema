@@ -2094,6 +2094,7 @@ test('accepts rest_dial with a codecs list', () => {
   validateVerb('rest:dial', {
     from: '16175551212',
     to: {type: 'phone', number: '15083084809'},
+    call_hook: {url: 'https://example.com/call', method: 'POST'},
     codecs: ['G722', 'PCMU']
   }, console);
 });
@@ -2102,6 +2103,7 @@ test('rejects rest_dial with an empty codecs list', () => {
   assertThrows(() => validateVerb('rest:dial', {
     from: '16175551212',
     to: {type: 'phone', number: '15083084809'},
+    call_hook: {url: 'https://example.com/call', method: 'POST'},
     codecs: []
   }, console), /codecs|minItems|fewer/i);
 });
