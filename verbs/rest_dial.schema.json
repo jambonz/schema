@@ -103,6 +103,12 @@
     "timeLimit": {
       "type": "number",
       "description": "Maximum call duration in seconds."
+    },
+    "codecs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "Codec names, in preference order, to offer on the outbound INVITE (e.g. [\"G722\", \"PCMU\"]). Names are case-insensitive. When omitted the media server offers its default codecs. If any name is not supported by the media server the whole list is ignored, an error is logged and an alert is written, and default negotiation is used."
     }
   },
   "required": [
