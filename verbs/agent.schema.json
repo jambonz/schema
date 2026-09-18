@@ -110,7 +110,8 @@
         },
         "sticky": {
           "type": "boolean",
-          "description": "If true, once the user interrupts the assistant does not resume speaking. Default: false.",
+          "deprecated": true,
+          "description": "Deprecated and currently has no effect. Resuming an unconfirmed barge-in with the response intact is the default behaviour.",
           "default": false
         }
       },
@@ -150,7 +151,11 @@
           "type": "object",
           "description": "SDK-level client options.",
           "properties": {
-            "timeout": { "type": "number", "minimum": 0 },
+            "timeout": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Request timeout passed to the vendor SDK, in milliseconds. Bounds an LLM request that produces no response; the turn then ends and the verb completes with completion_reason 'llm_failure'. Without it a proxy that accepts the connection and never answers holds the turn open for as long as the SDK allows."
+            },
             "maxRetries": { "type": "integer", "minimum": 0 },
             "endpoint": { "type": "string" },
             "baseURL": { "type": "string" }
