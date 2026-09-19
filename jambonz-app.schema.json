@@ -29,6 +29,7 @@
         { "$ref": "verbs/ultravox_s2s" },
         { "$ref": "verbs/qwen_s2s" },
         { "$ref": "verbs/gptlive_s2s" },
+        { "$ref": "verbs/voicelive_s2s" },
         { "$ref": "verbs/dialogflow" },
         { "$ref": "verbs/agent" },
         { "$ref": "verbs/transfer" },

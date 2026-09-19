@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/verbs/voicelive_s2s",
+  "minVersion": "0.4.0",
+  "title": "Azure Voice Live S2S",
+  "description": "Shortcut for 'llm' with vendor automatically set to 'voicelive'. Connects the caller to the Azure Voice Live API for real-time speech-to-speech conversation. connectOptions.host is required and names your Microsoft Foundry or Azure Speech resource (e.g. my-resource.services.ai.azure.com). auth takes either apiKey (sent as the api-key query parameter) or accessToken (a Microsoft Entra ID token, sent as a Bearer header). llmOptions.session_update is required and is sent verbatim in Voice Live's flat session shape, so Azure-only settings such as azure_semantic_vad, azure_deep_noise_suppression and Azure TTS voices are supported.",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "../components/llm-base"
+    }
+  ],
+  "properties": {
+    "verb": {
+      "const": "voicelive_s2s",
+      "description": "The verb name."
+    },
+    "vendor": {
+      "type": "string",
+      "const": "voicelive",
+      "description": "The LLM vendor (always 'voicelive' for this shortcut)."
+    },
+    "connectOptions": {
+      "type": "object",
+      "description": "Connection options for the Voice Live endpoint.",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "Required. The Foundry/Speech resource hostname, e.g. my-resource.services.ai.azure.com."
+        },
+        "apiVersion": {
+          "type": "string",
+          "description": "The Voice Live api-version. Defaults to 2026-04-10.",
+          "examples": ["2026-04-10", "2026-07-15"]
+        },
+        "agentId": {
+          "type": "string",
+          "description": "Foundry Agent Service agent id. When set, the session is addressed by agent instead of model."
+        },
+        "projectId": {
+          "type": "string",
+          "description": "Foundry project id, used together with agentId."
+        },
+        "path": {
+          "type": "string",
+          "description": "Overrides the entire websocket path, including the query string. Rarely needed."
+        }
+      },
+      "required": ["host"],
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "connectOptions",
+    "llmOptions"
+  ],
+  "examples": [
+    {
+      "verb": "voicelive_s2s",
+      "model": "gpt-realtime",
+      "auth": {
+        "apiKey": "..."
+      },
+      "connectOptions": {
+        "host": "my-resource.services.ai.azure.com"
+      },
+      "llmOptions": {
+        "session_update": {
+          "modalities": ["text", "audio"],
+          "instructions": "You are a helpful voice assistant.",
+          "voice": {
+            "name": "en-US-Ava:DragonHDLatestNeural",
+            "type": "azure-standard"
+          },
+          "turn_detection": {
+            "type": "azure_semantic_vad",
+            "silence_duration_ms": 500,
+            "remove_filler_words": true
+          },
+          "input_audio_noise_reduction": {
+            "type": "azure_deep_noise_suppression"
+          }
+        },
+        "response_create": {}
+      },
+      "actionHook": "/s2s-complete"
+    }
+  ]
+}
