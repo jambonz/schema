@@ -63,6 +63,12 @@ test('applies verb transforms (gptlive_s2s -> llm with vendor)', () => {
   assert.strictEqual(result[0].llm.vendor, 'gptlive');
 });
 
+test('applies verb transforms (voicelive_s2s -> llm with vendor)', () => {
+  const result = normalizeJambones(console, [{verb: 'voicelive_s2s', model: 'gpt-realtime'}]);
+  assert.strictEqual(Object.keys(result[0])[0], 'llm');
+  assert.strictEqual(result[0].llm.vendor, 'voicelive');
+});
+
 test('rejects non-array input', () => {
   assertThrows(() => normalizeJambones(console, 'not an array'), /must be array/);
 });
@@ -2257,6 +2263,68 @@ test('an app using gptlive_s2s validates (exactly one oneOf match)', () => {
   const result = validateApp([
     {verb: 'answer'},
     {verb: 'gptlive_s2s', auth: {apiKey: 'sk-...'}, llmOptions: {session_update: {instructions: 'hi'}}}
+  ], console);
+  assert.strictEqual(result.valid, true, JSON.stringify(result.errors));
+});
+
+/* ---- voicelive_s2s ---- */
+
+const VOICELIVE_OK = {
+  auth: {apiKey: '...'},
+  connectOptions: {host: 'my-resource.services.ai.azure.com'},
+  llmOptions: {
+    session_update: {
+      voice: {name: 'en-US-AvaNeural', type: 'azure-standard'},
+      turn_detection: {type: 'azure_semantic_vad'}
+    },
+    response_create: {}
+  }
+};
+
+test('voicelive_s2s accepts the flat Azure session shape', () => {
+  validateVerb('voicelive_s2s', VOICELIVE_OK, console);
+});
+
+test('voicelive_s2s requires connectOptions.host', () => {
+  assertThrows(() => validateVerb('voicelive_s2s', {
+    ...VOICELIVE_OK, connectOptions: {}
+  }, console));
+  const {connectOptions, ...noConnect} = VOICELIVE_OK;
+  assertThrows(() => validateVerb('voicelive_s2s', noConnect, console));
+});
+
+test('voicelive_s2s requires llmOptions', () => {
+  const {llmOptions, ...noOptions} = VOICELIVE_OK;
+  assertThrows(() => validateVerb('voicelive_s2s', noOptions, console));
+});
+
+/* the runtime throws on each of these, so validation must reject them too
+   rather than letting the call drop at exec */
+test('voicelive_s2s requires both halves of llmOptions', () => {
+  assertThrows(() => validateVerb('voicelive_s2s', {...VOICELIVE_OK, llmOptions: {}}, console));
+  assertThrows(() => validateVerb('voicelive_s2s',
+    {...VOICELIVE_OK, llmOptions: {session_update: {}}}, console));
+  assertThrows(() => validateVerb('voicelive_s2s',
+    {...VOICELIVE_OK, llmOptions: {response_create: {}}}, console));
+});
+
+test('voicelive_s2s requires a credential', () => {
+  const {auth, ...noAuth} = VOICELIVE_OK;
+  assertThrows(() => validateVerb('voicelive_s2s', noAuth, console));
+  assertThrows(() => validateVerb('voicelive_s2s', {...VOICELIVE_OK, auth: {}}, console));
+  assertThrows(() => validateVerb('voicelive_s2s', {...VOICELIVE_OK, auth: {apiKey: ''}}, console));
+  /* an Entra token is the documented alternative to a key */
+  validateVerb('voicelive_s2s', {...VOICELIVE_OK, auth: {accessToken: 'eyJ'}}, console);
+});
+
+test('voicelive_s2s rejects a vendor other than voicelive', () => {
+  assertThrows(() => validateVerb('voicelive_s2s', {...VOICELIVE_OK, vendor: 'microsoft'}, console));
+});
+
+test('an app using voicelive_s2s validates (exactly one oneOf match)', () => {
+  const result = validateApp([
+    {verb: 'answer'},
+    {verb: 'voicelive_s2s', ...VOICELIVE_OK}
   ], console);
   assert.strictEqual(result.valid, true, JSON.stringify(result.errors));
 });
