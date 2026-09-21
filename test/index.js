@@ -2298,6 +2298,25 @@ test('voicelive_s2s requires llmOptions', () => {
   assertThrows(() => validateVerb('voicelive_s2s', noOptions, console));
 });
 
+/* the runtime throws on each of these, so validation must reject them too
+   rather than letting the call drop at exec */
+test('voicelive_s2s requires both halves of llmOptions', () => {
+  assertThrows(() => validateVerb('voicelive_s2s', {...VOICELIVE_OK, llmOptions: {}}, console));
+  assertThrows(() => validateVerb('voicelive_s2s',
+    {...VOICELIVE_OK, llmOptions: {session_update: {}}}, console));
+  assertThrows(() => validateVerb('voicelive_s2s',
+    {...VOICELIVE_OK, llmOptions: {response_create: {}}}, console));
+});
+
+test('voicelive_s2s requires a credential', () => {
+  const {auth, ...noAuth} = VOICELIVE_OK;
+  assertThrows(() => validateVerb('voicelive_s2s', noAuth, console));
+  assertThrows(() => validateVerb('voicelive_s2s', {...VOICELIVE_OK, auth: {}}, console));
+  assertThrows(() => validateVerb('voicelive_s2s', {...VOICELIVE_OK, auth: {apiKey: ''}}, console));
+  /* an Entra token is the documented alternative to a key */
+  validateVerb('voicelive_s2s', {...VOICELIVE_OK, auth: {accessToken: 'eyJ'}}, console);
+});
+
 test('voicelive_s2s rejects a vendor other than voicelive', () => {
   assertThrows(() => validateVerb('voicelive_s2s', {...VOICELIVE_OK, vendor: 'microsoft'}, console));
 });
