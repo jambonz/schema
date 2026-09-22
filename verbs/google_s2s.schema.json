@@ -27,16 +27,70 @@
   "examples": [
     {
       "verb": "google_s2s",
-      "model": "gemini-2.0-flash",
+      "model": "gemini-3.8-live",
+      "auth": {
+        "apiKey": "AIza..."
+      },
       "llmOptions": {
-        "messages": [
-          {
-            "role": "system",
-            "content": "You are a helpful voice assistant."
+        "setup": {
+          "systemInstruction": {
+            "parts": [
+              {
+                "text": "You are a helpful voice assistant."
+              }
+            ]
           }
-        ]
+        },
+        "greeting": "Hi there, how can I help you today?"
       },
       "actionHook": "/s2s-complete"
+    },
+    {
+      "verb": "google_s2s",
+      "model": "gemini-3.8-live-extended-thinking",
+      "auth": {
+        "apiKey": "AIza..."
+      },
+      "llmOptions": {
+        "setup": {
+          "generationConfig": {
+            "thinkingConfig": {
+              "thinkingLevel": "LOW"
+            }
+          },
+          "systemInstruction": {
+            "parts": [
+              {
+                "text": "You are a helpful voice assistant."
+              }
+            ]
+          },
+          "tools": [
+            {
+              "functionDeclarations": [
+                {
+                  "name": "get_weather",
+                  "description": "Get current weather for a city.",
+                  "behavior": "NON_BLOCKING",
+                  "parameters": {
+                    "type": "OBJECT",
+                    "properties": {
+                      "location": {
+                        "type": "STRING"
+                      }
+                    },
+                    "required": [
+                      "location"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "actionHook": "/s2s-complete",
+      "toolHook": "/s2s-tool-call"
     }
   ]
 }
