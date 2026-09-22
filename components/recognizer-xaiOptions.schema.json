@@ -9,6 +9,11 @@
       "type": "string",
       "description": "xAI API key. Overrides the key configured in jambonz."
     },
+    "model": {
+      "type": "string",
+      "description": "Transcription model to use, e.g. 'grok-voice-transcribe-2.0'. Defaults to whatever xAI currently defaults to.",
+      "examples": ["grok-voice-transcribe-2.0", "grok-voice-transcribe-1.0"]
+    },
     "endpointing": {
       "type": "integer",
       "description": "Milliseconds of silence before an utterance is considered final. Range 0-5000."

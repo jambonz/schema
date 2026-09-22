@@ -463,6 +463,7 @@ test('accepts xaiOptions with valid fields', () => {
       vendor: 'xai',
       xaiOptions: {
         apiKey: 'my-key',
+        model: 'grok-voice-transcribe-2.0',
         endpointing: 500,
         diarize: true,
         fillerWords: false,
@@ -479,6 +480,14 @@ test('rejects non-integer endpointing in xaiOptions', () => {
     input: ['speech'],
     actionHook: '/test',
     recognizer: {vendor: 'xai', xaiOptions: {endpointing: 'soon'}}
+  }, console));
+});
+
+test('rejects non-string model in xaiOptions', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'xai', xaiOptions: {model: 2}}
   }, console));
 });
 
