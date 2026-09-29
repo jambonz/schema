@@ -539,6 +539,62 @@ test('rejects unknown property in modulateOptions', () => {
   }, console));
 });
 
+/* ---- recognizer zoomOptions ---- */
+console.log('\nrecognizer zoomOptions');
+
+test('accepts zoomOptions with valid fields', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'zoom',
+      language: 'en-US',
+      zoomOptions: {apiKey: 'my-key', zoomSttUri: 'proxy.example.com', zoomSttUseTls: false}
+    }
+  }, console);
+});
+
+test('accepts zoomOptions.turn_detection in range', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'zoom', zoomOptions: {
+      turn_detection: {threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 800}
+    }}
+  }, console);
+});
+
+for (const [name, td] of [
+  ['threshold 1.0', {threshold: 1.0}],
+  ['threshold 0.1', {threshold: 0.1}],
+  ['silence_duration_ms 200', {silence_duration_ms: 200}],
+  ['unknown min_pause_duration_ms', {min_pause_duration_ms: 100}],
+]) {
+  test(`rejects zoomOptions.turn_detection ${name}`, () => {
+    assertThrows(() => validateVerb('gather', {
+      input: ['speech'],
+      actionHook: '/test',
+      recognizer: {vendor: 'zoom', zoomOptions: {turn_detection: td}}
+    }, console));
+  });
+}
+
+test('rejects non-boolean zoomSttUseTls in zoomOptions', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'zoom', zoomOptions: {zoomSttUseTls: 'yes'}}
+  }, console));
+});
+
+test('rejects unknown property in zoomOptions', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'zoom', zoomOptions: {interim: true}}
+  }, console));
+});
+
 /* ---- error messages ---- */
 console.log('\nerror messages');
 
