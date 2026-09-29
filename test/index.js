@@ -2338,6 +2338,20 @@ test('an app using voicelive_s2s validates (exactly one oneOf match)', () => {
   assert.strictEqual(result.valid, true, JSON.stringify(result.errors));
 });
 
+/* ---- gladiaOptions ---- */
+console.log('\ngladiaOptions');
+
+test('gladiaOptions passes Gladia session fields through', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/gather',
+    recognizer: {vendor: 'gladia', gladiaOptions: {
+      language_config: {languages: ['en', 'fr'], code_switching: true},
+      realtime_processing: {custom_vocabulary: true, custom_vocabulary_config: {vocabulary: ['jambonz']}}
+    }}
+  }, console);
+});
+
 /* ---- summary ---- */
 console.log(`\n${passed} passed, ${failed} failed\n`);
 if (failed > 0) process.exit(1);
