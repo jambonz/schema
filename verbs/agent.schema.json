@@ -47,8 +47,8 @@
       "oneOf": [
         {
           "type": "string",
-          "enum": ["stt", "krisp"],
-          "description": "Turn detection strategy shorthand. 'stt' uses the STT vendor's native signals (silence-based for most vendors; acoustic+semantic for deepgramflux, assemblyai, speechmatics). 'krisp' uses the Krisp acoustic end-of-turn model with default settings."
+          "enum": ["stt", "krisp", "livekit"],
+          "description": "Turn detection strategy shorthand. 'stt' uses the STT vendor's native signals (silence-based for most vendors; acoustic+semantic for deepgramflux, assemblyai, speechmatics). 'krisp' uses the Krisp acoustic end-of-turn model. 'livekit' uses LiveKit's contextual end-of-turn model — the text (transcript/semantic) variant, which works with any STT vendor. For the voice (audio) variant use the object form with model 'voice'."
         },
         {
           "type": "object",
@@ -56,22 +56,37 @@
           "properties": {
             "mode": {
               "type": "string",
-              "enum": ["krisp"],
-              "description": "Turn detection mode. Currently only 'krisp' supports object-form tuning."
+              "enum": ["krisp", "livekit"],
+              "description": "Turn detection mode. 'krisp' = Krisp acoustic (audio) end-of-turn model. 'livekit' = LiveKit contextual end-of-turn; use 'model' to select the text or voice variant."
             },
             "threshold": {
               "type": "number",
               "minimum": 0,
               "maximum": 1,
-              "description": "Krisp end-of-turn confidence threshold (0.0–1.0). Lower values trigger earlier turn transitions. Default: 0.5"
+              "description": "End-of-turn confidence threshold (0.0–1.0). Lower values trigger earlier turn transitions. Default: 0.5"
             },
             "model": {
               "type": "string",
-              "description": "Optional Krisp model name override."
+              "description": "For mode 'krisp': optional Krisp model name override. For mode 'livekit': which model variant to run — 'text' (transcript-based/semantic; runs in the turn-detector sidecar; default) or 'voice' (audio/acoustic; runs in the media server, like Krisp)."
+            },
+            "url": {
+              "type": "string",
+              "description": "mode 'livekit' + model 'text' only: override the turn-detector sidecar URL. Defaults to the JAMBONES_TURN_DETECTOR_URL environment setting."
+            },
+            "maxDelay": {
+              "type": "number",
+              "minimum": 0,
+              "description": "mode 'livekit' only: seconds to wait before committing the turn when the model has not yet judged the utterance complete (a safety net for a false negative). Default: 2.5"
             }
           },
           "required": ["mode"],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "allOf": [
+            {
+              "if": { "properties": { "mode": { "const": "livekit" } }, "required": ["mode"] },
+              "then": { "properties": { "model": { "enum": ["text", "voice"] } } }
+            }
+          ]
         }
       ],
       "default": "stt",
