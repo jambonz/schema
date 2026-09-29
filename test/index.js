@@ -539,6 +539,37 @@ test('rejects unknown property in modulateOptions', () => {
   }, console));
 });
 
+/* ---- recognizer zoomOptions ---- */
+console.log('\nrecognizer zoomOptions');
+
+test('accepts zoomOptions with valid fields', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'zoom',
+      language: 'en-US',
+      zoomOptions: {apiKey: 'my-key', zoomSttUri: 'proxy.example.com', zoomSttUseTls: false}
+    }
+  }, console);
+});
+
+test('rejects non-boolean zoomSttUseTls in zoomOptions', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'zoom', zoomOptions: {zoomSttUseTls: 'yes'}}
+  }, console));
+});
+
+test('rejects unknown property in zoomOptions', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'zoom', zoomOptions: {interim: true}}
+  }, console));
+});
+
 /* ---- error messages ---- */
 console.log('\nerror messages');
 

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/components/recognizer-zoomOptions",
+  "title": "Zoom Recognizer Options",
+  "description": "Zoom Scribe (Live mode) STT options. Only applies when recognizer vendor is 'zoom'. Zoom segments turns server-side and returns one final transcript per speech turn: there are no interim results and no confidence scores (transcripts are reported with confidence 1.0). Supported languages: en-US, zh-CN, ja-JP, es-ES, it-IT, fr-FR, de-DE, ar-SA, ar-AE, pt-BR, pt-PT.",
+  "type": "object",
+  "properties": {
+    "apiKey": {
+      "type": "string",
+      "description": "Zoom Build platform API key (or JWT). Overrides the key configured in jambonz."
+    },
+    "zoomSttUri": {
+      "type": "string",
+      "description": "Custom host to connect to instead of api.zoom.us (e.g. a proxy)."
+    },
+    "zoomSttUseTls": {
+      "type": "boolean",
+      "description": "Use TLS when connecting to a custom host. Default true."
+    }
+  },
+  "additionalProperties": false
+}
