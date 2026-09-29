@@ -2,12 +2,35 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://jambonz.org/schema/components/recognizer-zoomOptions",
   "title": "Zoom Recognizer Options",
-  "description": "Zoom Scribe (Live mode) STT options. Only applies when recognizer vendor is 'zoom'. Zoom segments turns server-side and returns one final transcript per speech turn: there are no interim results and no confidence scores (transcripts are reported with confidence 1.0). Supported languages: en-US, zh-CN, ja-JP, es-ES, it-IT, fr-FR, de-DE, ar-SA, ar-AE, pt-BR, pt-PT.",
+  "description": "Zoom Scribe (Live mode) STT options. Only applies when recognizer vendor is 'zoom'. Zoom segments turns server-side (silence-based) and returns one final transcript per speech turn; in the agent verb each one ends the user's turn: there are no interim results and no confidence scores (transcripts are reported with confidence 1.0). Supported languages: en-US, zh-CN, ja-JP, es-ES, it-IT, fr-FR, de-DE, ar-SA, ar-AE, pt-BR, pt-PT.",
   "type": "object",
   "properties": {
     "apiKey": {
       "type": "string",
       "description": "Zoom Build platform API key (or JWT). Overrides the key configured in jambonz."
+    },
+    "turn_detection": {
+      "type": "object",
+      "description": "Tunes Zoom's server-side turn detection, which is silence-based: a turn ends after silence_duration_ms of silence, whether or not the sentence is complete. Out-of-range values make Zoom end the session, so they are bounded here.",
+      "properties": {
+        "threshold": {
+          "type": "number",
+          "minimum": 0.2,
+          "maximum": 0.9,
+          "description": "Speech detection threshold. Higher values need louder or clearer speech to start a turn."
+        },
+        "prefix_padding_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Milliseconds of audio before detected speech to include in the turn."
+        },
+        "silence_duration_ms": {
+          "type": "integer",
+          "exclusiveMinimum": 200,
+          "description": "Milliseconds of silence that end a turn. Zoom's default is about 350; raise it so a mid-sentence pause does not split the turn."
+        }
+      },
+      "additionalProperties": false
     },
     "zoomSttUri": {
       "type": "string",
