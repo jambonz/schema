@@ -40,6 +40,8 @@ A `keyterms` array can boost recognition of specific names, brands, or technical
 
 - See [Keyterms guide](https://www.assemblyai.com/docs/streaming/keyterms-prompting)
 
+Universal-3.6 Pro (`speechModel: "universal-3-6-pro"`) detects and code-switches across 32 languages automatically. `languageCodes` (e.g. `["en", "es"]`) biases it toward a subset. `voiceFocus` (`near-field` for phones and headsets, `far-field` for distant microphones) suppresses background speakers and noise before transcription; it is off by default.
+
 ### OpenAI (Whisper)
 
 - [Speech to Text Guide](https://platform.openai.com/docs/guides/speech-to-text)
