@@ -16,7 +16,7 @@
     },
     "speechModel": {
       "type": "string",
-      "description": "AssemblyAI speech model to use for recognition."
+      "description": "AssemblyAI speech model to use for recognition, e.g. 'universal-3-6-pro', 'universal-3-5-pro' or 'u3-rt-pro'."
     },
     "formatTurns": {
       "type": "boolean",
@@ -60,6 +60,18 @@
     "inactivityTimeout": {
       "type": "number",
       "description": "Timeout (seconds) for inactivity before closing the stream."
+    },
+    "languageCodes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Languages to bias transcription toward (e.g. ['en', 'es']); code-switching among them is still allowed. Universal-3.5 Pro and Universal-3.6 Pro only. Default: all supported languages."
+    },
+    "voiceFocus": {
+      "type": "string",
+      "enum": ["near-field", "far-field"],
+      "description": "Isolate the primary voice and suppress background noise before transcription. Use 'near-field' for phones and headsets, 'far-field' for distant microphones. Default: off."
     }
   },
   "additionalProperties": false
