@@ -176,6 +176,10 @@
         },
         "model": {
           "type": "string"
+        },
+        "label": {
+          "type": "string",
+          "description": "Label of the speech credential to use, for vendors that need one (kugelaudio)."
         }
       }
     },

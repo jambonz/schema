@@ -229,7 +229,7 @@
       "oneOf": [
         {
           "type": "string",
-          "enum": ["krisp", "rnnoise"],
+          "enum": ["krisp", "rnnoise", "kugelaudio"],
           "description": "Shorthand — enable noise isolation with the specified vendor using default settings."
         },
         {
@@ -239,6 +239,10 @@
             "mode": {
               "type": "string",
               "description": "Noise isolation vendor/mode (e.g. 'krisp')."
+            },
+            "label": {
+              "type": "string",
+              "description": "Label of the speech credential to use, for vendors that need one (kugelaudio)."
             },
             "level": {
               "type": "number",
