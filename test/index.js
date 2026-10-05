@@ -595,6 +595,44 @@ test('rejects unknown property in zoomOptions', () => {
   }, console));
 });
 
+/* ---- recognizer gradiumOptions ---- */
+console.log('\nrecognizer gradiumOptions');
+
+test('accepts gradiumOptions with valid fields', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'gradium',
+      language: 'en-US',
+      gradiumOptions: {
+        apiKey: 'my-key', model: 'default', delayInFrames: 56, keywords: ['Gradium'], keywordBoost: 3,
+        temp: 0, paddingBonus: -1.5,
+        turn_detection: {threshold: 0.6, horizon: 2}, gradiumSttUri: 'proxy.example.com', gradiumSttUseTls: false
+      }
+    }
+  }, console);
+});
+
+for (const [name, opts] of [
+  ['delayInFrames 6', {delayInFrames: 6}],
+  ['delayInFrames 57', {delayInFrames: 57}],
+  ['temp 1.6', {temp: 1.6}],
+  ['paddingBonus -5', {paddingBonus: -5}],
+  ['threshold 1', {turn_detection: {threshold: 1}}],
+  ['unknown turn_detection field', {turn_detection: {silence_ms: 500}}],
+  ['non-array keywords', {keywords: 'Gradium'}],
+  ['unknown property', {interim: true}],
+]) {
+  test(`rejects gradiumOptions ${name}`, () => {
+    assertThrows(() => validateVerb('gather', {
+      input: ['speech'],
+      actionHook: '/test',
+      recognizer: {vendor: 'gradium', gradiumOptions: opts}
+    }, console));
+  });
+}
+
 /* ---- error messages ---- */
 console.log('\nerror messages');
 
