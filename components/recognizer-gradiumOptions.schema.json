@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/components/recognizer-gradiumOptions",
+  "title": "Gradium Recognizer Options",
+  "description": "Gradium streaming STT options. Only applies when recognizer vendor is 'gradium'. Gradium streams words as they are recognized (sent as interim results when interim is enabled); a final transcript is produced when Gradium's semantic VAD predicts the speaker has finished, and in the agent verb each final ends the user's turn. Transcripts are reported with confidence 1.0. Supported languages: en, fr, es, pt, de; any other language uses Gradium's automatic language detection.",
+  "type": "object",
+  "properties": {
+    "apiKey": {
+      "type": "string",
+      "description": "Gradium API key. Overrides the key configured in jambonz."
+    },
+    "model": {
+      "type": "string",
+      "description": "STT model name. Defaults to 'default', Gradium's current production model.",
+      "examples": ["default"]
+    },
+    "delayInFrames": {
+      "type": "integer",
+      "minimum": 7,
+      "maximum": 55,
+      "description": "How far the model looks ahead before emitting a word, in 80 ms frames. Lower is faster, higher is more accurate. Gradium's default is 10."
+    },
+    "keywords": {
+      "type": "array",
+      "items": { "type": "string" },
+      "maxItems": 500,
+      "description": "Words to boost (brand names, jargon). Each entry must be a single word; multi-word entries are split. When omitted, recognizer.hints are used."
+    },
+    "keywordBoost": {
+      "type": "number",
+      "description": "How strongly to favor the keywords. Gradium recommends 3; 4 is the practical ceiling, negative values suppress words. When omitted with hints, recognizer.hintsBoost is used."
+    },
+    "keywordBoostId": {
+      "type": "string",
+      "description": "Id of a keyword dictionary saved in Gradium Studio. Replaces keywords and hints."
+    },
+    "turn_detection": {
+      "type": "object",
+      "description": "Tunes when a final transcript is cut. Gradium reports, every 80 ms, the probability that the speaker stays silent over several horizons; the turn ends when the chosen horizon's probability exceeds the threshold.",
+      "properties": {
+        "threshold": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "exclusiveMaximum": 1,
+          "description": "Inactivity probability that ends a turn. Default 0.5; lower ends turns sooner."
+        },
+        "horizon": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Prediction horizon in seconds to read the probability from (Gradium reports 0.5, 1, 2 and 3). Defaults to the longest; a shorter horizon ends turns sooner.",
+          "examples": [0.5, 1, 2, 3]
+        }
+      },
+      "additionalProperties": false
+    },
+    "gradiumSttUri": {
+      "type": "string",
+      "description": "Custom host to connect to instead of api.gradium.ai (e.g. a proxy)."
+    },
+    "gradiumSttUseTls": {
+      "type": "boolean",
+      "description": "Use TLS when connecting to a custom host. Default true."
+    }
+  },
+  "additionalProperties": false
+}
