@@ -17,8 +17,20 @@
     "delayInFrames": {
       "type": "integer",
       "minimum": 7,
-      "maximum": 55,
+      "maximum": 56,
       "description": "How far the model looks ahead before emitting a word, in 80 ms frames. Lower is faster, higher is more accurate. Gradium's default is 10."
+    },
+    "temp": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1.5,
+      "description": "Sampling temperature for the transcript text. 0 is greedy (most deterministic)."
+    },
+    "paddingBonus": {
+      "type": "number",
+      "minimum": -4,
+      "maximum": 4,
+      "description": "Biases the model toward emitting words sooner (negative) or later (positive). Default 0."
     },
     "keywords": {
       "type": "array",
@@ -32,7 +44,7 @@
     },
     "keywordBoostId": {
       "type": "string",
-      "description": "Id of a keyword dictionary saved in Gradium Studio. Replaces keywords and hints."
+      "description": "Id of a keyword dictionary saved in Gradium Studio. Replaces keywords and hints. Gradium does not reject an unknown id: it is accepted silently and transcripts lose casing, punctuation and number formatting, so check the id."
     },
     "turn_detection": {
       "type": "object",
@@ -55,7 +67,7 @@
     },
     "gradiumSttUri": {
       "type": "string",
-      "description": "Custom host to connect to instead of api.gradium.ai (e.g. a proxy)."
+      "description": "Custom host to connect to instead of api.gradium.ai, e.g. eu.api.gradium.ai or us.api.gradium.ai to pin data residency, or a proxy. Defaults to the host of the credential's API URL."
     },
     "gradiumSttUseTls": {
       "type": "boolean",
