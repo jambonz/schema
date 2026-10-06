@@ -53,7 +53,7 @@ The `noiseIsolation` property enables server-side noise cancellation on the call
 
 - **`"krisp"`** — Krisp's proprietary noise cancellation. Requires a Krisp API key on self-hosted systems.
 - **`"rnnoise"`** — Open-source RNNoise-based noise cancellation. No API key required.
-- **`"kugelaudio"`** — KugelAudio Clarity (`clarity-1`) cloud speech enhancement. Uses the account's KugelAudio speech credential (pick one with `label` in the object form, or pass `auth: {apiKey, apiUri}` inline); adds a short delay (the round trip to KugelAudio) to the filtered audio. `level` is ignored.
+- **`"kugelaudio"`** — KugelAudio Clarity (`clarity-1`) cloud speech enhancement. Uses a KugelAudio speech credential with "use for noise isolation" enabled (pick one with `label` in the object form, or pass `auth: {apiKey, apiUri}` inline); adds a short delay (the round trip to KugelAudio) to the filtered audio. `level` is ignored.
 
 Shorthand (default settings):
 
