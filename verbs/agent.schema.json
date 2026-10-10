@@ -119,7 +119,13 @@
     "noResponseTimeout": {
       "type": "number",
       "minimum": 0,
-      "description": "Seconds to wait after the assistant finishes speaking before prompting the user to respond. 0 disables. Default: 0.",
+      "description": "Seconds to wait after the assistant finishes speaking before prompting the user to respond. 0 disables. Default: 12.",
+      "default": 12
+    },
+    "noResponseMaxPrompts": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "End the agent after this many no-response prompts in a row get no reply. The actionHook then fires with completionReason 'no_response', so the application decides what happens next. The count resets whenever the user speaks. 0 or unset: no limit (the agent keeps prompting). Requires feature-server with jambonz/feature-server#259.",
       "default": 0
     },
     "llm": {
