@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/verbs/nova_s2s",
+  "minVersion": "11.1.7",
+  "title": "Amazon Nova Sonic S2S",
+  "description": "Shortcut for 'llm' with vendor automatically set to 'nova'. Connects the caller to Amazon Nova Sonic (Nova 2 / Nova 2.5 Sonic) on Amazon Bedrock for real-time speech-to-speech conversation. auth takes AWS IAM credentials (accessKeyId, secretAccessKey, optional sessionToken) and the Bedrock region; the credentials need bedrock:InvokeModelWithBidirectionalStream on the model. llmOptions is optional: systemPrompt, history, greeting, and sessionStart / promptStart bodies merged into Nova's own events (the audio formats are fixed by jambonz). Requires the mediajam media server.",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "../components/llm-base"
+    }
+  ],
+  "properties": {
+    "verb": {
+      "const": "nova_s2s",
+      "description": "The verb name."
+    },
+    "vendor": {
+      "type": "string",
+      "const": "nova",
+      "description": "The LLM vendor (always 'nova' for this shortcut)."
+    },
+    "model": {
+      "type": "string",
+      "description": "The Bedrock model id. Defaults to amazon.nova-2-5-sonic.",
+      "examples": [
+        "amazon.nova-2-5-sonic",
+        "amazon.nova-2-sonic-v1:0"
+      ]
+    },
+    "auth": {
+      "type": "object",
+      "description": "AWS IAM credentials and the Bedrock region.",
+      "properties": {
+        "accessKeyId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "AWS access key id."
+        },
+        "secretAccessKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "AWS secret access key."
+        },
+        "sessionToken": {
+          "type": "string",
+          "description": "Session token, for temporary (STS) credentials."
+        },
+        "region": {
+          "type": "string",
+          "description": "Bedrock region serving Nova Sonic. Defaults to us-east-1.",
+          "examples": [
+            "us-east-1",
+            "us-west-2",
+            "eu-north-1",
+            "ap-northeast-1"
+          ]
+        }
+      },
+      "required": [
+        "accessKeyId",
+        "secretAccessKey"
+      ],
+      "additionalProperties": true
+    },
+    "llmOptions": {
+      "type": "object",
+      "description": "Nova session options. A systemPrompt or other text above 50KB is split across several textInput events.",
+      "properties": {
+        "systemPrompt": {
+          "type": "string",
+          "description": "System instructions, sent as the SYSTEM text content."
+        },
+        "speechPrompt": {
+          "type": "string",
+          "description": "Sent after the system prompt with role SYSTEM_SPEECH. Nova accepts one of three fixed sentences that choose Latin, Devanagari or mixed script for Hindi transcription and responses."
+        },
+        "history": {
+          "type": "array",
+          "description": "Prior turns sent before the audio starts. Following Nova's rules, consecutive turns with the same role are merged, leading assistant turns are dropped, and the total is capped at 200KB.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string",
+                "enum": [
+                  "user",
+                  "assistant",
+                  "USER",
+                  "ASSISTANT"
+                ]
+              },
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "role",
+              "content"
+            ]
+          }
+        },
+        "greeting": {
+          "type": "string",
+          "description": "Sent as a user text turn once the audio starts, so Nova speaks first (Nova otherwise waits for the caller)."
+        },
+        "sessionStart": {
+          "type": "object",
+          "description": "Merged into Nova's sessionStart event: inferenceConfiguration, turnDetectionConfiguration.endpointingSensitivity (HIGH, MEDIUM, LOW)."
+        },
+        "promptStart": {
+          "type": "object",
+          "description": "Merged into Nova's promptStart event: audioOutputConfiguration.voiceId (default matthew), toolConfiguration.tools in Nova's toolSpec shape and toolConfiguration.toolChoice ({auto:{}}, {any:{}} or {tool:{name}}). The audio format fields are set by jambonz."
+        },
+        "dtmf": {
+          "type": "object",
+          "description": "Caller keypad input. Nova has no DTMF support, so each completed entry is sent as a user text turn. Takes the gather verb's digit options.",
+          "properties": {
+            "enable": {
+              "type": "boolean"
+            },
+            "finishOnKey": {
+              "type": "string"
+            },
+            "numDigits": {
+              "type": "number"
+            },
+            "minDigits": {
+              "type": "number"
+            },
+            "maxDigits": {
+              "type": "number"
+            },
+            "interDigitTimeout": {
+              "type": "number"
+            },
+            "timeout": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "enable"
+          ]
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "auth"
+  ],
+  "examples": [
+    {
+      "verb": "nova_s2s",
+      "model": "amazon.nova-2-5-sonic",
+      "auth": {
+        "accessKeyId": "AKIA...",
+        "secretAccessKey": "...",
+        "region": "us-east-1"
+      },
+      "llmOptions": {
+        "systemPrompt": "You are a helpful voice assistant. Keep answers short.",
+        "greeting": "Greet the caller and ask how you can help.",
+        "sessionStart": {
+          "turnDetectionConfiguration": {
+            "endpointingSensitivity": "MEDIUM"
+          }
+        },
+        "promptStart": {
+          "audioOutputConfiguration": {
+            "voiceId": "tiffany"
+          }
+        }
+      },
+      "toolHook": "/tool-call",
+      "actionHook": "/s2s-complete"
+    }
+  ]
+}

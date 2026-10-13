@@ -2432,6 +2432,48 @@ test('an app using voicelive_s2s validates (exactly one oneOf match)', () => {
   assert.strictEqual(result.valid, true, JSON.stringify(result.errors));
 });
 
+/* ---- nova_s2s ---- */
+
+const NOVA_OK = {
+  auth: {accessKeyId: 'AKIA', secretAccessKey: 'secret', region: 'ap-northeast-1'},
+  llmOptions: {systemPrompt: 'Be brief.', promptStart: {audioOutputConfiguration: {voiceId: 'tiffany'}}}
+};
+
+test('nova_s2s normalizes to llm with vendor nova', () => {
+  const result = normalizeJambones(console, [{verb: 'nova_s2s', ...NOVA_OK}]);
+  assert.strictEqual(result[0].llm.vendor, 'nova');
+});
+
+test('nova_s2s accepts IAM credentials, llmOptions optional', () => {
+  validateVerb('nova_s2s', NOVA_OK, console);
+  validateVerb('nova_s2s', {auth: NOVA_OK.auth}, console);
+});
+
+test('nova_s2s requires both halves of the IAM credential', () => {
+  const {auth, ...noAuth} = NOVA_OK;
+  assertThrows(() => validateVerb('nova_s2s', noAuth, console));
+  assertThrows(() => validateVerb('nova_s2s', {...NOVA_OK, auth: {accessKeyId: 'AKIA'}}, console));
+  assertThrows(() => validateVerb('nova_s2s', {...NOVA_OK, auth: {accessKeyId: 'AKIA', secretAccessKey: ''}}, console));
+});
+
+test('nova_s2s accepts speechPrompt and dtmf', () => {
+  validateVerb('nova_s2s', {...NOVA_OK, llmOptions: {speechPrompt: 'x', dtmf: {enable: true, finishOnKey: '#'}}}, console);
+  assertThrows(() => validateVerb('nova_s2s', {...NOVA_OK, llmOptions: {dtmf: {finishOnKey: '#'}}}, console));
+});
+
+test('nova_s2s rejects a non-string systemPrompt and another vendor', () => {
+  assertThrows(() => validateVerb('nova_s2s', {...NOVA_OK, llmOptions: {systemPrompt: {}}}, console));
+  assertThrows(() => validateVerb('nova_s2s', {...NOVA_OK, vendor: 'bedrock'}, console));
+});
+
+test('an app using nova_s2s validates (exactly one oneOf match)', () => {
+  const result = validateApp([
+    {verb: 'answer'},
+    {verb: 'nova_s2s', ...NOVA_OK}
+  ], console);
+  assert.strictEqual(result.valid, true, JSON.stringify(result.errors));
+});
+
 /* ---- gladiaOptions ---- */
 console.log('\ngladiaOptions');
 
