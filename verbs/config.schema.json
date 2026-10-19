@@ -176,6 +176,24 @@
         },
         "model": {
           "type": "string"
+        },
+        "label": {
+          "type": "string",
+          "description": "Label of the speech credential to use, for vendors that need one (kugelaudio)."
+        },
+        "auth": {
+          "type": "object",
+          "description": "Optional inline credentials for vendors that need them (kugelaudio). When omitted, feature-server looks up the speech credential by (vendor, label).",
+          "properties": {
+            "apiKey": {
+              "type": "string"
+            },
+            "apiUri": {
+              "type": "string",
+              "description": "Vendor API host, e.g. api.eu.kugelaudio.com."
+            }
+          },
+          "additionalProperties": true
         }
       }
     },
