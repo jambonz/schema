@@ -36,6 +36,30 @@ Lower threshold = faster turn transitions (more aggressive). Default is 0.5.
 
 **IMPORTANT NOTE**: you must have a krisp API key in order to utilize this module on a self-hosted jambonz system.  Please contact us at support@jambonz.org if you need more details.
 
+**`"livekit"`** — Uses LiveKit's contextual end-of-turn model. Unlike Krisp (acoustic), LiveKit ships two variants:
+
+- **`text`** (default) — a small transcript/semantic model that reads the STT output to decide whether the utterance is complete. Works with **any** STT vendor. Runs in a shared turn-detector sidecar (the `livekit-turn-detector` service), so the model is loaded once and reached over HTTP.
+- **`voice`** — an audio/acoustic model that runs in the media server, like Krisp. *(Not yet generally available — see notes below.)*
+
+```json
+{
+  "turnDetection": {
+    "mode": "livekit",
+    "model": "text",
+    "threshold": 0.5,
+    "maxDelay": 2.5
+  }
+}
+```
+
+The shorthand `"turnDetection": "livekit"` is equivalent to `{ "mode": "livekit", "model": "text" }`.
+
+- `threshold` — end-of-turn probability required to commit (0–1, default 0.5).
+- `maxDelay` — seconds to wait before committing anyway if the model has not judged the turn complete but the user has gone silent (safety net; default 2.5).
+- `url` — (text only) override the sidecar URL; defaults to the `JAMBONES_TURN_DETECTOR_URL` environment setting.
+
+The `text` and `voice` variants are isolated by the `model` field and use completely separate data planes: `text` consumes the STT **transcript** (sidecar HTTP), while `voice` consumes raw **audio** in the media server. `earlyGeneration` has no effect with `model: "text"`.
+
 ## Early generation (speculative preflight)
 
 Early generation speculatively sends the transcript to the LLM *before* end-of-turn is confirmed. If the transcript matches when the turn does end, buffered tokens are released immediately — shaving off the LLM prompt time. If the user keeps talking and the transcript changes, the speculative response is discarded. This is a latency optimization with no correctness downside.
