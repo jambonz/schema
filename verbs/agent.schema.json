@@ -26,12 +26,12 @@
         { "type": "boolean" },
         { "type": "string", "enum": ["always"] }
       ],
-      "description": "When using Deepgram Flux Multilingual, automatically adjust STT language hints and switch TTS voice based on detected language. Values: false (disabled), true (lock on first utterance), 'always' (continuously adapt on every turn). Default: false.",
+      "description": "Switch the TTS to the language the caller speaks, using the matching languageConfig entry. Works with any STT that reports the detected language: Deepgram (language 'multi', or Flux Multilingual), AssemblyAI (languageDetection), Google and Azure (altLanguages), Soniox (enableLanguageIdentification), Gladia and Modulate. Values: false (disabled), true (lock on the first utterance whose language is detected), 'always' (re-evaluate every turn). With Deepgram Flux, true also locks the STT language hints to the detected language. Default: false.",
       "default": false
     },
     "languageConfig": {
       "type": "object",
-      "description": "Per-language overrides for TTS. Keys are BCP-47 language codes. When autoLockLanguage detects a language switch, the agent uses the corresponding config.",
+      "description": "Per-language TTS overrides, used when autoLockLanguage detects a language. Keys are language codes such as 'es' or 'es-MX'. A detected language matches an exact key first (case-insensitive), then a key with the same primary language, so 'es' matches a detected 'es-US'. A detected language with no entry keeps the current TTS. The entry's tts is merged over the agent's tts; set its language to the code the TTS vendor expects.",
       "additionalProperties": {
         "type": "object",
         "properties": {
