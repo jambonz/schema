@@ -633,6 +633,55 @@ for (const [name, opts] of [
   });
 }
 
+/* ---- recognizer mistralOptions ---- */
+console.log('\nrecognizer mistralOptions');
+
+test('accepts mistralOptions with valid fields', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'mistral',
+      language: 'en-US',
+      mistralOptions: {
+        apiKey: 'my-key', model: 'voxtral-mini-transcribe-realtime-3', streamingDelayMs: 480,
+        contextBias: ['Northwind', 'Alder Creek Design'], verbatim: true,
+        turnDetection: {startThreshold: 0.5, eagerEndThreshold: 0.4, endThreshold: 0.33, minSilenceMs: 300,
+          endTimeoutMs: 2500},
+        mistralSttUri: 'proxy.example.com'
+      }
+    }
+  }, console);
+});
+
+test('accepts mistralOptions diarize with speakerReferences and the 2400ms delay', () => {
+  validateVerb('transcribe', {
+    transcriptionHook: '/t',
+    recognizer: {
+      vendor: 'mistral',
+      mistralOptions: {diarize: true, streamingDelayMs: 2400, speakerReferences: [{speaker_id: 'agent'}]}
+    }
+  }, console);
+});
+
+for (const [name, opts] of [
+  ['streamingDelayMs 79', {streamingDelayMs: 79}],
+  ['streamingDelayMs 1500', {streamingDelayMs: 1500}],
+  ['startThreshold 1.5', {turnDetection: {startThreshold: 1.5}}],
+  ['unknown turnDetection field', {turnDetection: {threshold: 0.5}}],
+  ['non-array contextBias', {contextBias: 'Northwind'}],
+  ['9 speakerReferences', {speakerReferences: Array(9).fill({})}],
+  ['unknown property', {interim: true}],
+]) {
+  test(`rejects mistralOptions ${name}`, () => {
+    assertThrows(() => validateVerb('gather', {
+      input: ['speech'],
+      actionHook: '/test',
+      recognizer: {vendor: 'mistral', mistralOptions: opts}
+    }, console));
+  });
+}
+
 /* ---- error messages ---- */
 console.log('\nerror messages');
 

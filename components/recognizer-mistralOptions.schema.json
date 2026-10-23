@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/components/recognizer-mistralOptions",
+  "title": "Mistral Recognizer Options",
+  "description": "Mistral Voxtral realtime STT options. Only applies when recognizer vendor is 'mistral'. Voxtral streams text as it is recognized (sent as interim results when interim is enabled); with turn detection on (the default) a final transcript is produced when Voxtral detects the end of the speaker's turn, and in the agent verb each final ends the user's turn. Transcripts are reported with confidence 1.0. The language is sent as a two-letter code (en-US becomes en); leave it unset or 'any' for automatic detection.",
+  "type": "object",
+  "properties": {
+    "apiKey": {
+      "type": "string",
+      "description": "Mistral API key. Overrides the key configured in jambonz."
+    },
+    "model": {
+      "type": "string",
+      "description": "Realtime transcription model. Defaults to voxtral-mini-transcribe-realtime-3.",
+      "examples": ["voxtral-mini-transcribe-realtime-3"]
+    },
+    "streamingDelayMs": {
+      "type": "integer",
+      "description": "Target streaming delay in ms: how far the model looks ahead before emitting text. Lower is faster, higher is more accurate. Any value from 80 to 1200, or 2400. Voxtral's default is 480.",
+      "anyOf": [
+        { "minimum": 80, "maximum": 1200 },
+        { "const": 2400 }
+      ]
+    },
+    "verbatim": {
+      "type": "boolean",
+      "description": "Ask Voxtral for a verbatim transcript (sent as verbatim). Not in Mistral's docs yet; the realtime API accepts it."
+    },
+    "contextBias": {
+      "type": "array",
+      "items": { "type": "string" },
+      "maxItems": 100,
+      "description": "Words or phrases to favor (names, brands, jargon). When omitted, recognizer.hints are used."
+    },
+    "diarize": {
+      "type": "boolean",
+      "description": "Label each transcript with a speaker. Voxtral cannot diarize and detect turns at once, so this turns off turn detection: a final transcript closes at each sentence end or change of speaker. recognizer.diarization has the same effect. Ignored in the agent verb, which needs turn detection."
+    },
+    "speakerReferences": {
+      "type": "array",
+      "maxItems": 8,
+      "description": "Reference clips (3 to 15 seconds each) that let diarization name known speakers. Passed to Mistral as speaker_references. Requires diarize.",
+      "items": { "type": "object" }
+    },
+    "turnDetection": {
+      "type": "object",
+      "description": "Tunes when Voxtral ends a turn. Ignored when diarize is on. Thresholds must satisfy startThreshold >= eagerEndThreshold > endThreshold.",
+      "properties": {
+        "startThreshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Speech probability that starts a turn. Default 0.5."
+        },
+        "eagerEndThreshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Probability at which Voxtral signals a likely end of turn early; the agent verb uses it for early generation. Default 0.5."
+        },
+        "endThreshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Probability below which silence counts toward ending the turn. Default 0.33."
+        },
+        "minSilenceMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Silence in ms before a turn can end. Default 500; raised to streamingDelayMs when that is longer, since Voxtral's text lags the audio by about that much."
+        },
+        "endTimeoutMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Silence in ms after which the turn ends regardless of the model. Default 3000; must be at least minSilenceMs."
+        }
+      },
+      "additionalProperties": false
+    },
+    "mistralSttUri": {
+      "type": "string",
+      "description": "Custom host to connect to instead of api.mistral.ai, e.g. a proxy. A ws:// or http:// prefix disables TLS."
+    }
+  },
+  "additionalProperties": false
+}
