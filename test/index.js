@@ -644,8 +644,7 @@ test('accepts mistralOptions with valid fields', () => {
       vendor: 'mistral',
       language: 'en-US',
       mistralOptions: {
-        apiKey: 'my-key', model: 'voxtral-mini-transcribe-realtime-3', streamingDelayMs: 480,
-        contextBias: ['Northwind', 'Alder Creek Design'], verbatim: true,
+        apiKey: 'my-key', streamingDelayMs: 480, verbatim: true,
         turnDetection: {startThreshold: 0.5, eagerEndThreshold: 0.4, endThreshold: 0.33, minSilenceMs: 300,
           endTimeoutMs: 2500},
         mistralSttUri: 'proxy.example.com'
@@ -654,12 +653,15 @@ test('accepts mistralOptions with valid fields', () => {
   }, console);
 });
 
-test('accepts mistralOptions diarize with speakerReferences and the 2400ms delay', () => {
+test('accepts recognizer diarization with mistralOptions speakerReferences and the 2400ms delay', () => {
   validateVerb('transcribe', {
     transcriptionHook: '/t',
     recognizer: {
       vendor: 'mistral',
-      mistralOptions: {diarize: true, streamingDelayMs: 2400, speakerReferences: [{speaker_id: 'agent'}]}
+      model: 'voxtral-mini-transcribe-realtime-3',
+      hints: ['Northwind', 'Alder Creek Design'],
+      diarization: true,
+      mistralOptions: {streamingDelayMs: 2400, speakerReferences: [{speaker_id: 'agent'}]}
     }
   }, console);
 });
@@ -669,7 +671,9 @@ for (const [name, opts] of [
   ['streamingDelayMs 1500', {streamingDelayMs: 1500}],
   ['startThreshold 1.5', {turnDetection: {startThreshold: 1.5}}],
   ['unknown turnDetection field', {turnDetection: {threshold: 0.5}}],
-  ['non-array contextBias', {contextBias: 'Northwind'}],
+  ['model (use recognizer.model)', {model: 'voxtral-mini-transcribe-realtime-3'}],
+  ['diarize (use recognizer.diarization)', {diarize: true}],
+  ['contextBias (use recognizer.hints)', {contextBias: ['Northwind']}],
   ['9 speakerReferences', {speakerReferences: Array(9).fill({})}],
   ['unknown property', {interim: true}],
 ]) {

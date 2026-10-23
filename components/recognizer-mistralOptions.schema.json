@@ -9,11 +9,6 @@
       "type": "string",
       "description": "Mistral API key. Overrides the key configured in jambonz."
     },
-    "model": {
-      "type": "string",
-      "description": "Realtime transcription model. Defaults to voxtral-mini-transcribe-realtime-3.",
-      "examples": ["voxtral-mini-transcribe-realtime-3"]
-    },
     "streamingDelayMs": {
       "type": "integer",
       "description": "Target streaming delay in ms: how far the model looks ahead before emitting text. Lower is faster, higher is more accurate. Any value from 80 to 1200, or 2400. Voxtral's default is 480.",
@@ -26,25 +21,15 @@
       "type": "boolean",
       "description": "Ask Voxtral for a verbatim transcript (sent as verbatim). Not in Mistral's docs yet; the realtime API accepts it."
     },
-    "contextBias": {
-      "type": "array",
-      "items": { "type": "string" },
-      "maxItems": 100,
-      "description": "Words or phrases to favor (names, brands, jargon). When omitted, recognizer.hints are used."
-    },
-    "diarize": {
-      "type": "boolean",
-      "description": "Label each transcript with a speaker. Voxtral cannot diarize and detect turns at once, so this turns off turn detection: a final transcript closes at each sentence end or change of speaker. recognizer.diarization has the same effect. Ignored in the agent verb, which needs turn detection."
-    },
     "speakerReferences": {
       "type": "array",
       "maxItems": 8,
-      "description": "Reference clips (3 to 15 seconds each) that let diarization name known speakers. Passed to Mistral as speaker_references. Requires diarize.",
+      "description": "Reference clips (3 to 15 seconds each) that let diarization name known speakers. Passed to Mistral as speaker_references. Requires recognizer.diarization.",
       "items": { "type": "object" }
     },
     "turnDetection": {
       "type": "object",
-      "description": "Tunes when Voxtral ends a turn. Ignored when diarize is on. Thresholds must satisfy startThreshold >= eagerEndThreshold > endThreshold.",
+      "description": "Tunes when Voxtral ends a turn. Ignored when recognizer.diarization is on. Thresholds must satisfy startThreshold >= eagerEndThreshold > endThreshold.",
       "properties": {
         "startThreshold": {
           "type": "number",
