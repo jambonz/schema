@@ -645,7 +645,7 @@ test('accepts mistralOptions with valid fields', () => {
       language: 'en-US',
       mistralOptions: {
         apiKey: 'my-key', model: 'voxtral-mini-transcribe-realtime-3', streamingDelayMs: 480,
-        contextBias: ['Northwind', 'Alder Creek Design'],
+        contextBias: ['Northwind', 'Alder Creek Design'], verbatim: true,
         turnDetection: {startThreshold: 0.5, eagerEndThreshold: 0.4, endThreshold: 0.33, minSilenceMs: 300,
           endTimeoutMs: 2500},
         mistralSttUri: 'proxy.example.com'

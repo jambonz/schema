@@ -22,6 +22,10 @@
         { "const": 2400 }
       ]
     },
+    "verbatim": {
+      "type": "boolean",
+      "description": "Ask Voxtral for a verbatim transcript (sent as verbatim). Not in Mistral's docs yet; the realtime API accepts it."
+    },
     "contextBias": {
       "type": "array",
       "items": { "type": "string" },
@@ -30,7 +34,7 @@
     },
     "diarize": {
       "type": "boolean",
-      "description": "Label each transcript with a speaker. Voxtral cannot diarize and detect turns at once, so this turns off turn detection: each diarized segment becomes a final transcript. recognizer.diarization has the same effect."
+      "description": "Label each transcript with a speaker. Voxtral cannot diarize and detect turns at once, so this turns off turn detection: a final transcript closes at each sentence end or change of speaker. recognizer.diarization has the same effect."
     },
     "speakerReferences": {
       "type": "array",
