@@ -331,6 +331,35 @@ For Anthropic models, use `"vendor": "anthropic"` and structure messages accordi
 
 By default (`greeting: true`), the agent prompts the LLM to generate an initial greeting before the user speaks. Set `greeting: false` if you want the agent to wait silently for the user to speak first.
 
+## Controlling what is spoken
+
+Everything the LLM writes is normally sent to TTS. Two options change that. Neither changes what the LLM sees: conversation history, `llm_response` events and the `turn_end` transcript always hold the model's raw text.
+
+**`speechCleanup`** (default `true`) drops text that models write but don't mean to be heard:
+
+- a paragraph that is only a stage direction in `()`, `[]` or `**`, such as `(silence)`, `(empty response)` or `[No response needed - the call has ended]`. Models write these when they are told to stay silent. A bracketed aside inside a sentence, such as "PPO (including Anthem)", is still spoken, and so is a span with no letters in it, such as a phone number's area code.
+- `<think>`, `<thinking>` and `<reasoning>` blocks, wherever they appear.
+
+The cleanup runs on the streaming tokens and holds back only text that could still turn out to be one of these, so ordinary speech is not delayed. If nothing is left to say, the reply ends without speaking, the same way as a reply that only called tools. Set `speechCleanup: false` to send the text to TTS exactly as written.
+
+**`speak: false`** keeps all of the agent's text out of TTS. Use it for an agent that must never talk, such as one that navigates a DTMF-only phone menu by calling tools. The LLM's replies are still kept, so the agent can take notes for itself. With `speak: false`, `toolFiller` and `earlyGeneration` are turned off.
+
+```json
+{
+  "verb": "agent",
+  "speak": false,
+  "llm": {
+    "vendor": "anthropic",
+    "model": "claude-haiku-4-5",
+    "llmOptions": {
+      "messages": [
+        { "role": "system", "content": "You navigate phone menus by pressing keys with the send_dtmf tool." }
+      ]
+    }
+  }
+}
+```
+
 ## Complete example (TypeScript)
 
 A voice agent using Deepgram STT, OpenAI LLM, and Cartesia TTS with Krisp turn detection. Exposes multiple endpoints with different STT/TTS combinations:
