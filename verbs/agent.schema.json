@@ -231,6 +231,16 @@
       "description": "Enable speculative LLM prompting before end-of-turn is confirmed. When using Krisp turn detection, set this to true to speculatively prompt the LLM before Krisp confirms the turn has ended. If the transcript matches when turn ends, buffered tokens are released immediately — reducing response latency. Note: Deepgram Flux performs early generation automatically via its native EagerEndOfTurn signal regardless of this setting. Default: false.",
       "default": false
     },
+    "speak": {
+      "type": "boolean",
+      "description": "Whether the agent's text is spoken. With false the agent never talks (for example while it drives a DTMF-only phone menu with its tools): the LLM's text is still kept in conversation history, llm_response events and the transcript, but is never sent to TTS, and toolFiller and earlyGeneration are turned off. Each reply ends when the LLM finishes, as for a reply that only called tools. Default: true.",
+      "default": true
+    },
+    "speechCleanup": {
+      "type": "boolean",
+      "description": "Keep text the model was not meant to say out of TTS: a paragraph that is only a stage direction in (), [] or ** (such as '(silence)' or '[No response needed]'), and <think>, <thinking> or <reasoning> blocks. Asides inside a sentence are still spoken. Applied as the reply streams; ordinary speech is not delayed. A reply with nothing left to say ends without speaking. History, llm_response events and the transcript keep the model's raw text. Default: true.",
+      "default": true
+    },
     "noiseIsolation": {
       "oneOf": [
         {

@@ -776,6 +776,23 @@ test('rejects invalid reasoningEffort value', () => {
   }, /enum|allowed|reasoningEffort/i);
 });
 
+test('accepts speak and speechCleanup', () => {
+  validateVerb('agent', {
+    llm: {vendor: 'openai', model: 'gpt-4o'},
+    speak: false,
+    speechCleanup: false,
+  }, console);
+});
+
+test('rejects speechCleanup of wrong type', () => {
+  assertThrows(() => {
+    validateVerb('agent', {
+      llm: {vendor: 'openai', model: 'gpt-4o'},
+      speechCleanup: 'yes',
+    }, console);
+  }, /type|boolean|speechCleanup/i);
+});
+
 test('rejects reasoningEffort of wrong type', () => {
   assertThrows(() => {
     validateVerb('agent', {
