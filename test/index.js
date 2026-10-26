@@ -633,6 +633,34 @@ for (const [name, opts] of [
   });
 }
 
+/* ---- recognizer giggyOptions ---- */
+console.log('\nrecognizer giggyOptions');
+
+test('accepts giggyOptions with valid fields', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'giggy',
+      language: 'en-US',
+      giggyOptions: {apiKey: 'my-key', giggySttUri: 'proxy.example.com', giggySttUseTls: false}
+    }
+  }, console);
+});
+
+for (const [name, opts] of [
+  ['non-boolean giggySttUseTls', {giggySttUseTls: 'no'}],
+  ['unknown property', {endpointing: 'external'}],
+]) {
+  test(`rejects giggyOptions ${name}`, () => {
+    assertThrows(() => validateVerb('gather', {
+      input: ['speech'],
+      actionHook: '/test',
+      recognizer: {vendor: 'giggy', giggyOptions: opts}
+    }, console));
+  });
+}
+
 /* ---- recognizer mistralOptions ---- */
 console.log('\nrecognizer mistralOptions');
 

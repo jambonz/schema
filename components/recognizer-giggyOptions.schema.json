@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/components/recognizer-giggyOptions",
+  "title": "Giggy Recognizer Options",
+  "description": "Giggy live STT options. Only applies when recognizer vendor is 'giggy'. Giggy ends each utterance after 650 ms of silence (energy-based, not semantic) and returns cumulative interim results then one final per utterance; there are no confidence scores (transcripts are reported with confidence 1.0). Giggy rejects recognition hints, so hints are not sent. Set the recognizer language to a supported locale (e.g. en-US, es-ES, vi-VN), or to 'any' for automatic language detection.",
+  "type": "object",
+  "properties": {
+    "apiKey": {
+      "type": "string",
+      "description": "Giggy API key. Overrides the key configured in jambonz."
+    },
+    "giggySttUri": {
+      "type": "string",
+      "description": "Custom host to connect to instead of api.giggy.ai (e.g. a proxy)."
+    },
+    "giggySttUseTls": {
+      "type": "boolean",
+      "description": "Use TLS when connecting to a custom host. Default true."
+    }
+  },
+  "additionalProperties": false
+}
