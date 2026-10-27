@@ -18,13 +18,14 @@ This replaces redirecting to a new `dialogflow` verb with a `welcomeEvent` to te
 
 ### Example: take a card payment, then tell the agent
 
-The caller is talking to a CES agent. The application pauses recording, takes the card payment on another system, and tells the agent when it is approved:
+The caller is talking to a CES agent. The application takes the card payment on another system and tells the agent when it is approved:
 
 ```typescript
-session.injectRecord('pauseCallRecording');   // pause recording while the card is taken
-// ... take the card payment on another system ...
-session.injectRecord('resumeCallRecording');
-session.injectCommand('dialogflow:update', { event: 'payment_approved' });
+// WebSocket application (@jambonz/sdk)
+session.updateDialogflow({ event: 'payment_approved' });
+
+// or from any system that knows the call sid, over REST
+await client.calls.updateDialogflow(callSid, { event: 'payment_approved' });
 ```
 
 The raw command is:
