@@ -765,7 +765,7 @@ test('accepts a well-formed agent llm block', () => {
   }, console);
 });
 
-test('accepts each valid reasoningEffort value', () => {
+test('accepts each valid reasoningEffort value (deprecated, still accepted)', () => {
   for (const reasoningEffort of ['minimal', 'low', 'medium', 'high']) {
     validateVerb('agent', {
       llm: {
