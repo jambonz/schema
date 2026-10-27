@@ -327,6 +327,30 @@ The `llm` property is the only required field. It configures the text-to-text LL
 
 For Anthropic models, use `"vendor": "anthropic"` and structure messages accordingly (Anthropic uses `"role": "user"` for the system-level instruction).
 
+### Vendor-specific parameters (`vendorParams`)
+
+`llmOptions.vendorParams` passes vendor-specific request parameters that jambonz has no first-class option for. For example, OpenRouter's provider routing and fallback models:
+
+```json
+{
+  "llm": {
+    "vendor": "openrouter",
+    "model": "meta-llama/llama-3.3-70b-instruct",
+    "llmOptions": {
+      "systemPrompt": "You are a helpful voice assistant.",
+      "vendorParams": {
+        "provider": { "sort": "latency", "data_collection": "deny" },
+        "models": ["openai/gpt-4.1-mini", "google/gemini-3.5-flash"]
+      }
+    }
+  }
+}
+```
+
+- Fields are added to the vendor request: the request body for OpenAI-compatible vendors (openai, openrouter, groq, deepseek, xai, azure-openai, ...) and the generation config for `google` and `vertex-gemini`. `anthropic` and `bedrock` ignore it.
+- Add-only: a field jambonz already sets (`model`, `messages`, `tools`, max tokens, `temperature`, ...) is never overridden, so use the first-class option for those.
+- Not validated by jambonz. A misspelled field, or one the vendor rejects, surfaces as a vendor error on the first turn.
+
 ## Greeting
 
 By default (`greeting: true`), the agent prompts the LLM to generate an initial greeting before the user speaks. Set `greeting: false` if you want the agent to wait silently for the user to speak first.

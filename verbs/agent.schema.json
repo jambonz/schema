@@ -196,6 +196,11 @@
               "enum": ["minimal", "low", "medium", "high"],
               "description": "Vendor-neutral thinking/reasoning effort. Mapped per-vendor by the LLM adapter (Gemini thinkingLevel, OpenAI reasoning_effort, Anthropic extended thinking); ignored by vendors without a native equivalent. 'minimal' minimizes thinking for lowest TTFT on latency-sensitive voice turns."
             },
+            "vendorParams": {
+              "type": "object",
+              "description": "Vendor-specific request parameters, passed through as-is. Fields are added to the vendor request (the request body for OpenAI-compatible vendors such as openai and openrouter, the generation config for google and vertex-gemini) but never override a field jambonz sets itself (model, messages, tools, max tokens, temperature, ...). Not validated by jambonz; ignored by anthropic and bedrock. Example for openrouter: {\"provider\": {\"sort\": \"latency\"}, \"models\": [\"openai/gpt-4.1-mini\"]}.",
+              "additionalProperties": true
+            },
             "tools": {
               "type": "array",
               "description": "Tool / function definitions available to the model. The MCP-flat shape `{name, description, parameters}` is canonical; the OpenAI-wrapped form `{type:'function', function:{...}}` is also accepted.",

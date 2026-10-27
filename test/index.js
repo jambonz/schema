@@ -804,6 +804,33 @@ test('rejects invalid reasoningEffort value', () => {
   }, /enum|allowed|reasoningEffort/i);
 });
 
+test('accepts vendorParams as a free-form object', () => {
+  validateVerb('agent', {
+    llm: {
+      vendor: 'openrouter',
+      model: 'meta-llama/llama-3.3-70b-instruct',
+      llmOptions: {
+        vendorParams: {
+          provider: {sort: 'latency', data_collection: 'deny'},
+          models: ['openai/gpt-4.1-mini'],
+        },
+      },
+    },
+  }, console);
+});
+
+test('rejects vendorParams of wrong type', () => {
+  assertThrows(() => {
+    validateVerb('agent', {
+      llm: {
+        vendor: 'openrouter',
+        model: 'meta-llama/llama-3.3-70b-instruct',
+        llmOptions: {vendorParams: 'sort=latency'},
+      },
+    }, console);
+  }, /type|object|vendorParams/i);
+});
+
 test('accepts speak and speechCleanup', () => {
   validateVerb('agent', {
     llm: {vendor: 'openai', model: 'gpt-4o'},
