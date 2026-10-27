@@ -255,6 +255,16 @@ session.updateAgent({
 });
 ```
 
+## Dialogflow Update
+
+The `dialogflow:update` command sends input into a running Dialogflow CES session (a `dialogflow` verb with `model: "ces"`) without restarting the verb. Over REST, send the same object as the `dialogflow_update` key of the call-update body. The object holds at most one of `event`, `text` or `dtmf`, plus optional `variables`; at least one field is required.
+
+```json
+{"type": "command", "command": "dialogflow:update", "data": {"event": "payment_approved"}}
+```
+
+An `event` or `text` is held until the agent's current turn ends, since CES drops input that arrives mid-reply. See `docs/verbs/dialogflow.md` for the worked example, including the line the CES agent's instructions need, and for the `input-sent` and `input-dropped` events.
+
 ## LLM Tool Output
 
 When using the `agent` verb with a `toolHook`, tool call requests arrive as events. Return results with:

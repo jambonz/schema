@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/commands/dialogflow:update",
+  "title": "Dialogflow Update Command",
+  "description": "Command sent from the application to feature-server over the session websocket, sending input into a running Dialogflow CES session (a `dialogflow` verb with `model: \"ces\"`) without restarting the verb. The same object can be sent over REST as the `dialogflow_update` key of the call-update body. `variables` and `dtmf` are sent at once. An `event` or `text` starts an agent turn; CES silently drops one that arrives while the agent is still replying, so jambonz holds it and sends it when the agent's current turn ends, one per turn, in order. A command sent when no CES dialogflow verb is running is refused and logged by feature-server.",
+  "type": "object",
+  "required": ["type", "command", "data"],
+  "properties": {
+    "type": { "const": "command" },
+    "command": { "const": "dialogflow:update" },
+    "data": {
+      "type": "object",
+      "description": "The input to send. At least one of `event`, `text`, `dtmf` or `variables` is required, and at most one of `event`, `text` and `dtmf`.",
+      "properties": {
+        "event": {
+          "type": "string",
+          "minLength": 1,
+          "description": "A CES event name. The CES agent's instructions must say what to do when it receives this event."
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Text sent as if the caller had said it."
+        },
+        "dtmf": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Keypad digits."
+        },
+        "variables": {
+          "type": "object",
+          "description": "CES session variables. Only variables the CES app declares, and whose instructions reference them as {name}, are used by the agent.",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "not": {
+        "anyOf": [
+          { "required": ["event", "text"] },
+          { "required": ["event", "dtmf"] },
+          { "required": ["text", "dtmf"] }
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "type": "command",
+      "command": "dialogflow:update",
+      "data": { "event": "payment_approved" }
+    },
+    {
+      "type": "command",
+      "command": "dialogflow:update",
+      "data": { "variables": { "account_tier": "gold" } }
+    }
+  ]
+}

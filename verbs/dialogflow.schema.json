@@ -81,7 +81,7 @@
       "items": {
         "type": "string"
       },
-      "description": "List of event types to receive via the eventHook."
+      "description": "List of event types to receive via the eventHook. For CES, the events `input-sent` (an input held by a `dialogflow:update` command was sent; data `{kind, event, waited_ms}`) and `input-dropped` (an input was not delivered, e.g. the session ended first; data `{kind, event, reason}`) are delivered only if listed here (or `all`)."
     },
     "welcomeEvent": {
       "type": "string",
