@@ -1269,6 +1269,24 @@ test('rejects unknown top-level properties', () => {
   }, /additional/i);
 });
 
+/* ---- commands: dialogflow:update ---- */
+console.log('\ncommand: dialogflow:update');
+
+test('accepts event, text, dtmf and variables-only dialogflow:update', () => {
+  for (const data of [{event: 'payment_approved'}, {text: 'hello'}, {dtmf: '1234#'},
+    {variables: {tier: 'gold'}}, {event: 'x', variables: {a: 1}}]) {
+    validateCommand('dialogflow:update', {type: 'command', command: 'dialogflow:update', data}, console);
+  }
+});
+
+test('rejects empty data and more than one of event/text/dtmf', () => {
+  for (const data of [{}, {event: 'a', text: 'b'}, {text: 'b', dtmf: '1'}, {event: 'a', dtmf: '1'}, {foo: 'bar'}]) {
+    assertThrows(() => {
+      validateCommand('dialogflow:update', {type: 'command', command: 'dialogflow:update', data}, console);
+    }, /.*/);
+  }
+});
+
 test('rejects unknown command name', () => {
   assertThrows(() => {
     validateCommand('no-such-command', {}, console);
