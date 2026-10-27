@@ -194,7 +194,8 @@
             "reasoningEffort": {
               "type": "string",
               "enum": ["minimal", "low", "medium", "high"],
-              "description": "Vendor-neutral thinking/reasoning effort. Mapped per-vendor by the LLM adapter (Gemini thinkingLevel, OpenAI reasoning_effort, Anthropic extended thinking); ignored by vendors without a native equivalent. 'minimal' minimizes thinking for lowest TTFT on latency-sensitive voice turns."
+              "deprecated": true,
+              "description": "Deprecated: has no effect. Accepted so existing applications keep validating. To control thinking, set the vendor's own parameter in vendorParams, e.g. {\"reasoning_effort\": \"none\"} for openai, {\"thinkingConfig\": {\"thinkingLevel\": \"minimal\"}} for google, {\"thinking\": {\"type\": \"disabled\"}} for deepseek, {\"reasoning\": {\"effort\": \"minimal\"}} for openrouter."
             },
             "vendorParams": {
               "type": "object",
