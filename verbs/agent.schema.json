@@ -144,25 +144,8 @@
           "type": "string",
           "description": "Optional label to disambiguate when the account has multiple credentials for the same vendor."
         },
-        "auth": {
-          "type": "object",
-          "description": "Optional inline credentials. When omitted, feature-server looks up credentials by (vendor, label) from the database.",
-          "properties": {
-            "apiKey": { "type": "string" }
-          },
-          "additionalProperties": true
-        },
-        "connectOptions": {
-          "type": "object",
-          "description": "SDK-level client options.",
-          "properties": {
-            "timeout": { "type": "number", "minimum": 0 },
-            "maxRetries": { "type": "integer", "minimum": 0 },
-            "endpoint": { "type": "string" },
-            "baseURL": { "type": "string" }
-          },
-          "additionalProperties": false
-        },
+        "auth": { "$ref": "#/$defs/llmAuth" },
+        "connectOptions": { "$ref": "#/$defs/llmConnectOptions" },
         "llmOptions": {
           "type": "object",
           "description": "Per-call LLM configuration.",
@@ -215,7 +198,7 @@
         "fallback": {
           "type": "array",
           "maxItems": 3,
-          "description": "LLMs to switch to, in order, when the current one fails (bad or expired key, no credit, rate limit, vendor error, no response within fallbackTimeoutMs) before it has said anything. The switch is silent to the caller: the conversation, including tool calls, carries over to the new vendor and stays there for the rest of the call. An entry that cannot be used at all (no credentials, unknown vendor) is skipped at start. The system prompt, tools, maxTokens and temperature come from the main llm; vendorParams do not. Each switch raises an alert and is reported in the actionHook as llm_fallback.",
+          "description": "LLMs to switch to, in order, when the current one fails (bad or expired key, no credit, a rate limit or vendor error that persists after one quick retry, no response within fallbackTimeoutMs) before it has said anything. The switch is silent to the caller: the conversation, including tool calls, carries over to the new vendor and stays there for the rest of the call. An LLM that cannot be used at all (unknown vendor, no credentials, no model, or a jambonz-hosted LLM whose wallet is depleted) is skipped at start, the main llm included. The system prompt, tools, maxTokens and temperature come from the main llm; vendorParams do not. A turnGate that shares the main llm's credentials follows the same chain. Each switch raises an alert and is reported in the actionHook as llm_fallback: [{from, to, reason}], where from/to are {vendor, model, label}.",
           "items": {
             "type": "object",
             "properties": {
@@ -225,31 +208,14 @@
               },
               "model": {
                 "type": "string",
-                "description": "Vendor-specific model id."
+                "description": "Vendor-specific model id. Required unless the credential is jambonz-hosted (which names its model); an entry without one is skipped at start."
               },
               "label": {
                 "type": "string",
                 "description": "Optional label to disambiguate when the account has multiple credentials for the same vendor."
               },
-              "auth": {
-                "type": "object",
-                "description": "Optional inline credentials. When omitted, feature-server looks up credentials by (vendor, label) from the database.",
-                "properties": {
-                  "apiKey": { "type": "string" }
-                },
-                "additionalProperties": true
-              },
-              "connectOptions": {
-                "type": "object",
-                "description": "SDK-level client options.",
-                "properties": {
-                  "timeout": { "type": "number", "minimum": 0 },
-                  "maxRetries": { "type": "integer", "minimum": 0 },
-                  "endpoint": { "type": "string" },
-                  "baseURL": { "type": "string" }
-                },
-                "additionalProperties": false
-              },
+              "auth": { "$ref": "#/$defs/llmAuth" },
+              "connectOptions": { "$ref": "#/$defs/llmConnectOptions" },
               "llmOptions": {
                 "type": "object",
                 "properties": {
@@ -269,10 +235,12 @@
         "fallbackTimeoutMs": {
           "type": "integer",
           "minimum": 0,
-          "description": "With llm.fallback set: switch to the next LLM when the current one has produced nothing this long after a request. 0 disables the timeout (errors still fall back). SDK retries are also turned off while a fallback remains, so a failing vendor is left at once instead of after its backoff. Default: 5000.",
+          "description": "Switch to the next LLM in llm.fallback when the current one has produced nothing this long after a request. 0 disables the timeout (errors still fall back). Reasoning models that think before their first token may need a higher value or 0. Default: 5000.",
           "default": 5000
         }
       },
+      "if": { "required": ["fallbackTimeoutMs"] },
+      "then": { "required": ["fallback"] },
       "additionalProperties": false
     },
     "actionHook": {
@@ -404,6 +372,25 @@
     }
   },
   "$defs": {
+    "llmAuth": {
+      "type": "object",
+      "description": "Optional inline credentials. When omitted, feature-server looks up credentials by (vendor, label) from the database.",
+      "properties": {
+        "apiKey": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "llmConnectOptions": {
+      "type": "object",
+      "description": "SDK-level client options. While an llm.fallback entry remains, the SDK's own retries are off unless maxRetries is set here.",
+      "properties": {
+        "timeout": { "type": "number", "minimum": 0 },
+        "maxRetries": { "type": "integer", "minimum": 0 },
+        "endpoint": { "type": "string" },
+        "baseURL": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
     "llmMessage": {
       "type": "object",
       "description": "A conversation-history message. The library normalizes content to a string; adapters may carry vendor-native shapes internally.",

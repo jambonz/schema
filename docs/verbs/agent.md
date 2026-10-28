@@ -362,18 +362,20 @@ For Anthropic models, use `"vendor": "anthropic"` and structure messages accordi
     "model": "gpt-4o",
     "llmOptions": { "systemPrompt": "You are a helpful voice assistant." },
     "fallback": [
-      { "vendor": "anthropic", "model": "claude-sonnet-4-5" },
-      { "vendor": "google", "model": "gemini-2.5-flash", "label": "backup" }
+      { "vendor": "anthropic", "model": "claude-sonnet-4-5", "label": "backup" },
+      { "vendor": "google", "model": "gemini-2.5-flash" }
     ],
     "fallbackTimeoutMs": 5000
   }
 }
 ```
 
-- **Any failure falls back**: an invalid or expired key, no credit, a rate limit, a vendor error, or no response within `fallbackTimeoutMs` (default 5000, 0 disables the timeout). SDK retries are turned off while a fallback remains, so a failing vendor is left at once.
+- **Any failure falls back**: an invalid or expired key, no credit, a model the vendor does not know, or no response within `fallbackTimeoutMs`. A rate limit (429), server error (5xx) or network error gets one quick retry (about 300ms) on the same vendor first. The SDK's own retries, which can wait out a long `Retry-After`, are turned off while a fallback remains, unless `connectOptions.maxRetries` is set.
+- **`fallbackTimeoutMs`** (default 5000, 0 disables it) counts from sending the request to the first token or tool call. Reasoning models that think before answering may need a higher value or 0. It requires `fallback`.
 - **Only before speaking.** The switch happens while the reply has produced no text yet. If a vendor fails partway through a reply, that reply is not retried, since the caller would hear it twice.
 - **The conversation carries over**, tool calls and results included, re-encoded for the new vendor. The agent stays on the new vendor for the rest of the call.
-- **Entries that cannot be used at all are skipped at start**: unknown vendor, no stored credentials, or a jambonz-hosted LLM whose wallet is depleted. When the main LLM is one of these, the agent starts on the first usable fallback.
+- **Entries that cannot be used at all are skipped at start**: unknown vendor, no stored credentials, no `model` (required on a fallback entry unless its credential is jambonz-hosted), or a jambonz-hosted LLM whose wallet is depleted. When the main LLM is one of these, the agent starts on the first usable fallback.
+- A `turnGate` that shares the main LLM's credentials follows the same fallback chain.
 - Each entry takes `vendor`, `model`, `label`, `auth`, `connectOptions` and `llmOptions.vendorParams`. The system prompt, tools, `maxTokens` and `temperature` come from the main `llm`.
 - Every switch raises an LLM failure alert naming both vendors and is listed in the actionHook payload:
 
@@ -381,7 +383,7 @@ For Anthropic models, use `"vendor": "anthropic"` and structure messages accordi
 "llm_fallback": [
   {
     "from": { "vendor": "openai", "model": "gpt-4o" },
-    "to": { "vendor": "anthropic", "model": "claude-sonnet-4-5" },
+    "to": { "vendor": "anthropic", "model": "claude-sonnet-4-5", "label": "backup" },
     "reason": "401 Incorrect API key provided"
   }
 ]
