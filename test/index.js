@@ -2748,6 +2748,55 @@ test('accepts an llm verb with no auth and a label', () => {
     llmOptions: {session_update: {}, response_create: {}}}, console);
 });
 
+/* ---- rime_s2s (Rime Prism) ---- */
+console.log('\nrime_s2s verb');
+
+const RIME_OK = {
+  label: 'prism',
+  llmOptions: {
+    session_update: {
+      voice: 'aurora',
+      instructions: 'You answer the phone for Juniper Cafe.',
+      tools: [{type: 'function', name: 'get_hours', description: 'Hours.', parameters: {type: 'object', properties: {}},
+        prism_filler: {type: 'text', text: 'One moment.'}}],
+      turn_detection: {interrupt_response: true, eagerness: 'low', prism_end_of_turn_timeout_ms: 3000},
+      truncation: {type: 'retention_ratio', retention_ratio: 0.9},
+      prism_response_metadata: {agent: 'cafe'}
+    },
+    response_create: {instructions: 'Greet the caller.'}
+  }
+};
+
+test('rime_s2s normalizes to llm with vendor rime', () => {
+  const result = normalizeJambones(console, [{verb: 'rime_s2s', ...RIME_OK}]);
+  assert.strictEqual(Object.keys(result[0])[0], 'llm');
+  assert.strictEqual(result[0].llm.vendor, 'rime');
+});
+
+test('rime_s2s accepts Prism settings, a credential label or a key, and no llmOptions at all', () => {
+  validateVerb('rime_s2s', RIME_OK, console);
+  validateVerb('rime_s2s', {...RIME_OK, label: undefined, auth: {apiKey: 'rk'}}, console);
+  validateVerb('rime_s2s', {}, console);
+  validateVerb('rime_s2s', {llmOptions: {session_update: {truncation: 'disabled'}}}, console);
+});
+
+test('rime_s2s rejects session fields Prism refuses', () => {
+  const su = (extra) => ({llmOptions: {session_update: {...RIME_OK.llmOptions.session_update, ...extra}}});
+  assertThrows(() => validateVerb('rime_s2s', su({temperature: 0.7}), console));
+  assertThrows(() => validateVerb('rime_s2s', su({voice: 'marin'}), console));
+  assertThrows(() => validateVerb('rime_s2s', su({turn_detection: {type: 'server_vad'}}), console));
+  assertThrows(() => validateVerb('rime_s2s', su({turn_detection: {prism_end_of_turn_timeout_ms: 500}}), console));
+  assertThrows(() => validateVerb('rime_s2s', su({audio: {output: {voice: 'aurora'}}}), console));
+  assertThrows(() => validateVerb('rime_s2s', su({prism_response_metadata: {prism_x: 'y'}}), console));
+  assertThrows(() => validateVerb('rime_s2s', {llmOptions: {response_create: {modalities: ['audio']}}}, console));
+  assertThrows(() => validateVerb('rime_s2s', {auth: {apiKey: ''}}, console));
+});
+
+test('an app using rime_s2s validates (exactly one oneOf match)', () => {
+  const result = validateApp([{verb: 'answer'}, {verb: 'rime_s2s', ...RIME_OK}], console);
+  assert.strictEqual(result.valid, true, JSON.stringify(result.errors));
+});
+
 /* ---- summary ---- */
 console.log(`\n${passed} passed, ${failed} failed\n`);
 if (failed > 0) process.exit(1);
