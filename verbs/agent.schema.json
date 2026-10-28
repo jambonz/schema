@@ -198,7 +198,7 @@
         "fallback": {
           "type": "array",
           "maxItems": 3,
-          "description": "LLMs to switch to, in order, when the current one fails (bad or expired key, no credit, a rate limit or vendor error that persists after one quick retry, no response within fallbackTimeoutMs) before it has said anything. The switch is silent to the caller: the conversation, including tool calls, carries over to the new vendor and stays there for the rest of the call. An LLM that cannot be used at all (unknown vendor, no credentials, no model, or a jambonz-hosted LLM whose wallet is depleted) is skipped at start, the main llm included. The system prompt, tools, maxTokens and temperature come from the main llm; vendorParams do not. A turnGate that shares the main llm's credentials follows the same chain. Each switch raises an alert and is reported in the actionHook as llm_fallback: [{from, to, reason}], where from/to are {vendor, model, label}.",
+          "description": "LLMs to switch to, in order, when the current one fails (bad or expired key, no credit, a rate limit or vendor error that persists after one quick retry, no response within fallbackTimeoutMs) before it has said anything. The switch is silent to the caller: the conversation, including tool calls, carries over to the new vendor and stays there for the rest of the call. An LLM that cannot be used at all (unknown vendor, no credentials, no model, or a jambonz-hosted LLM whose wallet is depleted) is skipped at start, the main llm included. The system prompt, tools, maxTokens and temperature come from the main llm; vendorParams do not. A turnGate that shares the main llm's credentials follows the same chain. The application's fallback LLM (set in the portal) is appended after these entries; an empty array opts out of it. Each switch raises an alert and is reported in the actionHook as llm_fallback: [{from, to, reason}], where from/to are {vendor, model, label}.",
           "items": {
             "type": "object",
             "properties": {
@@ -235,12 +235,10 @@
         "fallbackTimeoutMs": {
           "type": "integer",
           "minimum": 0,
-          "description": "Switch to the next LLM in llm.fallback when the current one has produced nothing this long after a request. 0 disables the timeout (errors still fall back). Reasoning models that think before their first token may need a higher value or 0. Default: 5000.",
+          "description": "Switch to the next fallback LLM when the current one has produced nothing this long after a request. 0 disables the timeout (errors still fall back). Reasoning models that think before their first token may need a higher value or 0. Default: 5000, or 0 when the only fallback is the application's. Ignored when there is no fallback.",
           "default": 5000
         }
       },
-      "if": { "required": ["fallbackTimeoutMs"] },
-      "then": { "required": ["fallback"] },
       "additionalProperties": false
     },
     "actionHook": {

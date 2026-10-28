@@ -926,10 +926,9 @@ test('rejects a fallback entry without a vendor, or more than three', () => {
   }, console), /must NOT have more than 3 items/);
 });
 
-test('rejects fallbackTimeoutMs without fallback', () => {
-  assertThrows(() => validateVerb('agent', {
-    llm: {vendor: 'openai', fallbackTimeoutMs: 2000},
-  }, console), /fallback/);
+test('accepts fallbackTimeoutMs alone (the application may supply the fallback) and an empty fallback', () => {
+  validateVerb('agent', {llm: {vendor: 'openai', fallbackTimeoutMs: 2000}}, console);
+  validateVerb('agent', {llm: {vendor: 'openai', fallback: []}}, console);
 });
 
 test('rejects main-llm-only options on a fallback entry', () => {
