@@ -130,19 +130,19 @@
     },
     "llm": {
       "type": "object",
-      "description": "LLM configuration for the agent. Optional: when omitted, or when `vendor`/`model` are omitted, they fall back to the application's configured default LLM (like `stt`/`tts`).",
+      "description": "LLM configuration for the agent. Optional: when omitted, or when `vendor`/`model` are omitted, they fall back to the application's configured default LLM (like `stt`/`tts`). With `vendor: \"harness\"` a customer-run harness decides what to say instead of a model, over one WebSocket per call opened by jambonz; jambonz keeps STT, turn-taking, barge-in and TTS. See `harness`.",
       "properties": {
         "vendor": {
           "type": "string",
-          "description": "LLM vendor id. Must match a `@jambonz/llm` registered adapter. Optional: falls back to the application's default LLM vendor."
+          "description": "LLM vendor id. Must match a `@jambonz/llm` registered adapter, or be \"harness\" for a customer-run harness (the account's Harness credential, looked up by vendor and label, gives its WebSocket URL and key). Optional: falls back to the application's default LLM vendor."
         },
         "model": {
           "type": "string",
           "description": "Vendor-specific model id (e.g. 'gpt-4o', 'claude-sonnet-4-5-20250929'). Optional: falls back to the application's default LLM model."
         },
         "label": {
-          "type": "string",
-          "description": "Optional label to disambiguate when the account has multiple credentials for the same vendor."
+          "type": ["string", "null"],
+          "description": "Optional label to disambiguate when the account has multiple credentials for the same vendor. null or omitted selects the unlabelled credential."
         },
         "auth": {
           "type": "object",
@@ -204,10 +204,47 @@
             },
             "tools": {
               "type": "array",
-              "description": "Tool / function definitions available to the model. The MCP-flat shape `{name, description, parameters}` is canonical; the OpenAI-wrapped form `{type:'function', function:{...}}` is also accepted.",
+              "description": "Tool / function definitions available to the model. The MCP-flat shape `{name, description, parameters}` is canonical; the OpenAI-wrapped form `{type:'function', function:{...}}` is also accepted. With vendor \"harness\" these are sent to the harness in session:start as OpenAI function definitions, and the harness runs them with tool:call through the toolHook.",
               "items": {
                 "type": "object"
               }
+            }
+          },
+          "additionalProperties": false
+        },
+        "harness": {
+          "type": "object",
+          "description": "Harness settings, only with vendor \"harness\". The harness owns prompts, context, fillers and reprompts, so with it `llmOptions` may carry only `tools`, `model`/`auth`/`connectOptions` are not allowed, and `mcpServers`, `toolFiller`, `earlyGeneration`, `speechCleanup: true` and `noResponseMaxPrompts` are rejected. `noResponseTimeout` still sets when the harness is sent a `silence` event; jambonz does not reprompt on its own. `handoff`, when present, supplies the defaults (mode, disposition, timeout, callerId) for transfers the harness asks for.",
+          "properties": {
+            "metadata": {
+              "type": "object",
+              "additionalProperties": true,
+              "description": "Free-form JSON passed to the harness in session:start (for example agent id, version and per-call variables)."
+            },
+            "firstChunkTimeoutMs": {
+              "type": "integer",
+              "minimum": 500,
+              "default": 4000,
+              "description": "Milliseconds from the end of the caller's turn to the harness's first reply:chunk (or reply:done). On the first timeout holdingPhrase is spoken once; on a second timeout onHarnessFailure runs. While a tool:call from the harness is outstanding, the second timeout waits for it. Default: 4000."
+            },
+            "holdingPhrase": {
+              "type": "string",
+              "description": "Spoken once when the harness has not started its reply within firstChunkTimeoutMs, for example 'One moment.'. When omitted nothing is spoken and the second timeout still applies."
+            },
+            "onHarnessFailure": {
+              "type": "object",
+              "description": "What jambonz does when the harness cannot be reached, stops answering, or drops and cannot be reconnected within 2 seconds: speak `say`, then transfer to `transfer` if given, otherwise hang up. The actionHook reports completionReason 'harness_failure' with a harness_error object.",
+              "properties": {
+                "say": {
+                  "type": "string",
+                  "description": "Spoken to the caller before the transfer or hangup."
+                },
+                "transfer": {
+                  "type": "string",
+                  "description": "Where to transfer the caller: an E.164 number, a sip: URI, or a registered user name. Uses the verb's `handoff` settings when present, otherwise a blind transfer by dial."
+                }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -221,7 +258,7 @@
     },
     "eventHook": {
       "$ref": "../components/actionHook",
-      "description": "A webhook invoked for agent events. Receives event types: 'user_transcript' (user speech recognized), 'llm_response' (assistant reply), 'user_interruption' (barge-in detected), and 'turn_end' (end-of-turn summary with transcript, response, and latency metrics)."
+      "description": "A webhook invoked for agent events. Receives event types: 'user_transcript' (user speech recognized), 'llm_response' (assistant reply), 'user_interruption' (barge-in detected), and 'turn_end' (end-of-turn summary with transcript, response, and latency metrics). With vendor \"harness\" it also receives 'harness_failure' ({reason, message}) when onHarnessFailure runs, and turn_end carries `engine: \"harness\"`, `harness.turn_record` and `latency.harness_first_chunk_ms`."
     },
     "toolHook": {
       "$ref": "../components/actionHook",
@@ -343,6 +380,41 @@
       "description": "Configuration for playing filler audio while tool calls are in progress. Prevents silence during long-running tool executions."
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "llm": {
+            "properties": { "vendor": { "const": "harness" } },
+            "required": ["vendor"]
+          }
+        },
+        "required": ["llm"]
+      },
+      "then": {
+        "properties": {
+          "llm": {
+            "properties": {
+              "model": false,
+              "auth": false,
+              "connectOptions": false,
+              "llmOptions": { "propertyNames": { "enum": ["tools"] } }
+            }
+          },
+          "mcpServers": { "maxItems": 0 },
+          "toolFiller": { "const": false },
+          "earlyGeneration": { "const": false },
+          "speechCleanup": { "const": false },
+          "noResponseMaxPrompts": { "const": 0 }
+        }
+      },
+      "else": {
+        "properties": {
+          "llm": { "not": { "required": ["harness"] } }
+        }
+      }
+    }
+  ],
   "$defs": {
     "llmMessage": {
       "type": "object",
@@ -454,6 +526,48 @@
         "sticky": false
       },
       "actionHook": "/agent-complete"
+    },
+    {
+      "verb": "agent",
+      "stt": {
+        "vendor": "deepgramflux",
+        "language": "en-US"
+      },
+      "tts": {
+        "vendor": "cartesia",
+        "voice": "sonic-english"
+      },
+      "llm": {
+        "vendor": "harness",
+        "label": "my-harness",
+        "llmOptions": {
+          "tools": [
+            {
+              "name": "lookup_account",
+              "description": "Look up the caller's account by phone number.",
+              "parameters": {
+                "type": "object",
+                "properties": { "phone": { "type": "string" } },
+                "required": ["phone"]
+              }
+            }
+          ]
+        },
+        "harness": {
+          "metadata": { "agent": "outage-line", "tenant": "acme" },
+          "firstChunkTimeoutMs": 4000,
+          "holdingPhrase": "One moment.",
+          "onHarnessFailure": {
+            "say": "Sorry, I'm having trouble. Transferring you now.",
+            "transfer": "+15085550100"
+          }
+        }
+      },
+      "turnDetection": "stt",
+      "bargeIn": { "enable": true },
+      "toolHook": "/tool",
+      "eventHook": "/event",
+      "actionHook": "/done"
     }
   ]
 }

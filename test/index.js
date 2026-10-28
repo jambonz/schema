@@ -2657,6 +2657,89 @@ test('gladiaOptions passes Gladia session fields through', () => {
   }, console);
 });
 
+/* ---- agent verb: harness engine ---- */
+console.log('\nagent verb — harness engine');
+
+const harnessVerb = (llmExtra = {}, extra = {}) => ({
+  stt: {vendor: 'deepgramflux', language: 'en-US'},
+  tts: {vendor: 'cartesia', voice: 'v'},
+  llm: {
+    vendor: 'harness',
+    label: null,
+    llmOptions: {tools: [{name: 'lookup', description: 'x', parameters: {type: 'object'}}]},
+    harness: {
+      metadata: {agent: 'a1', version: 3},
+      firstChunkTimeoutMs: 4000,
+      holdingPhrase: 'One moment.',
+      onHarnessFailure: {say: 'Sorry.', transfer: '+15085550100'},
+    },
+    ...llmExtra,
+  },
+  turnDetection: 'stt',
+  bargeIn: {enable: true},
+  toolHook: '/tool',
+  eventHook: '/event',
+  actionHook: '/done',
+  ...extra,
+});
+
+test('accepts the harness verb Studio sends (label null)', () => {
+  validateVerb('agent', harnessVerb(), console);
+});
+
+test('accepts a harness verb with no harness block and a string label', () => {
+  validateVerb('agent', {llm: {vendor: 'harness', label: 'my-harness'}}, console);
+});
+
+test('accepts a null label for other vendors too', () => {
+  validateVerb('agent', {llm: {vendor: 'openai', model: 'gpt-4o', label: null}}, console);
+});
+
+test('rejects a harness block on a non-harness vendor', () => {
+  assertThrows(() => validateVerb('agent', {llm: {vendor: 'openai', model: 'gpt-4o', harness: {}}}, console));
+});
+
+test('rejects llmOptions other than tools with the harness', () => {
+  assertThrows(() => validateVerb('agent', harnessVerb({llmOptions: {systemPrompt: 'x'}}), console));
+});
+
+test('rejects model and auth with the harness', () => {
+  assertThrows(() => validateVerb('agent', harnessVerb({model: 'gpt-4o'}), console));
+  assertThrows(() => validateVerb('agent', harnessVerb({auth: {apiKey: 'k'}}), console));
+});
+
+test('rejects settings the harness owns', () => {
+  assertThrows(() => validateVerb('agent', harnessVerb({}, {earlyGeneration: true}), console));
+  assertThrows(() => validateVerb('agent', harnessVerb({}, {speechCleanup: true}), console));
+  assertThrows(() => validateVerb('agent', harnessVerb({}, {noResponseMaxPrompts: 2}), console));
+  assertThrows(() => validateVerb('agent', harnessVerb({}, {mcpServers: [{url: 'https://m.example/sse'}]}), console));
+  assertThrows(() => validateVerb('agent', harnessVerb({}, {toolFiller: {type: 'backchannel'}}), console));
+});
+
+test('accepts the harness with settings that still apply', () => {
+  validateVerb('agent', harnessVerb({}, {
+    speechCleanup: false, earlyGeneration: false, noResponseTimeout: 8, greeting: false,
+    handoff: {mode: 'blind', blindMethod: 'dial', target: [{type: 'phone', number: '+15085550100'}]},
+    hangup: {reason: 'done'},
+  }), console);
+});
+
+test('rejects unknown harness fields and a bad firstChunkTimeoutMs', () => {
+  assertThrows(() => validateVerb('agent', harnessVerb({harness: {holdPhrase: 'x'}}), console));
+  assertThrows(() => validateVerb('agent', harnessVerb({harness: {firstChunkTimeoutMs: 10}}), console));
+  assertThrows(() => validateVerb('agent', harnessVerb({harness: {onHarnessFailure: {hangup: true}}}), console));
+});
+
+/* ---- dialogflow: credential reference ---- */
+console.log('\ndialogflow — credential reference');
+
+test('accepts a google credential reference for CES', () => {
+  const v = {project: 'p', agent: 'app1', region: 'us', model: 'ces', lang: 'en-US'};
+  validateVerb('dialogflow', {...v, credentials: {vendor: 'google', label: 'my-ces'}}, console);
+  validateVerb('dialogflow', {...v, credentials: {vendor: 'google', label: null}}, console);
+  validateVerb('dialogflow', {...v, credentials: {vendor: 'google'}}, console);
+});
+
 /* ---- summary ---- */
 console.log(`\n${passed} passed, ${failed} failed\n`);
 if (failed > 0) process.exit(1);
