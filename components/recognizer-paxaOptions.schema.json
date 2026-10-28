@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/components/recognizer-paxaOptions",
+  "title": "Paxa Recognizer Options",
+  "description": "Paxa Labs realtime STT options. Only applies when recognizer vendor is 'paxa'. Paxa detects the end of each turn and produces one final transcript per turn. Leave the recognizer language unset for automatic detection.",
+  "type": "object",
+  "properties": {
+    "style": {
+      "type": "string",
+      "enum": ["verbatim", "clean"],
+      "description": "verbatim (default) keeps fillers and false starts; clean drops them."
+    },
+    "convention": {
+      "type": "string",
+      "enum": ["spoken", "written"],
+      "description": "spoken (default) writes numbers as said; written uses digits and units."
+    },
+    "timestamps": {
+      "type": "boolean",
+      "description": "Request word-level timestamps."
+    }
+  },
+  "additionalProperties": false
+}
