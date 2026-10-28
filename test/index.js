@@ -2733,11 +2733,19 @@ test('rejects unknown harness fields and a bad firstChunkTimeoutMs', () => {
 /* ---- dialogflow: credential reference ---- */
 console.log('\ndialogflow — credential reference');
 
-test('accepts a google credential reference for CES', () => {
+test('accepts a dialogflow_ces credential reference for CES', () => {
   const v = {project: 'p', agent: 'app1', region: 'us', model: 'ces', lang: 'en-US'};
-  validateVerb('dialogflow', {...v, credentials: {vendor: 'google', label: 'my-ces'}}, console);
-  validateVerb('dialogflow', {...v, credentials: {vendor: 'google', label: null}}, console);
-  validateVerb('dialogflow', {...v, credentials: {vendor: 'google'}}, console);
+  validateVerb('dialogflow', {...v, credentials: {vendor: 'dialogflow_ces', label: 'my-ces'}}, console);
+  validateVerb('dialogflow', {...v, credentials: {vendor: 'dialogflow_ces', label: null}}, console);
+  validateVerb('dialogflow', {...v, credentials: {vendor: 'dialogflow_ces'}}, console);
+});
+
+/* ---- llm: credential by label ---- */
+console.log('\nllm — credential by label');
+
+test('accepts an llm verb with no auth and a label', () => {
+  validateVerb('llm', {vendor: 'openai', model: 'gpt-realtime', label: 'rt',
+    llmOptions: {session_update: {}, response_create: {}}}, console);
 });
 
 /* ---- summary ---- */

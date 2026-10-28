@@ -24,7 +24,7 @@
           "type": "string"
         }
       ],
-      "description": "Google service account credentials as a JSON object or stringified JSON. Alternatively a reference to a Google speech credential on the account, so no key is carried in the verb: {\"vendor\": \"google\", \"label\": \"my-ces\"} (label optional; omit it or use null for the unlabelled Google credential). An object with only `vendor` (\"google\") and optionally `label` is treated as a reference; feature-server looks the credential up by vendor and label, account first then service provider, and uses its service key. If none is found the verb ends at once and its actionHook reports dialogflowResult 'error' with error.code 'credential_not_found'."
+      "description": "Google service account credentials as a JSON object or stringified JSON. Alternatively a reference to a Dialogflow CES credential on the account (LLM Services, Hosted agents), so no key is carried in the verb: {\"vendor\": \"dialogflow_ces\", \"label\": \"my-ces\"} (label optional; omit it or use null for the unlabelled one). A Google speech credential is never used. An object with only `vendor` (\"dialogflow_ces\") and optionally `label` is treated as a reference; feature-server looks the credential up by vendor and label, account first then service provider, and uses its service key. If none is found the verb ends at once and its actionHook reports dialogflowResult 'error' with error.code 'credential_not_found'."
     },
     "project": {
       "type": "string",
