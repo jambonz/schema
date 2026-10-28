@@ -903,6 +903,35 @@ test('accepts baseten vendor id', () => {
   }, console);
 });
 
+test('accepts an llm.fallback chain and fallbackTimeoutMs', () => {
+  validateVerb('agent', {
+    llm: {
+      vendor: 'openai', model: 'gpt-4o',
+      fallback: [
+        {vendor: 'anthropic', model: 'claude-sonnet-4-5', label: 'backup'},
+        {vendor: 'google', model: 'gemini-2.5-flash', auth: {apiKey: 'k'},
+          connectOptions: {timeout: 10000}, llmOptions: {vendorParams: {thinkingConfig: {thinkingBudget: 0}}}},
+      ],
+      fallbackTimeoutMs: 3000,
+    },
+  }, console);
+});
+
+test('rejects a fallback entry without a vendor, or more than three', () => {
+  assertThrows(() => validateVerb('agent', {
+    llm: {vendor: 'openai', fallback: [{model: 'gpt-4o'}]},
+  }, console), /vendor|required/i);
+  assertThrows(() => validateVerb('agent', {
+    llm: {vendor: 'openai', fallback: [{vendor: 'a'}, {vendor: 'b'}, {vendor: 'c'}, {vendor: 'd'}]},
+  }, console), /fallback|maxItems|3/i);
+});
+
+test('rejects main-llm-only options on a fallback entry', () => {
+  assertThrows(() => validateVerb('agent', {
+    llm: {vendor: 'openai', fallback: [{vendor: 'anthropic', llmOptions: {systemPrompt: 'x'}}]},
+  }, console), /systemPrompt|additional/i);
+});
+
 test('accepts moonshot vendor id', () => {
   // Moonshot (Kimi) is OpenAI-compatible; reached via a baseURL override.
   validateVerb('agent', {

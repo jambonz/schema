@@ -211,6 +211,66 @@
             }
           },
           "additionalProperties": false
+        },
+        "fallback": {
+          "type": "array",
+          "maxItems": 3,
+          "description": "LLMs to switch to, in order, when the current one fails (bad or expired key, no credit, rate limit, vendor error, no response within fallbackTimeoutMs) before it has said anything. The switch is silent to the caller: the conversation, including tool calls, carries over to the new vendor and stays there for the rest of the call. An entry that cannot be used at all (no credentials, unknown vendor) is skipped at start. The system prompt, tools, maxTokens and temperature come from the main llm; vendorParams do not. Each switch raises an alert and is reported in the actionHook as llm_fallback.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "vendor": {
+                "type": "string",
+                "description": "LLM vendor id. Must match a `@jambonz/llm` registered adapter."
+              },
+              "model": {
+                "type": "string",
+                "description": "Vendor-specific model id."
+              },
+              "label": {
+                "type": "string",
+                "description": "Optional label to disambiguate when the account has multiple credentials for the same vendor."
+              },
+              "auth": {
+                "type": "object",
+                "description": "Optional inline credentials. When omitted, feature-server looks up credentials by (vendor, label) from the database.",
+                "properties": {
+                  "apiKey": { "type": "string" }
+                },
+                "additionalProperties": true
+              },
+              "connectOptions": {
+                "type": "object",
+                "description": "SDK-level client options.",
+                "properties": {
+                  "timeout": { "type": "number", "minimum": 0 },
+                  "maxRetries": { "type": "integer", "minimum": 0 },
+                  "endpoint": { "type": "string" },
+                  "baseURL": { "type": "string" }
+                },
+                "additionalProperties": false
+              },
+              "llmOptions": {
+                "type": "object",
+                "properties": {
+                  "vendorParams": {
+                    "type": "object",
+                    "description": "Vendor-specific request parameters for this vendor, as in llm.llmOptions.vendorParams.",
+                    "additionalProperties": true
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "required": ["vendor"],
+            "additionalProperties": false
+          }
+        },
+        "fallbackTimeoutMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "With llm.fallback set: switch to the next LLM when the current one has produced nothing this long after a request. 0 disables the timeout (errors still fall back). SDK retries are also turned off while a fallback remains, so a failing vendor is left at once instead of after its backoff. Default: 5000.",
+          "default": 5000
         }
       },
       "additionalProperties": false

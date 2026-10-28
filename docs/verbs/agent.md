@@ -351,6 +351,42 @@ For Anthropic models, use `"vendor": "anthropic"` and structure messages accordi
 - Add-only: a field jambonz already sets (`model`, `messages`, `tools`, max tokens, `temperature`, ...) is never overridden, so use the first-class option for those.
 - Not validated by jambonz. A misspelled field, or one the vendor rejects, surfaces as a vendor error on the first turn.
 
+### Fallback LLMs (`fallback`)
+
+`llm.fallback` lists up to three LLMs to switch to, in order, when the current one fails. The caller does not notice the switch:
+
+```json
+{
+  "llm": {
+    "vendor": "openai",
+    "model": "gpt-4o",
+    "llmOptions": { "systemPrompt": "You are a helpful voice assistant." },
+    "fallback": [
+      { "vendor": "anthropic", "model": "claude-sonnet-4-5" },
+      { "vendor": "google", "model": "gemini-2.5-flash", "label": "backup" }
+    ],
+    "fallbackTimeoutMs": 5000
+  }
+}
+```
+
+- **Any failure falls back**: an invalid or expired key, no credit, a rate limit, a vendor error, or no response within `fallbackTimeoutMs` (default 5000, 0 disables the timeout). SDK retries are turned off while a fallback remains, so a failing vendor is left at once.
+- **Only before speaking.** The switch happens while the reply has produced no text yet. If a vendor fails partway through a reply, that reply is not retried, since the caller would hear it twice.
+- **The conversation carries over**, tool calls and results included, re-encoded for the new vendor. The agent stays on the new vendor for the rest of the call.
+- **Entries that cannot be used at all are skipped at start**: unknown vendor, no stored credentials, or a jambonz-hosted LLM whose wallet is depleted. When the main LLM is one of these, the agent starts on the first usable fallback.
+- Each entry takes `vendor`, `model`, `label`, `auth`, `connectOptions` and `llmOptions.vendorParams`. The system prompt, tools, `maxTokens` and `temperature` come from the main `llm`.
+- Every switch raises an LLM failure alert naming both vendors and is listed in the actionHook payload:
+
+```json
+"llm_fallback": [
+  {
+    "from": { "vendor": "openai", "model": "gpt-4o" },
+    "to": { "vendor": "anthropic", "model": "claude-sonnet-4-5" },
+    "reason": "401 Incorrect API key provided"
+  }
+]
+```
+
 ## Greeting
 
 By default (`greeting: true`), the agent prompts the LLM to generate an initial greeting before the user speaks. Set `greeting: false` if you want the agent to wait silently for the user to speak first.
