@@ -235,8 +235,7 @@
         "fallbackTimeoutMs": {
           "type": "integer",
           "minimum": 0,
-          "description": "Switch to the next fallback LLM when the current one has produced nothing this long after a request. 0 disables the timeout (errors still fall back). Reasoning models that think before their first token may need a higher value or 0. Default: 5000, or 0 when the only fallback is the application's. Ignored when there is no fallback.",
-          "default": 5000
+          "description": "Switch to the next fallback LLM when the current one has produced nothing this long after a request. 0 disables the timeout: errors still fall back, but an LLM that hangs is waited on until the SDK's own timeout. Reasoning models that think before their first token may need a higher value or 0. Default: 5000, or 0 when every fallback left at call start is the application's. Ignored when there is no fallback."
         }
       },
       "additionalProperties": false
