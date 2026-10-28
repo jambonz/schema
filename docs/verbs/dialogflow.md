@@ -2,6 +2,17 @@
 
 The dialogflow verb connects the caller to a Google Dialogflow agent (ES, CX, or CES). See the verb schema for all properties.
 
+## Credentials without a key in the verb
+
+`credentials` may name a Google speech credential on the account instead of carrying a service account key:
+
+```json
+{"verb": "dialogflow", "model": "ces", "project": "my-project", "region": "us", "agent": "<CES app id>",
+ "lang": "en-US", "credentials": {"vendor": "google", "label": "my-ces"}}
+```
+
+An object with only `vendor: "google"` and optionally `label` is a reference. feature-server looks up the Google speech credential with that label (no label, or null, means the unlabelled one), account first and then service provider, and uses its service key. The credential does not have to be enabled or tested for STT or TTS. If none is found the verb ends at once: the actionHook gets `dialogflowResult: "error"` with `error.code: "credential_not_found"`, and feature-server logs the account sid, vendor and label. An inline service account works as before.
+
 ## Sending input into a CES conversation mid-call
 
 With `model: "ces"`, an application can send input into the running conversation without restarting the verb. Updates can be sent via:

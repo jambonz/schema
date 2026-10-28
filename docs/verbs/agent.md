@@ -291,6 +291,44 @@ session.updateAgent({
 });
 ```
 
+## Your own harness (`llm.vendor: "harness"`)
+
+With `vendor: "harness"` the customer's own code decides what the agent says, while jambonz keeps STT, turn-taking, barge-in, TTS and the turn record. feature-server opens one WebSocket per call to the URL in the account's **Harness** LLM credential (fields `url` and `api_key`, looked up by vendor and `label` like any LLM credential), with subprotocol `harness.jambonz.org` and `Authorization: Bearer <api_key>`.
+
+```json
+{
+  "verb": "agent",
+  "stt": {"vendor": "deepgramflux", "language": "en-US"},
+  "tts": {"vendor": "cartesia", "voice": "..."},
+  "llm": {
+    "vendor": "harness",
+    "label": "my-harness",
+    "llmOptions": {"tools": [{"name": "lookup_account", "description": "...", "parameters": {"type": "object"}}]},
+    "harness": {
+      "metadata": {"agent": "outage-line"},
+      "firstChunkTimeoutMs": 4000,
+      "holdingPhrase": "One moment.",
+      "onHarnessFailure": {"say": "Sorry, I'm having trouble. Transferring you now.", "transfer": "+15085550100"}
+    }
+  },
+  "toolHook": "/tool",
+  "eventHook": "/event",
+  "actionHook": "/done"
+}
+```
+
+The harness owns prompts, context, fillers and reprompts, so with it `llmOptions` may carry only `tools`, and `model`, `auth`, `connectOptions`, `mcpServers`, `toolFiller`, `earlyGeneration: true`, `speechCleanup: true` and `noResponseMaxPrompts` are rejected by the schema. The tools are sent to the harness in `session:start` as OpenAI function definitions; when the harness sends `tool:call`, jambonz runs it through the `toolHook` exactly as for a model (`agent:tool-call`, answered with `llm:tool-output`) and returns `tool:result`. `handoff`, when present, gives the defaults for transfers the harness asks for.
+
+What jambonz sends: `session:start`, `speech:start`, `transcript`, `turn:start` (`input` is `speech`, `greeting` or `no_input`), `turn:cancel`, `event` (`user_interruption`, `reply_spoken`, `reply_dropped`, `silence`, `transfer`, `recording`, `application_update`, `error`), `command:result`, `tool:result`, `session:end`. What the harness sends: `reply:chunk` / `reply:done` (OpenAI `ChatCompletionChunk`s; `choices[0].delta.content` is spoken), `tool:call`, and `command` (`hangup`, `transfer`, `record`, `barge_in`, `listen`). The full protocol is the harness protocol reference.
+
+Notes on this implementation:
+- `application_update` carries the application's `agent:update` type as `update_type` (the message's own `type` is `event`), with the rest of the update in `data`.
+- `user_interruption.spoken` is exact with TTS vendors that report alignment, and estimated from playout time otherwise.
+- `noResponseTimeout` sends a `silence` event (`seconds`, `streak`) each time it elapses; jambonz does not reprompt.
+- `play` and `listen` with `hints` are not supported yet and are refused in `command:result`; `listen` with `language` works where the STT vendor can change language mid-call (Deepgram Flux).
+- Failures (socket cannot open, no reply twice in `firstChunkTimeoutMs`, a dropped socket that cannot be reopened within 2 s) run `onHarnessFailure`; the actionHook reports `completionReason: "harness_failure"` with `harness_error: {reason, message}` and the eventHook gets `harness_failure`.
+- Each `turn_end` carries `engine: "harness"`, `harness.turn_record` (the harness's `reply:done.turn_record`, up to 16 KB) and `latency.harness_first_chunk_ms` in place of `llm_ms`.
+
 ## LLM configuration
 
 The `llm` property is the only required field. It configures the text-to-text LLM:
