@@ -710,6 +710,36 @@ for (const [name, opts] of [
   });
 }
 
+/* ---- recognizer paxaOptions ---- */
+console.log('\nrecognizer paxaOptions');
+
+test('accepts paxaOptions with valid fields', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'paxa',
+      language: 'th-TH',
+      paxaOptions: {style: 'clean', convention: 'written', timestamps: true}
+    }
+  }, console);
+});
+
+for (const [name, opts] of [
+  ['bad style', {style: 'tidy'}],
+  ['bad convention', {convention: 'formal'}],
+  ['non-boolean timestamps', {timestamps: 'word'}],
+  ['unknown property', {apiKey: 'k'}],
+]) {
+  test(`rejects paxaOptions ${name}`, () => {
+    assertThrows(() => validateVerb('gather', {
+      input: ['speech'],
+      actionHook: '/test',
+      recognizer: {vendor: 'paxa', paxaOptions: opts}
+    }, console));
+  });
+}
+
 /* ---- error messages ---- */
 console.log('\nerror messages');
 
