@@ -20,7 +20,7 @@
     },
     "auth": {
       "type": "object",
-      "description": "Authentication credentials for the LLM vendor API. When omitted with vendor openai, jambonz uses the account's OpenAI Realtime (openai_s2s) credential chosen by `label` (LLM Services, Speech-to-speech), never the openai language-model credential. If there is none the verb ends at once: the actionHook gets completion_reason 'credential not found' with error.code 'credential_not_found'.",
+      "description": "Authentication credentials for the LLM vendor API. When omitted with vendor openai or rime, jambonz uses the account's speech-to-speech credential for that vendor (openai_s2s for OpenAI Realtime, rime_s2s for Rime Prism) chosen by `label` (LLM Services, Speech-to-speech), never a language-model credential. If there is none the verb ends at once: the actionHook gets completion_reason 'credential not found' with error.code 'credential_not_found'.",
       "properties": {
         "apiKey": {
           "type": "string",

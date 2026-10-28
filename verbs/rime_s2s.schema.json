@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/verbs/rime_s2s",
+  "minVersion": "11.1.11",
+  "title": "Rime Prism S2S",
+  "description": "Shortcut for 'llm' with vendor automatically set to 'rime'. Connects the caller to Rime Prism, a speech-to-speech model (English only), for real-time voice conversation. Prism finds the end of each turn itself and has no model choice, so 'model' is ignored. With no 'auth', jambonz uses the account's Rime Prism (rime_s2s) speech-to-speech credential chosen by 'label'. llmOptions.session_update is sent in Prism's flat session shape; Prism refuses a whole update that has an unknown field, so only Prism's own fields are allowed. Prism speaks first only when llmOptions.response_create is given; without it, Prism waits for the caller.",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "../components/llm-base"
+    }
+  ],
+  "properties": {
+    "verb": {
+      "const": "rime_s2s",
+      "description": "The verb name."
+    },
+    "vendor": {
+      "type": "string",
+      "const": "rime",
+      "description": "The LLM vendor (always 'rime' for this shortcut)."
+    },
+    "auth": {
+      "type": "object",
+      "description": "Optional. A Rime API key. When omitted, jambonz uses the account's rime_s2s credential chosen by 'label'.",
+      "properties": {
+        "apiKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Rime API key, sent as a Bearer header."
+        }
+      },
+      "additionalProperties": true
+    },
+    "connectOptions": {
+      "type": "object",
+      "description": "Connection options, for a Prism deployment other than Rime's cloud.",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "The Prism host. Defaults to prism.api.rime.ai."
+        },
+        "path": {
+          "type": "string",
+          "description": "The websocket path. Defaults to v1/realtime."
+        }
+      },
+      "additionalProperties": false
+    },
+    "llmOptions": {
+      "type": "object",
+      "description": "session_update configures the Prism session; response_create, when present, makes Prism speak first.",
+      "properties": {
+        "session_update": {
+          "type": "object",
+          "description": "Prism session settings, sent as the first session.update. jambonz adds the handoff and hangup tools when they are configured, and labels every reply with the call sid.",
+          "properties": {
+            "voice": {
+              "type": "string",
+              "enum": ["astra", "aurora", "brando", "wawona"],
+              "description": "The Prism voice. Defaults to astra. Rime's text-to-speech voices do not work with Prism."
+            },
+            "instructions": {
+              "type": "string",
+              "description": "The system prompt. Write it in plain spoken sentences, and give each tool a rule for when to call it."
+            },
+            "tools": {
+              "type": "array",
+              "description": "Functions Prism can ask the application to run, in either OpenAI shape (flat, or nested under 'function'). Results come back through the toolHook.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": { "const": "function" },
+                  "name": { "type": "string" },
+                  "description": { "type": "string" },
+                  "parameters": { "type": "object" },
+                  "function": { "type": "object" },
+                  "prism_filler": {
+                    "type": "object",
+                    "description": "What Prism says while this tool runs: auto (a short line from the tool's description), text (your line) or none.",
+                    "properties": {
+                      "type": { "type": "string", "enum": ["auto", "text", "none"] },
+                      "text": { "type": "string", "minLength": 1, "maxLength": 500 },
+                      "instructions": { "type": "string" }
+                    },
+                    "required": ["type"],
+                    "additionalProperties": false
+                  }
+                },
+                "required": ["type"]
+              }
+            },
+            "turn_detection": {
+              "type": "object",
+              "description": "Prism detects turns itself; these settings tune it. eagerness and prism_end_of_turn_timeout_ms cannot change after the session starts.",
+              "properties": {
+                "interrupt_response": {
+                  "type": "boolean",
+                  "description": "Whether the caller's speech interrupts a reply. Defaults to true."
+                },
+                "eagerness": {
+                  "type": "string",
+                  "enum": ["low", "medium", "high", "auto"],
+                  "description": "How readily Prism decides the caller has finished. low waits longer; high replies sooner."
+                },
+                "prism_end_of_turn_timeout_ms": {
+                  "type": "integer",
+                  "minimum": 1000,
+                  "maximum": 10000,
+                  "description": "Silence that ends the caller's turn even when Prism is unsure. Defaults to 5000."
+                }
+              },
+              "additionalProperties": false
+            },
+            "truncation": {
+              "description": "What Prism does when the conversation outgrows its context: auto (leave out the oldest turns), disabled, or a retention ratio.",
+              "oneOf": [
+                { "type": "string", "enum": ["auto", "disabled"] },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": { "const": "retention_ratio" },
+                    "retention_ratio": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 }
+                  },
+                  "required": ["type", "retention_ratio"],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "prism_response_metadata": {
+              "type": "object",
+              "description": "Labels copied onto every reply. Up to 16; keys up to 64 characters not starting with prism_, string values up to 512 characters. jambonz adds call_sid.",
+              "maxProperties": 15,
+              "propertyNames": { "maxLength": 64, "not": { "pattern": "^prism_" } },
+              "additionalProperties": { "type": "string", "maxLength": 512 }
+            }
+          },
+          "additionalProperties": false
+        },
+        "response_create": {
+          "type": "object",
+          "description": "When present, Prism speaks first: jambonz sends a nudge with these instructions as soon as the session is ready. Omit it to wait for the caller.",
+          "properties": {
+            "instructions": {
+              "type": "string",
+              "maxLength": 4000,
+              "description": "What the opening reply should do, e.g. 'Greet the caller and ask how you can help.'"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "examples": [
+    {
+      "verb": "rime_s2s",
+      "label": "prism",
+      "llmOptions": {
+        "session_update": {
+          "voice": "aurora",
+          "instructions": "You answer the phone for Juniper Cafe. Answer in one short sentence. Call get_opening_hours before you answer a question about opening hours.",
+          "tools": [
+            {
+              "type": "function",
+              "name": "get_opening_hours",
+              "description": "Today's opening hours for Juniper Cafe.",
+              "parameters": { "type": "object", "properties": {} }
+            }
+          ],
+          "turn_detection": { "eagerness": "auto" }
+        },
+        "response_create": {
+          "instructions": "Greet the caller and ask how you can help."
+        }
+      },
+      "toolHook": "/tool",
+      "actionHook": "/s2s-complete"
+    }
+  ]
+}
