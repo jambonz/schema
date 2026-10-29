@@ -2695,6 +2695,14 @@ test('accepts a null label for other vendors too', () => {
   validateVerb('agent', {llm: {vendor: 'openai', model: 'gpt-4o', label: null}}, console);
 });
 
+test('accepts a harness url on the verb', () => {
+  validateVerb('agent', harnessVerb({harness: {url: 'wss://harness.example.com/agent'}}), console);
+});
+
+test('rejects a harness url that is not a WebSocket url', () => {
+  assertThrows(() => validateVerb('agent', harnessVerb({harness: {url: 'https://harness.example.com'}}), console));
+});
+
 test('rejects a harness block on a non-harness vendor', () => {
   assertThrows(() => validateVerb('agent', {llm: {vendor: 'openai', model: 'gpt-4o', harness: {}}}, console));
 });
