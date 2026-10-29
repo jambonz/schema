@@ -293,7 +293,7 @@ session.updateAgent({
 
 ## Your own harness (`llm.vendor: "harness"`)
 
-With `vendor: "harness"` the customer's own code decides what the agent says, while jambonz keeps STT, turn-taking, barge-in, TTS and the turn record. feature-server opens one WebSocket per call to the URL in the account's **Harness** LLM credential (fields `url` and `api_key`, looked up by vendor and `label` like any LLM credential), with subprotocol `harness.jambonz.org` and `Authorization: Bearer <api_key>`.
+With `vendor: "harness"` the customer's own code decides what the agent says, while jambonz keeps STT, turn-taking, barge-in, TTS and the turn record. feature-server opens one WebSocket per call, with subprotocol `harness.jambonz.org`, to `harness.url` when the verb gives one, otherwise to the URL in the account's **Harness** LLM credential (fields `url` and `api_key`, looked up by vendor and `label` like any LLM credential). The key comes from that credential and is sent as `Authorization: Bearer <api_key>`. With `harness.url`, a key is sent only from the credential named by `label`; with no `label` the socket opens without one.
 
 ```json
 {
@@ -305,6 +305,7 @@ With `vendor: "harness"` the customer's own code decides what the agent says, wh
     "label": "my-harness",
     "llmOptions": {"tools": [{"name": "lookup_account", "description": "...", "parameters": {"type": "object"}}]},
     "harness": {
+      "url": "wss://harness.example.com/agent",
       "metadata": {"agent": "outage-line"},
       "firstChunkTimeoutMs": 4000,
       "holdingPhrase": "One moment.",

@@ -216,6 +216,11 @@
           "type": "object",
           "description": "Harness settings, only with vendor \"harness\". The harness owns prompts, context, fillers and reprompts, so with it `llmOptions` may carry only `tools`, `model`/`auth`/`connectOptions` are not allowed, and `mcpServers`, `toolFiller`, `earlyGeneration`, `speechCleanup: true` and `noResponseMaxPrompts` are rejected. `noResponseTimeout` still sets when the harness is sent a `silence` event; jambonz does not reprompt on its own. `handoff`, when present, supplies the defaults (mode, disposition, timeout, callerId) for transfers the harness asks for.",
           "properties": {
+            "url": {
+              "type": "string",
+              "pattern": "^wss?://",
+              "description": "The harness's WebSocket URL (wss://, or ws:// for a private address). When given it is used instead of the url in the Harness credential, and a key is sent only from the Harness credential named by `label`; with no `label` the socket opens without an Authorization header."
+            },
             "metadata": {
               "type": "object",
               "additionalProperties": true,
