@@ -795,6 +795,15 @@ test('accepts a well-formed agent llm block', () => {
   }, console);
 });
 
+test('greeting is true, false, or the exact words to open with', () => {
+  const llm = {vendor: 'openai', model: 'gpt-4o', llmOptions: {systemPrompt: 'You are helpful.'}};
+  for (const greeting of [true, false, 'Thanks for calling Acme. How can I help?']) {
+    validateVerb('agent', {llm, greeting}, console);
+  }
+  assertThrows(() => validateVerb('agent', {llm, greeting: 1}, console));
+  assertThrows(() => validateVerb('agent', {llm, greeting: {text: 'hi'}}, console));
+});
+
 test('accepts each valid reasoningEffort value (deprecated, still accepted)', () => {
   for (const reasoningEffort of ['minimal', 'low', 'medium', 'high']) {
     validateVerb('agent', {
