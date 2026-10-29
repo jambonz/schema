@@ -219,7 +219,7 @@
             "url": {
               "type": "string",
               "pattern": "^wss?://",
-              "description": "The harness's WebSocket URL (wss://, or ws:// for a private address). When given it is used instead of the url in the Harness credential, and the credential, chosen by `label`, is needed only for its key: with no `label` and no unlabelled Harness credential the socket opens without an Authorization header."
+              "description": "The harness's WebSocket URL (wss://, or ws:// for a private address). When given it is used instead of the url in the Harness credential, and a key is sent only from the Harness credential named by `label`; with no `label` the socket opens without an Authorization header."
             },
             "metadata": {
               "type": "object",
