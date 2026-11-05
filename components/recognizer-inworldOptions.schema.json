@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/components/recognizer-inworldOptions",
+  "title": "Inworld Recognizer Options",
+  "description": "Inworld realtime STT options. Only applies when recognizer vendor is 'inworld'. Inworld detects the end of each turn and produces one final transcript per turn. The recognizer language is reduced to its primary subtag (en-US -> en); an unsupported language or 'any' turns on automatic detection.",
+  "type": "object",
+  "properties": {
+    "prompts": {
+      "type": "array",
+      "items": { "type": "string" },
+      "maxItems": 100,
+      "description": "Terms to bias recognition toward, merged with recognizer hints. Terms with characters other than letters, digits, spaces and .,'():!?;- are dropped."
+    },
+    "includeWordTimestamps": {
+      "type": "boolean",
+      "description": "Request word-level timestamps."
+    },
+    "enableSpeakerDiarization": {
+      "type": "boolean",
+      "description": "Label words by speaker. Implies word timestamps."
+    },
+    "endOfTurnConfidenceThreshold": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Confidence needed to declare the end of a turn."
+    },
+    "minEndOfTurnSilenceWhenConfident": {
+      "type": "integer",
+      "minimum": 20,
+      "maximum": 5000,
+      "description": "Silence (ms) needed to end a turn when the model is confident."
+    },
+    "maxTurnSilence": {
+      "type": "integer",
+      "minimum": 20,
+      "maximum": 5000,
+      "description": "Silence (ms) after which a turn always ends."
+    },
+    "vadThreshold": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 1,
+      "description": "Voice activity detection threshold. 0 (manual turn mode) is not supported."
+    },
+    "inactivityTimeoutSeconds": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Provider-specific inactivity setting. Inworld documents that inworld/inworld-stt-1 does not apply it."
+    },
+    "enableVoiceProfile": {
+      "type": "boolean",
+      "description": "Return voice profile attributes for the speaker."
+    },
+    "voiceProfileTopN": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of top labels from each voice profile class to return (vendor default 10)."
+    }
+  },
+  "additionalProperties": false
+}

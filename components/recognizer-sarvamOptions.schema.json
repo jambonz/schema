@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/components/recognizer-sarvamOptions",
+  "title": "Sarvam Recognizer Options",
+  "description": "Sarvam AI realtime STT options. Only applies when recognizer vendor is 'sarvam'. The recognizer language is mapped to a Sarvam Indian language code (e.g. en-US becomes en-IN); unsupported languages fall back to 'auto' detection. Every option is sent only when set.",
+  "type": "object",
+  "properties": {
+    "model": {
+      "type": "string",
+      "description": "STT model. Defaults to saaras:v3-realtime.",
+      "examples": ["saaras:v3-realtime", "saaras:v4"]
+    },
+    "language": {
+      "type": "string",
+      "description": "Sarvam language code (e.g. hi-IN) or 'auto'. Overrides the recognizer language.",
+      "examples": ["hi-IN", "en-IN", "auto"]
+    },
+    "streamType": {
+      "type": "string",
+      "enum": ["fast", "balanced", "simulated"],
+      "description": "Latency/accuracy trade-off. Server default is balanced."
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["transcribe", "translate", "verbatim", "translit", "codemix"],
+      "description": "Output mode. Server default is transcribe."
+    },
+    "endpointing": {
+      "type": "string",
+      "enum": ["vad", "manual"],
+      "description": "vad (default) cuts finals on silence. With manual, jambonz sends no speech signals, so finals arrive only at session end."
+    },
+    "threshold": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "VAD speech threshold (server default 0.3)."
+    },
+    "prefixPaddingMs": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Audio kept before detected speech, in ms (server default 300)."
+    },
+    "silenceDurationMs": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Silence that ends an utterance, in ms (server default 500)."
+    },
+    "minSpeechDurationMs": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Shortest speech treated as an utterance, in ms (server default 250)."
+    },
+    "returnTimestamps": {
+      "type": "boolean",
+      "description": "Request timestamps in transcripts."
+    },
+    "prompt": {
+      "type": "string",
+      "description": "Context prompt for the model."
+    },
+    "keyterms": {
+      "type": "array",
+      "items": { "type": "string", "maxLength": 64 },
+      "maxItems": 50,
+      "description": "Terms to boost. Overrides recognizer hints. Sent only with saaras:v4."
+    }
+  },
+  "additionalProperties": false
+}

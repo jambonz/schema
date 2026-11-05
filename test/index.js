@@ -740,6 +740,708 @@ for (const [name, opts] of [
   });
 }
 
+/* ---- recognizer inworldOptions ---- */
+console.log('\nrecognizer inworldOptions');
+
+test('accepts inworldOptions with valid fields', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'inworld',
+      language: 'en-US',
+      hints: ['jambonz'],
+      inworldOptions: {
+        prompts: ['Inworld', 'jambonz'],
+        includeWordTimestamps: true,
+        enableSpeakerDiarization: true,
+        endOfTurnConfidenceThreshold: 0.5,
+        minEndOfTurnSilenceWhenConfident: 200,
+        maxTurnSilence: 1500,
+        vadThreshold: 0.3,
+        inactivityTimeoutSeconds: 30,
+        enableVoiceProfile: true,
+        voiceProfileTopN: 3
+      }
+    }
+  }, console);
+});
+
+for (const [name, opts] of [
+  ['non-array prompts', {prompts: 'jambonz'}],
+  ['too many prompts', {prompts: Array.from({length: 101}, (_, i) => `term${i}`)}],
+  ['threshold above 1', {endOfTurnConfidenceThreshold: 1.5}],
+  ['silence below 20', {minEndOfTurnSilenceWhenConfident: 10}],
+  ['max silence above 5000', {maxTurnSilence: 6000}],
+  ['vadThreshold 0', {vadThreshold: 0}],
+  ['inactivity timeout 0', {inactivityTimeoutSeconds: 0}],
+  ['voiceProfileTopN 0', {voiceProfileTopN: 0}],
+  ['non-boolean diarization', {enableSpeakerDiarization: 'yes'}],
+  ['unknown property', {apiKey: 'k'}],
+]) {
+  test(`rejects inworldOptions ${name}`, () => {
+    assertThrows(() => validateVerb('gather', {
+      input: ['speech'],
+      actionHook: '/test',
+      recognizer: {vendor: 'inworld', inworldOptions: opts}
+    }, console));
+  });
+}
+
+/* ---- recognizer sarvamOptions ---- */
+console.log('\nrecognizer sarvamOptions');
+
+test('accepts sarvamOptions with valid fields', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'sarvam',
+      language: 'hi-IN',
+      sarvamOptions: {
+        model: 'saaras:v4',
+        language: 'auto',
+        streamType: 'fast',
+        mode: 'codemix',
+        endpointing: 'vad',
+        threshold: 0.5,
+        prefixPaddingMs: 200,
+        silenceDurationMs: 400,
+        minSpeechDurationMs: 100,
+        returnTimestamps: true,
+        prompt: 'banking support call',
+        keyterms: ['UPI', 'NEFT']
+      }
+    }
+  }, console);
+});
+
+for (const [name, opts] of [
+  ['bad streamType', {streamType: 'slow'}],
+  ['bad mode', {mode: 'summarize'}],
+  ['bad endpointing', {endpointing: 'auto'}],
+  ['threshold above 1', {threshold: 1.5}],
+  ['negative silenceDurationMs', {silenceDurationMs: -1}],
+  ['non-integer prefixPaddingMs', {prefixPaddingMs: 1.5}],
+  ['too many keyterms', {keyterms: Array.from({length: 51}, (_, i) => `t${i}`)}],
+  ['keyterm too long', {keyterms: ['x'.repeat(65)]}],
+  ['unknown property', {apiKey: 'k'}],
+]) {
+  test(`rejects sarvamOptions ${name}`, () => {
+    assertThrows(() => validateVerb('gather', {
+      input: ['speech'],
+      actionHook: '/test',
+      recognizer: {vendor: 'sarvam', sarvamOptions: opts}
+    }, console));
+  });
+}
+
+/* ---- recognizer smallestaiOptions ---- */
+console.log('\nrecognizer smallestaiOptions');
+
+test('accepts smallestaiOptions with valid fields', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'smallestai',
+      language: 'en-US',
+      model: 'pulse',
+      smallestaiOptions: {
+        language: 'north_indic',
+        wordTimestamps: true,
+        diarize: false,
+        vadEvents: true,
+        endpointing: true,
+        eouTimeoutMs: 800,
+        format: true,
+        punctuate: true,
+        capitalize: true,
+        itnNormalize: false,
+        noFormatDelay: true,
+        finalizeOnWords: true,
+        maxWords: 50,
+        redactPii: true,
+        redactPci: true,
+        sentenceTimestamps: false,
+        emotionDetection: true,
+        genderDetection: false,
+        keywords: ['jambonz', 'drachtio:5'],
+        timeout: 3600,
+        expireContent: '7d',
+        externalSessionId: 'call-123'
+      }
+    }
+  }, console);
+});
+
+test('accepts smallestai synthesizer', () => {
+  validateVerb('say', {
+    text: 'hello',
+    synthesizer: {vendor: 'smallestai', language: 'en-US', voice: 'kaitlyn'}
+  }, console);
+});
+
+for (const [name, opts] of [
+  ['eouTimeoutMs below range', {eouTimeoutMs: 50}],
+  ['eouTimeoutMs above range', {eouTimeoutMs: 20000}],
+  ['maxWords zero', {maxWords: 0}],
+  ['timeout above range', {timeout: 10801}],
+  ['non-boolean diarize', {diarize: 'yes'}],
+  ['keywords not an array', {keywords: 'jambonz'}],
+  ['too many keywords', {keywords: Array.from({length: 101}, (_, i) => `k${i}`)}],
+  ['non-string externalSessionId', {externalSessionId: 123}],
+  ['unknown property', {apiKey: 'k'}],
+]) {
+  test(`rejects smallestaiOptions ${name}`, () => {
+    assertThrows(() => validateVerb('gather', {
+      input: ['speech'],
+      actionHook: '/test',
+      recognizer: {vendor: 'smallestai', smallestaiOptions: opts}
+    }, console));
+  });
+}
+
+/* ---- recognizer azureopenaiOptions ---- */
+console.log('\nrecognizer azureopenaiOptions');
+
+test('accepts azureopenaiOptions with valid fields', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'azureopenai',
+      language: 'en-US',
+      azureopenaiOptions: {
+        apiKey: 'k',
+        deployment: 'my-live-transcribe',
+        model: 'gpt-live-transcribe',
+        prompt: 'telephony',
+        languages: ['en', 'fr'],
+        keywords: ['jambonz', 'drachtio'],
+        delay: 'low',
+        input_audio_noise_reduction: 'near_field',
+        vadMode: 2,
+        vadSilenceMs: 500,
+        vadVoiceMs: 250
+      }
+    }
+  }, console);
+});
+
+test('accepts azureopenaiOptions server turn detection', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'azureopenai',
+      azureopenaiOptions: {
+        model: 'gpt-4o-transcribe',
+        turn_detection: {type: 'semantic_vad', eagerness: 'high', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500}
+      }
+    }
+  }, console);
+});
+
+test('accepts azureopenaiOptions server_vad idle_timeout_ms', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'azureopenai',
+      azureopenaiOptions: {
+        model: 'gpt-4o-transcribe',
+        turn_detection: {type: 'server_vad', silence_duration_ms: 500, idle_timeout_ms: 5000}
+      }
+    }
+  }, console);
+});
+
+test('accepts azureopenai synthesizer', () => {
+  validateVerb('say', {
+    text: 'hello',
+    synthesizer: {vendor: 'azureopenai', language: 'en-US', voice: 'alloy', options: {model_id: 'gpt-4o-mini-tts', speed: 1.2}}
+  }, console);
+});
+
+for (const [name, opts] of [
+  ['unknown model family', {model: 'gpt-4o'}],
+  ['unsupported delay', {delay: 'ultra'}],
+  ['keywords not an array', {keywords: 'jambonz'}],
+  ['empty languages', {languages: []}],
+  ['bad noise reduction', {input_audio_noise_reduction: 'mid_field'}],
+  ['turn_detection without type', {turn_detection: {threshold: 0.5}}],
+  ['vadMode out of range', {vadMode: 4}],
+  ['vadSilenceMs zero', {vadSilenceMs: 0}],
+  ['unknown property', {promptTemplates: {}}],
+]) {
+  test(`rejects azureopenaiOptions ${name}`, () => {
+    assertThrows(() => validateVerb('gather', {
+      input: ['speech'],
+      actionHook: '/test',
+      recognizer: {vendor: 'azureopenai', azureopenaiOptions: opts}
+    }, console));
+  });
+}
+
+/* ---- recognizer gnaniOptions ---- */
+console.log('\nrecognizer gnaniOptions');
+
+test('accepts gnaniOptions with valid fields', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'gnani',
+      language: 'hi-IN',
+      model: 'prisma-v3.0',
+      gnaniOptions: {
+        format: 'codemix',
+        itnNativeNumerals: false,
+        enableSubstitution: true,
+        substitutionMap: [{patterns: ['jam bones'], replacement: 'jambonz'}],
+        biasList: ['jambonz'],
+        biasScore: 1.5,
+        keyterms: ['jambonz', 'drachtio'],
+        topic: 'banking support',
+        previousText: 'hello',
+        speakerNames: ['agent', 'caller'],
+        idleTimeoutSec: 300,
+        requestId: 'req-1',
+        vadThreshold: 0.6,
+        minSilenceMs: 400,
+        minSpeechMs: 150,
+        minSegmentMs: 200,
+        maxSpeechS: 30
+      }
+    }
+  }, console);
+});
+
+test('accepts gnani synthesizer', () => {
+  validateVerb('say', {
+    text: 'hello',
+    synthesizer: {vendor: 'gnani', language: 'en-IN', voice: 'Kaveri', options: {model_id: 'timbre-v2.5', speed: 'fast'}}
+  }, console);
+});
+
+for (const [name, opts] of [
+  ['unknown format', {format: 'clean'}],
+  ['biasScore not in enum', {biasScore: 0.7}],
+  ['too many speakerNames', {speakerNames: ['a', 'b', 'c', 'd', 'e']}],
+  ['substitution without replacement', {substitutionMap: [{patterns: ['x']}]}],
+  ['substitution with empty patterns', {substitutionMap: [{patterns: [], replacement: 'y'}]}],
+  ['idleTimeoutSec out of range', {idleTimeoutSec: 901}],
+  ['vadThreshold above 1', {vadThreshold: 1.5}],
+  ['minSilenceMs below minimum', {minSilenceMs: 50}],
+  ['maxSpeechS below minimum', {maxSpeechS: 2}],
+  ['itnNativeNumerals not boolean', {itnNativeNumerals: 'true'}],
+  ['unknown property', {apiUri: 'api.vachana.ai'}],
+]) {
+  test(`rejects gnaniOptions ${name}`, () => {
+    assertThrows(() => validateVerb('gather', {
+      input: ['speech'],
+      actionHook: '/test',
+      recognizer: {vendor: 'gnani', gnaniOptions: opts}
+    }, console));
+  });
+}
+
+/* ---- recognizer metaOptions ---- */
+console.log('\nrecognizer metaOptions');
+
+test('accepts metaOptions with valid fields', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'meta',
+      language: 'en-US',
+      model: 'muse-voice-transcribe-1.0',
+      metaOptions: {
+        mode: 'DIARIZATION',
+        partialMode: 'DELTA',
+        emitAudioProgress: false,
+        keywords: ['jambonz', 'drachtio'],
+        languageBias: ['English', 'Spanish'],
+        sessionId: 'sess-1'
+      }
+    }
+  }, console);
+});
+
+for (const [name, opts] of [
+  ['PUSH_TO_TALK mode', {mode: 'PUSH_TO_TALK'}],
+  ['unknown partialMode', {partialMode: 'FULL'}],
+  ['emitAudioProgress not boolean', {emitAudioProgress: 'true'}],
+  ['keywords not array', {keywords: 'jambonz'}],
+  ['languageBias with non-string', {languageBias: [1]}],
+  ['unknown property', {apiUri: 'api.meta.ai'}],
+]) {
+  test(`rejects metaOptions ${name}`, () => {
+    assertThrows(() => validateVerb('gather', {
+      input: ['speech'],
+      actionHook: '/test',
+      recognizer: {vendor: 'meta', metaOptions: opts}
+    }, console));
+  });
+}
+
+/* ---- synthesizer minimax ---- */
+console.log('\nsynthesizer minimax');
+
+test('accepts minimax synthesizer with options', () => {
+  validateVerb('say', {
+    text: 'hello',
+    synthesizer: {
+      vendor: 'minimax',
+      language: 'en-US',
+      voice: 'English_expressive_narrator',
+      options: {
+        model_id: 'speech-2.8-turbo',
+        speed: 1.1,
+        pitch: 0,
+        emotion: 'happy',
+        language_boost: 'English',
+        voice_modify: {pitch: 10, intensity: -5, timbre: 0},
+        timbre_weights: [{voice_id: 'English_expressive_narrator', weight: 1}]
+      }
+    }
+  }, console);
+});
+
+/* ---- synthesizer neuphonic ---- */
+console.log('\nsynthesizer neuphonic');
+
+test('accepts neuphonic synthesizer with options', () => {
+  validateVerb('say', {
+    text: 'hello',
+    synthesizer: {
+      vendor: 'neuphonic',
+      language: 'en-US',
+      voice: 'eeb488b8-d532-4235-aa57-f070cfc44750',
+      options: {
+        language: 'en',
+        speed: 1.0,
+        temperature: 0.5,
+        ipa_key: 'es-castilian'
+      }
+    }
+  }, console);
+});
+
+/* ---- synthesizer camb ---- */
+console.log('\nsynthesizer camb');
+
+test('accepts camb synthesizer with options', () => {
+  validateVerb('say', {
+    text: 'hello',
+    synthesizer: {
+      vendor: 'camb',
+      language: 'en-US',
+      voice: '147320',
+      options: {
+        language: 'en-us',
+        model_id: 'mars-flash',
+        speaking_rate: 1.0,
+        word_timestamps: true,
+        inference_steps: 50,
+        stability: 0.5,
+        temperature: 0.7,
+        acoustic_quality_boost: true
+      }
+    }
+  }, console);
+});
+
+/* ---- synthesizer respeecher ---- */
+console.log('\nsynthesizer respeecher');
+
+test('accepts respeecher synthesizer with options', () => {
+  validateVerb('say', {
+    text: 'hello',
+    synthesizer: {
+      vendor: 'respeecher',
+      language: 'en-US',
+      voice: 'samantha',
+      options: {
+        model_id: 'en-rt',
+        seed: 42,
+        temperature: 0.7,
+        top_k: 40,
+        top_p: 0.9,
+        min_p: 0.05,
+        presence_penalty: 0.1,
+        repetition_penalty: 1.1,
+        frequency_penalty: 0.1,
+        api_uri: 'api.respeecher.com'
+      }
+    }
+  }, console);
+});
+
+/* ---- synthesizer simplismart ---- */
+console.log('\nsynthesizer simplismart');
+
+test('accepts simplismart synthesizer with options', () => {
+  validateVerb('say', {
+    text: 'hello',
+    synthesizer: {
+      vendor: 'simplismart',
+      language: 'en-US',
+      voice: 'tara',
+      options: {
+        model_id: 'canopylabs/orpheus-3b-0.1-ft',
+        temperature: 0.7,
+        top_p: 0.9,
+        repetition_penalty: 1.5,
+        max_tokens: 1000,
+        api_uri: 'api.simplismart.live'
+      }
+    }
+  }, console);
+});
+
+test('accepts simplismart qwen synthesizer with options', () => {
+  validateVerb('say', {
+    text: 'hello',
+    synthesizer: {
+      vendor: 'simplismart',
+      language: 'en-US',
+      voice: 'Chelsie',
+      options: {
+        model_id: 'qwen-tts',
+        language: 'English',
+        leading_silence: true
+      }
+    }
+  }, console);
+});
+
+/* ---- synthesizer spitch ---- */
+console.log('\nsynthesizer spitch');
+
+test('accepts spitch synthesizer with options', () => {
+  validateVerb('say', {
+    text: 'hello',
+    synthesizer: {
+      vendor: 'spitch',
+      language: 'yo-NG',
+      voice: 'sade',
+      options: {
+        speed: 1.1,
+        api_uri: 'api.spitch.app'
+      }
+    }
+  }, console);
+});
+
+/* ---- synthesizer kokoro ---- */
+console.log('\nsynthesizer kokoro');
+
+test('accepts kokoro synthesizer with options', () => {
+  validateVerb('say', {
+    text: 'hello',
+    synthesizer: {
+      vendor: 'kokoro',
+      language: 'en-US',
+      voice: 'af_heart',
+      options: {
+        speed: 1.1,
+        lang_code: 'a',
+        volume_multiplier: 1.2,
+        normalization_options: {normalize: true},
+        voice_aliases: {narrator: 'af_bella'}
+      }
+    }
+  }, console);
+});
+
+/* ---- synthesizer vakyam ---- */
+console.log('\nsynthesizer vakyam');
+
+test('accepts vakyam synthesizer with options', () => {
+  validateVerb('say', {
+    text: 'hello',
+    synthesizer: {
+      vendor: 'vakyam',
+      language: 'hi-IN',
+      voice: 'Archana',
+      options: {
+        model_id: 'raaga-v1',
+        speed: 1.2,
+        language: 'hi-IN',
+        api_uri: 'api.vakyam.ai'
+      }
+    }
+  }, console);
+});
+
+/* ---- synthesizer groq ---- */
+console.log('\nsynthesizer groq');
+
+test('accepts groq synthesizer with options', () => {
+  validateVerb('say', {
+    text: 'hello',
+    synthesizer: {
+      vendor: 'groq',
+      language: 'en-US',
+      voice: 'autumn',
+      options: {
+        model_id: 'canopylabs/orpheus-v1-english',
+        speed: 1.2,
+        sample_rate: 24000
+      }
+    }
+  }, console);
+});
+
+/* ---- synthesizer hume ---- */
+console.log('\nsynthesizer hume');
+
+test('accepts hume synthesizer with options', () => {
+  validateVerb('say', {
+    text: 'hello',
+    synthesizer: {
+      vendor: 'hume',
+      language: 'en-US',
+      voice: 'Ava Song',
+      options: {
+        model_id: '2',
+        voice_provider: 'HUME_AI',
+        description: 'calm and warm',
+        speed: 1.1,
+        trailing_silence: 0.5,
+        instant_mode: true,
+        temperature: 0.7,
+        split_utterances: false
+      }
+    }
+  }, console);
+});
+
+/* ---- synthesizer speechmatics ---- */
+console.log('\nsynthesizer speechmatics');
+
+test('accepts speechmatics synthesizer with options', () => {
+  validateVerb('say', {
+    text: 'hello',
+    synthesizer: {
+      vendor: 'speechmatics',
+      language: 'en-GB',
+      voice: 'sarah',
+      options: {
+        sm_app: 'my-app',
+        api_uri: 'preview.tts.speechmatics.com'
+      }
+    }
+  }, console);
+});
+
+/* ---- synthesizer soniox ---- */
+console.log('\nsynthesizer soniox');
+
+test('accepts soniox synthesizer with options', () => {
+  validateVerb('say', {
+    text: 'hello',
+    synthesizer: {
+      vendor: 'soniox',
+      language: 'es-ES',
+      voice: 'Lucia',
+      options: {
+        model_id: 'tts-rt-v2',
+        speed: 1.2,
+        reduce_silence: true,
+        client_reference_id: 'ref-123'
+      }
+    }
+  }, console);
+});
+
+/* ---- synthesizer bland ---- */
+console.log('\nsynthesizer bland');
+
+test('accepts bland synthesizer with options', () => {
+  validateVerb('say', {
+    text: 'hello',
+    synthesizer: {
+      vendor: 'bland',
+      language: 'en-US',
+      voice: '2f9fdbc7-4bf2-4792-8a18-21ce3c93978f',
+      options: {
+        expressiveness: 0.6,
+        stability: 0.8,
+        api_uri: 'api.bland.ai'
+      }
+    }
+  }, console);
+});
+
+/* ---- synthesizer asyncai ---- */
+console.log('\nsynthesizer asyncai');
+
+test('accepts asyncai synthesizer with options', () => {
+  validateVerb('say', {
+    text: 'hello',
+    synthesizer: {
+      vendor: 'asyncai',
+      language: 'en-US',
+      voice: 'e0f39dc4-f691-4e78-bba5-5c636692cc04',
+      options: {
+        model_id: 'async_flash_v1.0',
+        language: 'en',
+        speed_control: 1.2,
+        stability: 50
+      }
+    }
+  }, console);
+});
+
+/* ---- recognizer saidwireOptions ---- */
+console.log('\nrecognizer saidwireOptions');
+
+test('accepts saidwireOptions with valid fields', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'saidwire',
+      language: 'en-US',
+      saidwireOptions: {
+        apiKey: 'k',
+        punctuate: true,
+        smartFormatting: true,
+        endpointing: 500,
+        utteranceEndMs: 1000,
+        vadEvents: true
+      }
+    }
+  }, console);
+});
+
+test('accepts saidwireOptions endpointing false', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'saidwire', saidwireOptions: {endpointing: false}}
+  }, console);
+});
+
+for (const [name, opts] of [
+  ['endpointing below 500', {endpointing: 300}],
+  ['endpointing true', {endpointing: true}],
+  ['utteranceEndMs out of range', {utteranceEndMs: 20000}],
+  ['unknown property', {keyterms: ['jambonz']}],
+]) {
+  test(`rejects saidwireOptions ${name}`, () => {
+    assertThrows(() => validateVerb('gather', {
+      input: ['speech'],
+      actionHook: '/test',
+      recognizer: {vendor: 'saidwire', saidwireOptions: opts}
+    }, console));
+  });
+}
+
 /* ---- error messages ---- */
 console.log('\nerror messages');
 
