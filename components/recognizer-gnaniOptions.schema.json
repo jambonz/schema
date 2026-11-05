@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/components/recognizer-gnaniOptions",
+  "title": "Gnani Recognizer Options",
+  "description": "Gnani (Vachana) realtime STT options. Only applies when recognizer vendor is 'gnani'. Gnani produces final transcripts only, one per detected utterance. The model is set with the recognizer 'model' (prisma-v2.5 or prisma-v3.0); the recognizer language is mapped to an Indic code (e.g. en-US becomes en-IN), and 'any' or 'auto' turns on Indic auto-detection.",
+  "type": "object",
+  "properties": {
+    "format": {
+      "type": "string",
+      "enum": ["verbatim", "transcribe", "codemix", "transliterate"],
+      "description": "Output text format."
+    },
+    "itnNativeNumerals": {
+      "type": "boolean",
+      "description": "Write numbers in the native script numerals of the language."
+    },
+    "enableSubstitution": {
+      "type": "boolean",
+      "description": "Apply the substitutionMap to transcripts."
+    },
+    "substitutionMap": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "properties": {
+          "patterns": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "maxLength": 200 },
+            "description": "Phrases to replace."
+          },
+          "replacement": {
+            "type": "string",
+            "description": "Text written in place of any matched pattern."
+          }
+        },
+        "required": ["patterns", "replacement"],
+        "additionalProperties": false
+      },
+      "description": "Phrase substitutions applied to transcripts."
+    },
+    "biasList": {
+      "type": "array",
+      "items": { "type": "string" },
+      "maxItems": 100,
+      "description": "Words to boost (prisma-v2.5). Defaults to single words from the recognizer's 'hints' on prisma-v2.5."
+    },
+    "biasScore": {
+      "type": "number",
+      "enum": [0, 0.5, 1, 1.5, 2],
+      "description": "Boost strength for biasList. Defaults to 1 when biasList comes from hints."
+    },
+    "keyterms": {
+      "type": "array",
+      "items": { "type": "string" },
+      "maxItems": 200,
+      "description": "Key terms to boost (prisma-v3.0). Defaults to the recognizer's 'hints' on prisma-v3.0."
+    },
+    "topic": {
+      "type": "string",
+      "maxLength": 1600,
+      "description": "Free-text description of the conversation topic."
+    },
+    "previousText": {
+      "type": "string",
+      "description": "Preceding conversation text used as context."
+    },
+    "speakerNames": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "maxItems": 4,
+      "description": "Names of the speakers expected on the call."
+    },
+    "idleTimeoutSec": {
+      "type": "integer",
+      "minimum": 5,
+      "maximum": 900,
+      "description": "Seconds without speech before the vendor closes the session (vendor default 60)."
+    },
+    "requestId": {
+      "type": "string",
+      "description": "Correlation id sent with the request."
+    },
+    "vadThreshold": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Vendor VAD speech probability threshold (vendor default 0.7)."
+    },
+    "minSilenceMs": {
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 2000,
+      "description": "Milliseconds of silence that end an utterance (vendor default 500)."
+    },
+    "minSpeechMs": {
+      "type": "integer",
+      "minimum": 50,
+      "maximum": 2000,
+      "description": "Milliseconds of speech needed to start an utterance."
+    },
+    "minSegmentMs": {
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 1000,
+      "description": "Minimum segment length in milliseconds (vendor default 120)."
+    },
+    "maxSpeechS": {
+      "type": "number",
+      "minimum": 5,
+      "maximum": 120,
+      "description": "Maximum utterance length in seconds before it is cut (vendor default disabled)."
+    }
+  },
+  "additionalProperties": false
+}

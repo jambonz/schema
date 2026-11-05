@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/components/recognizer-saidwireOptions",
+  "title": "Saidwire Recognizer Options",
+  "description": "Saidwire realtime STT options. Only applies when recognizer vendor is 'saidwire'. Saidwire is English only, one audio channel per stream.",
+  "type": "object",
+  "properties": {
+    "apiKey": {
+      "type": "string",
+      "description": "Saidwire API key. Overrides the key configured in jambonz."
+    },
+    "punctuate": {
+      "type": "boolean",
+      "description": "Enable automatic punctuation."
+    },
+    "smartFormatting": {
+      "type": "boolean",
+      "description": "Enable smart formatting (dates, numbers, etc.)."
+    },
+    "endpointing": {
+      "anyOf": [
+        { "type": "number", "minimum": 500 },
+        { "const": false }
+      ],
+      "description": "Milliseconds of silence (at least 500) before a final transcript, or false to disable. Keep it set: without it turns may not end."
+    },
+    "utteranceEndMs": {
+      "type": "number",
+      "minimum": 100,
+      "maximum": 10000,
+      "description": "Milliseconds of silence before an UtteranceEnd message is sent."
+    },
+    "vadEvents": {
+      "type": "boolean",
+      "description": "Send SpeechStarted events when speech begins."
+    }
+  },
+  "additionalProperties": false
+}

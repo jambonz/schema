@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/components/recognizer-smallestaiOptions",
+  "title": "Smallest AI Recognizer Options",
+  "description": "Smallest AI Pulse realtime STT options. Only applies when recognizer vendor is 'smallestai'. Each option is sent only when set; otherwise the vendor default applies. The model comes from recognizer.model (pulse or pulse-2).",
+  "type": "object",
+  "properties": {
+    "language": {
+      "type": "string",
+      "description": "Vendor language code sent verbatim (e.g. 'north_indic', 'hi-dev', 'multi-asian'). Overrides the language mapped from the recognizer language."
+    },
+    "wordTimestamps": {
+      "type": "boolean",
+      "description": "Request word-level timestamps."
+    },
+    "diarize": {
+      "type": "boolean",
+      "description": "Label words by speaker."
+    },
+    "vadEvents": {
+      "type": "boolean",
+      "description": "Request speech started/ended events."
+    },
+    "endpointing": {
+      "type": "boolean",
+      "description": "Enable server-side endpointing."
+    },
+    "eouTimeoutMs": {
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 10000,
+      "description": "Silence in milliseconds before end of utterance."
+    },
+    "format": {
+      "type": "boolean",
+      "description": "Apply text formatting to transcripts."
+    },
+    "punctuate": {
+      "type": "boolean",
+      "description": "Add punctuation."
+    },
+    "capitalize": {
+      "type": "boolean",
+      "description": "Apply capitalization."
+    },
+    "itnNormalize": {
+      "type": "boolean",
+      "description": "Apply inverse text normalization (numbers, dates, etc. as written forms)."
+    },
+    "noFormatDelay": {
+      "type": "boolean",
+      "description": "Return finals without waiting for formatting."
+    },
+    "finalizeOnWords": {
+      "type": "boolean",
+      "description": "Finalize a transcript once maxWords is reached."
+    },
+    "maxWords": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Word count at which a transcript is finalized."
+    },
+    "redactPii": {
+      "type": "boolean",
+      "description": "Redact personally identifiable information."
+    },
+    "redactPci": {
+      "type": "boolean",
+      "description": "Redact payment card information."
+    },
+    "sentenceTimestamps": {
+      "type": "boolean",
+      "description": "Request sentence-level timestamps."
+    },
+    "emotionDetection": {
+      "type": "boolean",
+      "description": "Detect speaker emotion."
+    },
+    "genderDetection": {
+      "type": "boolean",
+      "description": "Detect speaker gender."
+    },
+    "keywords": {
+      "type": "array",
+      "items": { "type": "string" },
+      "maxItems": 100,
+      "description": "Keywords to boost, each 'term' or 'term:intensifier'. When absent, recognizer hints are used."
+    },
+    "timeout": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10800,
+      "description": "Session timeout in seconds."
+    },
+    "expireContent": {
+      "type": "string",
+      "description": "Value sent in the x-expire-content header."
+    },
+    "externalSessionId": {
+      "type": "string",
+      "description": "Client id for correlating the session in Smallest AI logs"
+    }
+  },
+  "additionalProperties": false
+}

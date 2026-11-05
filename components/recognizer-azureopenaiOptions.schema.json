@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/components/recognizer-azureopenaiOptions",
+  "title": "Azure OpenAI Recognizer Options",
+  "description": "Azure OpenAI realtime transcription STT options. Only applies when recognizer vendor is 'azureopenai'.",
+  "type": "object",
+  "properties": {
+    "apiKey": {
+      "type": "string",
+      "description": "Azure OpenAI resource key. Overrides credentials configured in jambonz."
+    },
+    "deployment": {
+      "type": "string",
+      "description": "Azure STT deployment name. Overrides the deployment configured in the credential."
+    },
+    "model": {
+      "type": "string",
+      "enum": ["gpt-live-transcribe", "gpt-realtime-whisper", "gpt-4o-transcribe", "gpt-4o-mini-transcribe", "whisper-1"],
+      "description": "Model family behind the deployment. Selects turn detection and the fields sent; inferred from the deployment name when unset."
+    },
+    "prompt": {
+      "type": "string",
+      "description": "Prompt to guide the recognition model."
+    },
+    "languages": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "Language hints for the 'gpt-live-transcribe' family, which takes a list rather than a single code (e.g. ['en','fr']). Overrides the recognizer language."
+    },
+    "keywords": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Literal term hints for the 'gpt-live-transcribe' family. Defaults to the recognizer's 'hints' when unset."
+    },
+    "delay": {
+      "type": "string",
+      "enum": ["minimal", "low", "medium", "high", "xhigh"],
+      "description": "Latency/accuracy trade-off for the 'gpt-live-transcribe' family."
+    },
+    "input_audio_noise_reduction": {
+      "type": "string",
+      "enum": ["near_field", "far_field"],
+      "description": "Input audio noise reduction mode."
+    },
+    "turn_detection": {
+      "type": "object",
+      "description": "Server turn detection for the server-endpointed families ('gpt-4o-transcribe', 'gpt-4o-mini-transcribe', 'whisper-1').",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["none", "server_vad", "semantic_vad"],
+          "description": "Turn detection strategy."
+        },
+        "eagerness": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "auto"],
+          "description": "How eagerly a turn is ended (semantic_vad only)."
+        },
+        "threshold": { "type": "number", "description": "VAD activation threshold (0-1)." },
+        "prefix_padding_ms": { "type": "number", "description": "Milliseconds of audio to include before detected speech." },
+        "silence_duration_ms": { "type": "number", "description": "Milliseconds of silence to detect end of speech." },
+        "idle_timeout_ms": { "type": "number", "description": "server_vad only: milliseconds of silence after which the server commits the buffer." }
+      },
+      "required": ["type"]
+    },
+    "vadMode": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 3,
+      "description": "Local VAD aggressiveness (0-3). Used only with the client-endpointed families ('gpt-live-transcribe', 'gpt-realtime-whisper')."
+    },
+    "vadSilenceMs": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Milliseconds of silence to detect end-of-speech for local VAD. Used only with the client-endpointed families."
+    },
+    "vadVoiceMs": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Milliseconds of voice to detect start-of-speech for local VAD. Used only with the client-endpointed families."
+    }
+  },
+  "additionalProperties": false
+}
