@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/components/recognizer-kugelaudioOptions",
+  "title": "KugelAudio Recognizer Options",
+  "description": "KugelAudio streaming STT (kugel-ear-1) options. Only applies when recognizer vendor is 'kugelaudio'. KugelAudio detects the end of each turn itself: words stream as interim results when interim is enabled, and a final transcript closes the turn; in the agent verb each final ends the user's turn. Supported languages: cs, da, de, el, en, es, fi, fr, hu, it, nl, pl, pt, ro, sv (the recognizer language is reduced to its base code, e.g. de-DE to de); any other language uses KugelAudio's automatic detection.",
+  "type": "object",
+  "properties": {
+    "apiKey": {
+      "type": "string",
+      "description": "KugelAudio API key. Overrides the key configured in jambonz. The key needs the speech-to-text permission."
+    },
+    "model": {
+      "type": "string",
+      "description": "STT model. Defaults to kugel-ear-1, currently the only model.",
+      "examples": ["kugel-ear-1"]
+    },
+    "languages": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Languages to detect among, in order of likelihood (e.g. ['de', 'en']). Replaces the recognizer language. Unsupported codes are dropped."
+    },
+    "turnDetection": {
+      "type": "string",
+      "enum": ["kugelturn", "vad"],
+      "description": "How a turn ends. 'kugelturn' (default) is KugelAudio's semantic end-of-turn model, which can close a turn after a pause of about 200 ms. 'vad' ends a turn after 1 s of silence."
+    },
+    "turnDetectionLevel": {
+      "type": "string",
+      "enum": ["responsive", "conservative"],
+      "description": "How eagerly kugelturn ends a turn. 'responsive' (default) or 'conservative', which waits longer before ending a turn. Not sent with turnDetection 'vad', which KugelAudio would reject."
+    },
+    "boostedPhrases": {
+      "type": "array",
+      "items": { "type": "string", "maxLength": 64 },
+      "maxItems": 5000,
+      "description": "Words or phrases to favor (names, brands, jargon), up to 64 characters each. When omitted, recognizer.hints are used."
+    },
+    "dictionaryIds": {
+      "type": "array",
+      "items": { "type": "integer" },
+      "description": "Ids of KugelAudio dictionaries that bias recognition. An id unknown to the key's project fails the session."
+    },
+    "projectId": {
+      "type": "integer",
+      "description": "KugelAudio project the session is billed to."
+    },
+    "kugelaudioSttUri": {
+      "type": "string",
+      "description": "Custom host to connect to instead of api.kugelaudio.com, e.g. api.eu.kugelaudio.com for EU processing, or a proxy. Defaults to the host of the credential's API URL."
+    },
+    "kugelaudioSttUseTls": {
+      "type": "boolean",
+      "description": "Use TLS when connecting to a custom host. Default true."
+    }
+  },
+  "additionalProperties": false
+}
