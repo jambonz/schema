@@ -633,6 +633,42 @@ for (const [name, opts] of [
   });
 }
 
+/* ---- recognizer kugelaudioOptions ---- */
+console.log('\nrecognizer kugelaudioOptions');
+
+test('accepts kugelaudioOptions with valid fields', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {
+      vendor: 'kugelaudio',
+      language: 'de-DE',
+      kugelaudioOptions: {
+        apiKey: 'my-key', model: 'kugel-ear-1', languages: ['de', 'en'], turnDetection: 'vad',
+        turnDetectionLevel: 'conservative', boostedPhrases: ['jambonz'], dictionaryIds: [12], projectId: 7,
+        kugelaudioSttUri: 'api.eu.kugelaudio.com', kugelaudioSttUseTls: true
+      }
+    }
+  }, console);
+});
+
+for (const [name, opts] of [
+  ['turnDetection manual', {turnDetection: 'manual'}],
+  ['turnDetectionLevel fast', {turnDetectionLevel: 'fast'}],
+  ['phrase over 64 chars', {boostedPhrases: ['x'.repeat(65)]}],
+  ['string dictionaryIds', {dictionaryIds: ['12']}],
+  ['string projectId', {projectId: 'p1'}],
+  ['unknown property', {interim: true}],
+]) {
+  test(`rejects kugelaudioOptions ${name}`, () => {
+    assertThrows(() => validateVerb('gather', {
+      input: ['speech'],
+      actionHook: '/test',
+      recognizer: {vendor: 'kugelaudio', kugelaudioOptions: opts}
+    }, console));
+  });
+}
+
 /* ---- recognizer giggyOptions ---- */
 console.log('\nrecognizer giggyOptions');
 
