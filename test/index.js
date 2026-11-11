@@ -1291,6 +1291,25 @@ test('accepts spitch synthesizer with options', () => {
   }, console);
 });
 
+/* ---- synthesizer phonic ---- */
+console.log('\nsynthesizer phonic');
+
+test('accepts phonic synthesizer with options', () => {
+  validateVerb('say', {
+    text: 'hello',
+    synthesizer: {
+      vendor: 'phonic',
+      language: 'de-DE',
+      voice: 'grant',
+      options: {
+        model_id: 'merritt',
+        speed: 1.1,
+        api_uri: 'api.phonic.ai'
+      }
+    }
+  }, console);
+});
+
 /* ---- synthesizer kokoro ---- */
 console.log('\nsynthesizer kokoro');
 
