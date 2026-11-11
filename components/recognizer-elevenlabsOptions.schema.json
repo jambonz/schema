@@ -11,8 +11,8 @@
     },
     "commitStrategy": {
       "type": "string",
-      "enum": ["manual", "vad"],
-      "description": "How audio chunks are committed. 'manual' for explicit commits, 'vad' for voice activity detection."
+      "enum": ["manual", "vad", "turn_prediction"],
+      "description": "How audio chunks are committed. 'manual' for explicit commits, 'vad' for voice activity detection, 'turn_prediction' to commit when the model predicts the speaker has finished (scribe_v3_live only)."
     },
     "vadSilenceThresholdSecs": {
       "type": "number",
