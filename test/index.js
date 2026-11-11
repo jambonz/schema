@@ -100,6 +100,25 @@ test('rejects gather with invalid input values', () => {
   assertThrows(() => validateVerb('gather', {input: ['invalid']}, console));
 });
 
+/* ---- elevenlabs recognizer options ---- */
+console.log('\nelevenlabs recognizer options');
+
+test('accepts elevenlabs commitStrategy turn_prediction', () => {
+  validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'elevenlabs', elevenlabsOptions: {commitStrategy: 'turn_prediction'}}
+  }, console);
+});
+
+test('rejects unknown elevenlabs commitStrategy', () => {
+  assertThrows(() => validateVerb('gather', {
+    input: ['speech'],
+    actionHook: '/test',
+    recognizer: {vendor: 'elevenlabs', elevenlabsOptions: {commitStrategy: 'semantic'}}
+  }, console));
+});
+
 /* ---- recognizer hints ---- */
 console.log('\nrecognizer hints');
 
