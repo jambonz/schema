@@ -59,9 +59,44 @@
                 }
               },
               "additionalProperties": false
+            },
+            "first_speech_token_ms": {
+              "type": "integer",
+              "description": "With the emotion option: time from prompting the LLM to its first spoken (non-directive) token, in milliseconds."
             }
           },
           "additionalProperties": false
+        },
+        "user_emotion": {
+          "type": "object",
+          "description": "The caller's tone from the STT vendor, with the agent verb's emotion option.",
+          "properties": {
+            "label": {
+              "type": "string",
+              "enum": ["neutral", "happy", "sad", "angry", "fearful", "surprised", "disgusted", "calm", "other"]
+            },
+            "detail": {
+              "type": "string",
+              "description": "The STT vendor's own word when it is more specific than label, such as frustrated."
+            },
+            "confidence": {
+              "type": ["number", "null"]
+            },
+            "source": {
+              "type": "string",
+              "enum": ["acoustic", "text", "llm"]
+            }
+          },
+          "required": ["label", "source"],
+          "additionalProperties": false
+        },
+        "agent_styles": {
+          "type": "array",
+          "description": "Voice directives used in this turn's reply, with the agent verb's emotion option.",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
         }
       },
       "required": ["type", "transcript", "response", "interrupted", "latency"],
@@ -76,6 +111,29 @@
         "transcript": {
           "type": "string",
           "description": "The user's final speech-to-text transcript."
+        },
+        "emotion": {
+          "type": "object",
+          "description": "The caller's tone from the STT vendor, with the agent verb's emotion option.",
+          "properties": {
+            "label": {
+              "type": "string",
+              "enum": ["neutral", "happy", "sad", "angry", "fearful", "surprised", "disgusted", "calm", "other"]
+            },
+            "detail": {
+              "type": "string",
+              "description": "The STT vendor's own word when it is more specific than label, such as frustrated."
+            },
+            "confidence": {
+              "type": ["number", "null"]
+            },
+            "source": {
+              "type": "string",
+              "enum": ["acoustic", "text", "llm"]
+            }
+          },
+          "required": ["label", "source"],
+          "additionalProperties": false
         }
       },
       "required": ["type", "transcript"],
@@ -90,6 +148,19 @@
         "response": {
           "type": "string",
           "description": "The assistant's complete text response."
+        },
+        "styles": {
+          "type": "array",
+          "description": "Voice directives the LLM wrote, with the agent verb's emotion option: the offset in the response text where each style starts, and its attributes.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "offset": {
+                "type": "integer"
+              }
+            },
+            "additionalProperties": true
+          }
         }
       },
       "required": ["type", "response"],
