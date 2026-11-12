@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jambonz.org/schema/verbs/phonic_s2s",
+  "minVersion": "11.1.13",
+  "title": "Phonic S2S",
+  "description": "Shortcut for 'llm' with vendor automatically set to 'phonic'. Connects the caller to Phonic, a speech-to-speech model, for real-time voice conversation. Phonic finds the end of each turn itself. llmOptions.config is Phonic's config message (system_prompt, voice_id, welcome_message, agent, tools, ...); jambonz sets the audio formats. With no 'auth', jambonz uses the account's Phonic (phonic_s2s) speech-to-speech credential chosen by 'label'.",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "../components/llm-base"
+    }
+  ],
+  "properties": {
+    "verb": {
+      "const": "phonic_s2s",
+      "description": "The verb name."
+    },
+    "vendor": {
+      "type": "string",
+      "const": "phonic",
+      "description": "The LLM vendor (always 'phonic' for this shortcut)."
+    },
+    "model": {
+      "type": "string",
+      "description": "The Phonic model, e.g. 'phonic-1'. Omit it for Phonic's current default. llmOptions.config.model wins when both are set.",
+      "examples": ["phonic-1", "phonic-0.5"]
+    },
+    "auth": {
+      "type": "object",
+      "description": "Optional. A Phonic API key. When omitted, jambonz uses the account's phonic_s2s credential chosen by 'label'.",
+      "properties": {
+        "apiKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Phonic API key (starts with ph_), sent as a Bearer header."
+        }
+      },
+      "additionalProperties": true
+    },
+    "connectOptions": {
+      "type": "object",
+      "description": "Connection options, for a Phonic endpoint other than Phonic's cloud.",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "The Phonic host. Defaults to api.phonic.ai."
+        },
+        "path": {
+          "type": "string",
+          "description": "The websocket path. Defaults to v1/sts/ws."
+        }
+      },
+      "additionalProperties": false
+    },
+    "llmOptions": {
+      "type": "object",
+      "description": "config configures the conversation; dtmf passes the caller's keypad entries to the agent.",
+      "properties": {
+        "config": {
+          "type": "object",
+          "description": "Phonic's config message, sent as given when the session opens. jambonz adds the MCP, handoff and hangup tools when they are configured, sets external_id to the call sid unless you set one, and sets input_format and output_format itself.",
+          "properties": {
+            "agent": {
+              "type": "string",
+              "description": "A Phonic agent, by name, whose settings the conversation starts from."
+            },
+            "project": {
+              "type": "string",
+              "description": "The Phonic project the agent belongs to. Defaults to main."
+            },
+            "system_prompt": {
+              "type": "string",
+              "description": "The system prompt."
+            },
+            "voice_id": {
+              "type": "string",
+              "description": "The Phonic voice, e.g. sabrina."
+            },
+            "welcome_message": {
+              "type": ["string", "null"],
+              "description": "What the agent says first. Without one (and without generate_welcome_message) Phonic waits for the caller."
+            },
+            "generate_welcome_message": {
+              "type": "boolean",
+              "description": "Let the agent write its own opening line."
+            },
+            "tools": {
+              "type": "array",
+              "description": "Tools by name (pre-defined or built-in, e.g. keypad_input, natural_conversation_ending), built-in tool objects, or inline tools {type: 'custom_websocket', tool_schema: {type: 'function', function: {name, description, parameters, strict: true}}}. Inline tool calls go to the toolHook.",
+              "items": {
+                "oneOf": [
+                  { "type": "string" },
+                  { "type": "object" }
+                ]
+              }
+            },
+            "default_language": {
+              "type": "string",
+              "description": "ISO 639-1 language code. Defaults to en."
+            },
+            "audio_speed": {
+              "type": "number",
+              "minimum": 0.5,
+              "maximum": 1.5
+            }
+          },
+          "additionalProperties": true
+        },
+        "dtmf": {
+          "type": "object",
+          "description": "Gather-style keypad options. When enable is true, each completed entry reaches the agent as the caller's message.",
+          "properties": {
+            "enable": { "type": "boolean" }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "examples": [
+    {
+      "verb": "phonic_s2s",
+      "llmOptions": {
+        "config": {
+          "system_prompt": "You answer the phone for Juniper Cafe. Be brief.",
+          "voice_id": "sabrina",
+          "welcome_message": "Juniper Cafe, how can I help?"
+        }
+      },
+      "toolHook": "/tool",
+      "eventHook": "/event",
+      "actionHook": "/done"
+    }
+  ]
+}

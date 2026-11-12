@@ -32,6 +32,7 @@
         { "$ref": "verbs/voicelive_s2s" },
         { "$ref": "verbs/nova_s2s" },
         { "$ref": "verbs/rime_s2s" },
+        { "$ref": "verbs/phonic_s2s" },
         { "$ref": "verbs/dialogflow" },
         { "$ref": "verbs/agent" },
         { "$ref": "verbs/transfer" },
