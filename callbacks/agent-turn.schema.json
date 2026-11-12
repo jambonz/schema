@@ -99,10 +99,118 @@
       "properties": {
         "type": {
           "const": "user_interruption",
-          "description": "Sent when the user barges in (interrupts) while the assistant is speaking. This event has no additional data."
+          "description": "Sent when the user barges in (interrupts) while the assistant is speaking. The agent verb's pipeline adds what confirmed the barge-in and what the caller heard; speech-to-speech engines send no additional data."
+        },
+        "cause": {
+          "type": "string",
+          "enum": ["vad", "transcript", "interrupt_prediction"],
+          "description": "What confirmed the barge-in: speech still active after minSpeechDuration ('vad'), words from the speech recognizer ('transcript'), or the turn-taking model's interrupt prediction ('interrupt_prediction')."
+        },
+        "probability": {
+          "type": "number",
+          "description": "The interrupt prediction's probability. Only with cause 'interrupt_prediction'."
+        },
+        "spoken_text": {
+          "type": "string",
+          "description": "The part of the assistant's reply the caller heard before the interruption. Absent when it is not known."
+        },
+        "spoken_estimated": {
+          "type": "boolean",
+          "description": "True when spoken_text is estimated from playout time because the TTS vendor reports no word alignment."
         }
       },
       "required": ["type"],
+      "additionalProperties": false
+    },
+    {
+      "properties": {
+        "type": {
+          "const": "overlapping_speech",
+          "description": "Sent when the caller speaks during the assistant's reply and it is not treated as an interruption (barge-in off, or the interrupt prediction model judged it not a floor-taking attempt)."
+        },
+        "outcome": {
+          "type": "string",
+          "enum": ["ignored", "held", "answered"],
+          "description": "'ignored': too short to be a turn (a backchannel such as 'okay'), dropped. 'held': kept and added to the caller's next turn. 'answered': the reply ended and the held speech became the caller's turn."
+        },
+        "transcript": {
+          "type": "string",
+          "description": "What the caller said. With outcome 'answered', all the held speech."
+        },
+        "word_count": {
+          "type": "integer",
+          "description": "Number of words in transcript."
+        }
+      },
+      "required": ["type", "outcome", "transcript", "word_count"],
+      "additionalProperties": false
+    },
+    {
+      "properties": {
+        "type": {
+          "const": "interrupt_prediction_ignored",
+          "description": "Sent when the interrupt prediction model fires before the assistant has started speaking (while it is thinking or waiting on the turn gate). It is usually the tail of the utterance being answered, so it is not treated as an interruption."
+        },
+        "probability": {
+          "type": "number",
+          "description": "The interrupt prediction's probability."
+        },
+        "state": {
+          "type": "string",
+          "enum": ["thinking", "awaiting_turn_gate"],
+          "description": "The agent's state when the prediction arrived."
+        }
+      },
+      "required": ["type", "probability", "state"],
+      "additionalProperties": false
+    },
+    {
+      "properties": {
+        "type": {
+          "const": "no_response_timeout",
+          "description": "Sent when the caller has said nothing for noResponseTimeout and the agent prompts them to check they are still there."
+        },
+        "count": {
+          "type": "integer",
+          "description": "How many times in a row the agent has prompted the silent caller, this one included."
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "description": "The silence that triggered the prompt, in milliseconds."
+        }
+      },
+      "required": ["type", "count", "timeout_ms"],
+      "additionalProperties": false
+    },
+    {
+      "properties": {
+        "type": {
+          "const": "llm_error",
+          "description": "Sent when a request to the LLM fails. Unless retrying is true, the agent verb then ends with completion reason 'llm_failure'."
+        },
+        "stage": {
+          "type": "string",
+          "enum": ["prompt", "retry_without_tools", "tool_result"],
+          "description": "'prompt': the request for a reply failed. 'retry_without_tools': the retry of that request without tools failed. 'tool_result': the request that follows a tool result failed."
+        },
+        "vendor": {
+          "type": "string",
+          "description": "The LLM vendor."
+        },
+        "model": {
+          "type": "string",
+          "description": "The LLM model."
+        },
+        "message": {
+          "type": "string",
+          "description": "The vendor's error message, at most 200 characters, with anything that looks like a key or token masked."
+        },
+        "retrying": {
+          "type": "boolean",
+          "description": "True when the agent retries the request without tools."
+        }
+      },
+      "required": ["type", "stage", "message", "retrying"],
       "additionalProperties": false
     }
   ]

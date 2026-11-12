@@ -107,7 +107,11 @@ The `eventHook` receives real-time events during the conversation. In WebSocket 
 |---|---|---|
 | `user_transcript` | User speech recognized | `transcript` |
 | `llm_response` | Assistant reply text | `response` |
-| `user_interruption` | User barged in | — |
+| `user_interruption` | User barged in | `cause` (`vad`, `transcript`, `interrupt_prediction`), `probability`, `spoken_text`, `spoken_estimated` |
+| `overlapping_speech` | Caller spoke over the reply without interrupting it | `outcome` (`ignored`, `held`, `answered`), `transcript`, `word_count` |
+| `interrupt_prediction_ignored` | Interrupt prediction before the assistant spoke | `probability`, `state` |
+| `no_response_timeout` | Caller silent; the agent prompts them | `count`, `timeout_ms` |
+| `llm_error` | An LLM request failed | `stage` (`prompt`, `retry_without_tools`, `tool_result`), `vendor`, `model`, `message`, `retrying` |
 | `turn_end` | End-of-turn summary | `transcript`, `response`, `interrupted`, `latency` |
 
 The `turn_end` event is the most useful for observability. It includes per-component latency metrics (STT, LLM, TTS) in milliseconds. See the `callback:agent-turn` schema for the full payload structure.
