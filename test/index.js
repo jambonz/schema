@@ -3590,6 +3590,49 @@ test('an app using rime_s2s validates (exactly one oneOf match)', () => {
   assert.strictEqual(result.valid, true, JSON.stringify(result.errors));
 });
 
+/* ---- phonic_s2s (Phonic) ---- */
+console.log('\nphonic_s2s verb');
+
+const PHONIC_OK = {
+  label: 'phonic',
+  model: 'phonic-1',
+  llmOptions: {
+    config: {
+      system_prompt: 'You answer the phone for Juniper Cafe.',
+      voice_id: 'sabrina',
+      welcome_message: 'Juniper Cafe, how can I help?',
+      tools: ['natural_conversation_ending', {type: 'custom_websocket', tool_schema: {type: 'function',
+        function: {name: 'get_hours', description: 'Hours.', parameters: {type: 'object', properties: {}}, strict: true}}}],
+      min_words_to_interrupt: 2
+    },
+    dtmf: {enable: true, finishOnKey: '#'}
+  }
+};
+
+test('phonic_s2s normalizes to llm with vendor phonic', () => {
+  const result = normalizeJambones(console, [{verb: 'phonic_s2s', ...PHONIC_OK}]);
+  assert.strictEqual(Object.keys(result[0])[0], 'llm');
+  assert.strictEqual(result[0].llm.vendor, 'phonic');
+});
+
+test('phonic_s2s accepts a config, a credential label or a key, and no llmOptions at all', () => {
+  validateVerb('phonic_s2s', PHONIC_OK, console);
+  validateVerb('phonic_s2s', {...PHONIC_OK, label: undefined, auth: {apiKey: 'ph_k'}}, console);
+  validateVerb('phonic_s2s', {}, console);
+});
+
+test('phonic_s2s rejects malformed options', () => {
+  assertThrows(() => validateVerb('phonic_s2s', {llmOptions: {config: 'x'}}, console));
+  assertThrows(() => validateVerb('phonic_s2s', {llmOptions: {session_update: {}}}, console));
+  assertThrows(() => validateVerb('phonic_s2s', {llmOptions: {config: {audio_speed: 3}}}, console));
+  assertThrows(() => validateVerb('phonic_s2s', {auth: {apiKey: ''}}, console));
+});
+
+test('an app using phonic_s2s validates (exactly one oneOf match)', () => {
+  const result = validateApp([{verb: 'answer'}, {verb: 'phonic_s2s', ...PHONIC_OK}], console);
+  assert.strictEqual(result.valid, true, JSON.stringify(result.errors));
+});
+
 /* ---- summary ---- */
 console.log(`\n${passed} passed, ${failed} failed\n`);
 if (failed > 0) process.exit(1);
