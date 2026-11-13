@@ -1663,6 +1663,23 @@ test('rejects speechCleanup of wrong type', () => {
   }, /type|boolean|speechCleanup/i);
 });
 
+test('accepts emotion', () => {
+  validateVerb('agent', {
+    llm: {vendor: 'openai', model: 'gpt-4o'},
+    emotion: {listen: 'auto', speak: true, emotions: ['happy', 'empathetic'], sounds: ['laugh'],
+      minConfidence: 0.6, default: 'calm'},
+  }, console);
+  validateVerb('agent', {llm: {vendor: 'openai', model: 'gpt-4o'}, emotion: {}}, console);
+});
+
+test('rejects malformed emotion', () => {
+  const agent = (emotion) => ({llm: {vendor: 'openai', model: 'gpt-4o'}, emotion});
+  assertThrows(() => validateVerb('agent', agent({listen: 'always'}), console), /listen|enum/i);
+  assertThrows(() => validateVerb('agent', agent({emotions: ['furious']}), console), /emotions|enum/i);
+  assertThrows(() => validateVerb('agent', agent({minConfidence: 2}), console), /minConfidence|maximum/i);
+  assertThrows(() => validateVerb('agent', agent({tone: 'x'}), console), /additional|tone/i);
+});
+
 test('rejects reasoningEffort of wrong type', () => {
   assertThrows(() => {
     validateVerb('agent', {

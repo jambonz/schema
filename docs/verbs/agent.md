@@ -267,6 +267,17 @@ session.updateAgent({
 });
 ```
 
+### update_emotion
+
+Change the `emotion` settings of an agent that has them. Fields you leave out keep their value; the system prompt is updated in place.
+
+```typescript
+session.updateAgent({
+  type: 'update_emotion',
+  emotion: { emotions: ['calm', 'empathetic'], sounds: false },
+});
+```
+
 ### generate_reply
 
 Prompt the LLM to generate a new response. If the agent is currently idle, the prompt executes immediately. If the agent is busy (e.g. the assistant is speaking), the request is queued and executes when the current turn completes.
@@ -408,6 +419,40 @@ Everything the LLM writes is normally sent to TTS. Two options change that. Neit
 - `<think>`, `<thinking>` and `<reasoning>` blocks, wherever they appear.
 
 The cleanup runs on the streaming tokens and holds back only text that could still turn out to be one of these, so ordinary speech is not delayed. If nothing is left to say, the reply ends without speaking, the same way as a reply that only called tools. Set `speechCleanup: false` to send the text to TTS exactly as written.
+
+**`emotion`** makes the agent hear the caller's tone and change its own voice style. Omit it and the agent behaves exactly as without it.
+
+```json
+"emotion": {
+  "listen": "auto",
+  "speak": true,
+  "emotions": ["neutral", "happy", "empathetic", "calm"],
+  "sounds": false,
+  "minConfidence": 0.5,
+  "default": "neutral"
+}
+```
+
+- **Hearing.** When the STT vendor reports the caller's emotion during streaming — modulate (`velma-2-stt-streaming`; not `velma-2-stt-streaming-english-v2`), smallestai (`pulse-2`) or inworld (voice profile) — the user message the LLM receives starts with `[caller tone: angry]`. With `listen: "auto"` (the default) and `"stt"` the agent turns on that vendor's emotion output unless your recognizer options already set it. Without a label the LLM is told to judge the tone from the words (`auto` and `llm`). Labels: `neutral happy sad angry fearful surprised disgusted calm other`. Reprompts and other prompts the agent writes itself are never prefixed. When the vendor's word is more specific than the label (modulate `Frustrated`, inworld `tender`), the LLM gets that word and the event carries it as `emotion.detail`. Not reported in streaming by the other STT vendors: assemblyai (sentiment is a pre-recorded add-on only), deepgram (sentiment is batch only), speechmatics (laughter and applause events only), gladia (text sentiment arrives as a separate message the agent does not read yet), aws (sentiment only on the Call Analytics API, not the one jambonz uses), and elevenlabs, soniox, google, microsoft and the rest. With them the LLM judges the tone from the words.
+- **Speaking.** The LLM may start a sentence with a directive such as `<voice emotion="empathetic" speed="slow"/>` (attributes: `emotion`, `intensity`, `speed`, `volume`, `sound`). The directive is never spoken: it is rendered as the TTS vendor's own tag in front of that sentence, so the style can change mid-reply on the same connection, and lasts until the next directive or the end of the reply. Each reply starts in `default`. The system prompt only offers what the configured TTS model can render:
+
+| TTS vendor and model | Styles |
+| --- | --- |
+| elevenlabs `eleven_v3*`, `eleven_v4*` | emotions, soft/loud, sounds (use a v3 voice) |
+| inworld `inworld-tts-2` (`inworld-tts-2-flash`: sounds only) | emotions, speed, volume, sounds |
+| fishaudio `s2*` | emotions, soft/loud, laugh, sigh |
+| soniox `tts-rt-v2` | emotions, speed, soft/loud, sounds |
+| paxa `paxa-tts-flash-v2` | emotions, speed, volume, sounds |
+| cartesia `sonic-3` and later (`sonic-3.5`, `sonic-3.6`) | emotions (English), speed, volume, laughter |
+| minimax `speech-2.8*` | sounds only (laugh, sigh, breath) |
+| xai | sounds only (laugh, sigh, breath, pause) |
+
+Checked against each vendor's documentation and not supported on the streaming connection the agent uses: assemblyai (no emotion parameter; bracketed tags are read aloud), bland (its `[say …]` tags made no audible difference over its streaming socket in live tests), deepgram Aura and deepgramflux (`expressivity` is fixed for the connection), google (Chirp 3 HD has no style control; Gemini-TTS tags are not on the streaming path), hume (acting `description` per request, not yet per sentence), camb (its streaming model takes sound tags only), minimax emotion (fixed at connect; only its sound tags change), murf and sarvam (style fixed per voice or connection), nvidia Magpie (emotion is part of the voice name), rimelabs (Coda takes tags only as best-effort cues), elevenlabs Flash/Turbo/Multilingual, asyncai, gradium, kugelaudio, neuphonic, nineninesix, respeecher, smallestai and svara. With these the voice keeps the style it was configured with.
+
+  With any other vendor or model no voice guidance is added and any directive the LLM writes anyway is removed. Invalid directives are removed, never spoken.
+- **Events.** With `emotion`, `llm_response.response` and the `turn_end` response hold the text without directives, and `llm_response` adds `styles` (`[{offset, emotion, ...}]`). `user_transcript` carries `emotion` (`{label, detail, confidence, source}`); `turn_end` and the session data carry `user_emotion` and `agent_styles`, and `latency.first_speech_token_ms` (prompt to the first spoken token). Conversation history keeps the directives.
+
+Change the settings mid-call with `update_emotion` (see below).
 
 **`speak: false`** keeps all of the agent's text out of TTS. Use it for an agent that must never talk, such as one that navigates a DTMF-only phone menu by calling tools. The LLM's replies are still kept, so the agent can take notes for itself. With `speak: false`, `toolFiller` and `earlyGeneration` are turned off.
 

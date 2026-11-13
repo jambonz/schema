@@ -289,6 +289,53 @@
       "description": "Keep text the model was not meant to say out of TTS: a paragraph that is only a stage direction in (), [] or ** (such as '(silence)' or '[No response needed]'), and <think>, <thinking> or <reasoning> blocks. Asides inside a sentence are still spoken. Applied as the reply streams; ordinary speech is not delayed. A reply with nothing left to say ends without speaking. History, llm_response events and the transcript keep the model's raw text. Default: true.",
       "default": true
     },
+    "emotion": {
+      "type": "object",
+      "description": "Emotion-aware voice. The caller's tone, when the STT vendor reports one while streaming (modulate velma-2-stt-streaming, smallestai pulse-2, inworld voice profile), is passed to the LLM as a '[caller tone: <label>]' prefix on the user message; the LLM may start a sentence with a <voice emotion=\"...\" speed=\"...\" volume=\"...\" sound=\"...\"/> directive, which is never spoken and is rendered as the TTS vendor's own style tags (elevenlabs eleven_v3/v4, inworld inworld-tts-2, fishaudio s2, soniox tts-rt-v2, paxa flash-v2, cartesia sonic-3 and later, minimax speech-2.8 and xai sounds). Only styles the configured TTS model can render are offered to the LLM. Events and the transcript carry the text without directives, plus the caller's emotion and the styles used. Omit to keep the agent exactly as without it.",
+      "properties": {
+        "listen": {
+          "type": "string",
+          "enum": ["auto", "stt", "llm", "off"],
+          "description": "Where the caller's tone comes from. 'auto': the STT vendor's label when there is one, else the LLM judges from the words; 'stt': the STT label only; 'llm': the LLM judges from the words; 'off': not used. 'auto' and 'stt' turn on the STT vendor's emotion output (modulateOptions.emotionSignal, smallestaiOptions.emotionDetection, inworldOptions.enableVoiceProfile) unless the application set it. Default: 'auto'.",
+          "default": "auto"
+        },
+        "speak": {
+          "type": "boolean",
+          "description": "Let the LLM change the voice style with <voice/> directives. Ignored when the TTS model has no style control. Default: true.",
+          "default": true
+        },
+        "emotions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["neutral", "happy", "excited", "calm", "empathetic", "sad", "serious", "surprised", "curious", "angry"]
+          },
+          "description": "Allow-list of emotions the LLM may use. Default: every emotion the TTS model supports."
+        },
+        "sounds": {
+          "oneOf": [
+            {"type": "boolean"},
+            {"type": "array", "items": {"type": "string", "enum": ["laugh", "sigh", "breath", "pause"]}}
+          ],
+          "description": "Allow non-speech sounds (sound=\"laugh\" etc.), all or a list. Default: false.",
+          "default": false
+        },
+        "minConfidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Drop STT emotion labels whose confidence is below this. Labels without a confidence are kept. Default: 0.5.",
+          "default": 0.5
+        },
+        "default": {
+          "type": "string",
+          "enum": ["neutral", "happy", "excited", "calm", "empathetic", "sad", "serious", "surprised", "curious", "angry"],
+          "description": "The style every reply starts in. Default: 'neutral'.",
+          "default": "neutral"
+        }
+      },
+      "additionalProperties": false
+    },
     "noiseIsolation": {
       "oneOf": [
         {

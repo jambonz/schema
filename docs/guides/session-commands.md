@@ -183,7 +183,7 @@ This pattern is essential for applications like real-time translation, where you
 
 ## Agent Update
 
-The `updateAgent()` method sends mid-conversation updates to an active `agent` verb. Four operation types are supported:
+The `updateAgent()` method sends mid-conversation updates to an active `agent` verb. Five operation types are supported:
 
 ### Update Instructions
 
@@ -226,6 +226,17 @@ session.updateAgent({
       },
     },
   ],
+});
+```
+
+### Update Emotion
+
+Change the `emotion` settings of an agent verb that has them (fields left out keep their value):
+
+```typescript
+session.updateAgent({
+  type: 'update_emotion',
+  emotion: { emotions: ['calm', 'empathetic'], sounds: false },
 });
 ```
 
