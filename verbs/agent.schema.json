@@ -263,7 +263,7 @@
     },
     "eventHook": {
       "$ref": "../components/actionHook",
-      "description": "A webhook invoked for agent events. Receives event types: 'user_transcript' (user speech recognized), 'llm_response' (assistant reply), 'user_interruption' (barge-in detected), and 'turn_end' (end-of-turn summary with transcript, response, and latency metrics). With vendor \"harness\" it also receives 'harness_failure' ({reason, message}) when onHarnessFailure runs, and turn_end carries `engine: \"harness\"`, `harness.turn_record` and `latency.harness_first_chunk_ms`."
+      "description": "A webhook invoked for agent events. Receives event types: 'user_transcript' (user speech recognized), 'llm_response' (assistant reply), 'user_interruption' (barge-in detected, with its cause and what the caller heard), 'turn_end' (end-of-turn summary with transcript, response, and latency metrics), 'overlapping_speech' (caller spoke over the reply without interrupting it: ignored, held or answered), 'interrupt_prediction_ignored', 'no_response_timeout' and 'llm_error' ({stage, vendor, model, message, retrying}). See callback:agent-turn for the payloads. With vendor \"harness\" it also receives 'harness_failure' ({reason, message}) when onHarnessFailure runs, and turn_end carries `engine: \"harness\"`, `harness.turn_record` and `latency.harness_first_chunk_ms`."
     },
     "toolHook": {
       "$ref": "../components/actionHook",
