@@ -36,6 +36,21 @@ Lower threshold = faster turn transitions (more aggressive). Default is 0.5.
 
 **IMPORTANT NOTE**: you must have a krisp API key in order to utilize this module on a self-hosted jambonz system.  Please contact us at support@jambonz.org if you need more details.
 
+**`"jambonz"`** — Uses the jambonz acoustic end-of-turn model, which runs inside the media server and needs no vendor key. It listens to how the caller stops speaking (intonation, rhythm, trailing words) and is tuned for telephone audio. Tune it the same way:
+
+```json
+{
+  "turnDetection": {
+    "mode": "jambonz",
+    "threshold": 0.9
+  }
+}
+```
+
+For `jambonz`, `threshold` is where the threshold starts when the caller goes quiet; it falls to 0 over 1.6 seconds of silence, so every turn ends by then. Default is 0.9.
+
+`bargeIn.strategy: "interruptPrediction"` is not available with `"jambonz"` turn detection; the agent uses the `vad` barge-in strategy instead.
+
 ## Early generation (speculative preflight)
 
 Early generation speculatively sends the transcript to the LLM *before* end-of-turn is confirmed. If the transcript matches when the turn does end, buffered tokens are released immediately — shaving off the LLM prompt time. If the user keeps talking and the transcript changes, the speculative response is discarded. This is a latency optimization with no correctness downside.
