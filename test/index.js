@@ -3650,6 +3650,25 @@ test('an app using phonic_s2s validates (exactly one oneOf match)', () => {
   assert.strictEqual(result.valid, true, JSON.stringify(result.errors));
 });
 
+/* ---- agent turnDetection ---- */
+console.log('\nagent turnDetection');
+
+const agentLlm = {vendor: 'openai', model: 'gpt-4o'};
+
+test('accepts turnDetection jambonz as a string and an object', () => {
+  validateVerb('agent', {llm: agentLlm, turnDetection: 'jambonz'}, console);
+  validateVerb('agent', {llm: agentLlm, turnDetection: {mode: 'jambonz', threshold: 0.6}}, console);
+});
+
+test('still accepts turnDetection krisp', () => {
+  validateVerb('agent', {llm: agentLlm, turnDetection: {mode: 'krisp', threshold: 0.3, model: 'x'}}, console);
+});
+
+test('rejects an unknown turnDetection mode', () => {
+  assertThrows(() => validateVerb('agent', {llm: agentLlm, turnDetection: 'smartturn'}, console));
+  assertThrows(() => validateVerb('agent', {llm: agentLlm, turnDetection: {mode: 'smartturn'}}, console));
+});
+
 /* ---- summary ---- */
 console.log(`\n${passed} passed, ${failed} failed\n`);
 if (failed > 0) process.exit(1);
