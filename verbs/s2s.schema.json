@@ -24,14 +24,20 @@
     {
       "verb": "s2s",
       "vendor": "openai",
-      "model": "gpt-4o-realtime",
+      "model": "gpt-realtime-2.1",
       "llmOptions": {
-        "messages": [
-          {
-            "role": "system",
-            "content": "You are a helpful voice assistant."
+        "session_update": {
+          "type": "realtime",
+          "instructions": "You are a helpful voice assistant.",
+          "audio": {
+            "output": {
+              "voice": "marin"
+            }
           }
-        ]
+        },
+        "response_create": {
+          "instructions": "Greet the caller and ask how you can help."
+        }
       },
       "actionHook": "/s2s-complete"
     }
