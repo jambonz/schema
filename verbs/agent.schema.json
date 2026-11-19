@@ -94,7 +94,7 @@
         },
         "vendor": {
           "type": "string",
-          "description": "Detection vendor for strategy 'interruptPrediction'; defaults to 'krisp' (currently the only option). Not used with strategy 'vad'."
+          "description": "Detection vendor for strategy 'interruptPrediction': 'krisp' (default) or 'jambonz'. It must match turnDetection when that is 'krisp' or 'jambonz' (they share one session). Not used with strategy 'vad'."
         },
         "threshold": {
           "type": "number",
