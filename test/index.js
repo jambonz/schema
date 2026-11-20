@@ -3669,6 +3669,25 @@ test('rejects an unknown turnDetection mode', () => {
   assertThrows(() => validateVerb('agent', {llm: agentLlm, turnDetection: {mode: 'smartturn'}}, console));
 });
 
+/* ---- agent noiseIsolation ---- */
+console.log('\nagent noiseIsolation');
+
+for (const vendor of ['krisp', 'rnnoise', 'kugelaudio', 'aicoustics']) {
+  test(`accepts noiseIsolation shorthand ${vendor}`, () => {
+    validateVerb('agent', {llm: agentLlm, noiseIsolation: vendor}, console);
+  });
+}
+
+test('accepts noiseIsolation aicoustics object form', () => {
+  validateVerb('agent', {llm: agentLlm, noiseIsolation: {
+    mode: 'aicoustics', level: 80, direction: 'write', model: 'quail-s-8khz.aicmodel'
+  }}, console);
+});
+
+test('rejects an unknown noiseIsolation shorthand', () => {
+  assertThrows(() => validateVerb('agent', {llm: agentLlm, noiseIsolation: 'nosuchvendor'}, console));
+});
+
 /* ---- summary ---- */
 console.log(`\n${passed} passed, ${failed} failed\n`);
 if (failed > 0) process.exit(1);

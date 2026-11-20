@@ -64,11 +64,12 @@ For other STT vendors with native turn-taking (assemblyai, speechmatics), early 
 
 ## Noise isolation
 
-The `noiseIsolation` property enables server-side noise cancellation on the call audio. By default it filters the inbound (caller) audio, improving STT accuracy in noisy environments. It can also be configured to filter outbound audio via the `direction` option. Three vendors are available:
+The `noiseIsolation` property enables server-side noise cancellation on the call audio. By default it filters the inbound (caller) audio, improving STT accuracy in noisy environments. It can also be configured to filter outbound audio via the `direction` option. Four vendors are available:
 
 - **`"krisp"`** — Krisp's proprietary noise cancellation. Requires a Krisp API key on self-hosted systems.
 - **`"rnnoise"`** — Open-source RNNoise-based noise cancellation. No API key required.
 - **`"kugelaudio"`** — KugelAudio Clarity (`clarity-1`) cloud speech enhancement. Uses a KugelAudio speech credential with "use for noise isolation" enabled (pick one with `label` in the object form, or pass `auth: {apiKey, apiUri}` inline); adds a short delay (the round trip to KugelAudio) to the filtered audio. `level` is ignored.
+- **`"aicoustics"`** — ai-coustics speech enhancement, running on the media server. Requires an ai-coustics license on self-hosted systems. Has native 8 kHz and 16 kHz models; the filtered audio is delayed by the model's algorithmic delay (about 30 ms with the default 8 kHz model).
 
 Shorthand (default settings):
 
@@ -90,10 +91,10 @@ Detailed configuration:
 }
 ```
 
-- `mode` — Vendor: `"krisp"` or `"rnnoise"`.
+- `mode` — Vendor: `"krisp"`, `"rnnoise"`, `"kugelaudio"` or `"aicoustics"`.
 - `level` — Suppression level 0–100. Higher values are more aggressive. Default: 100.
 - `direction` — `"read"` filters caller audio (default), `"write"` filters outbound audio.
-- `model` — Optional model name override.
+- `model` — Optional model name override. For `aicoustics`, a model file name in the media server's model directory (paths are rejected).
 
 Noise isolation can also be enabled/disabled mid-call via the `config` verb, the REST LCC API, or a WebSocket inject command (`noiseIsolation:status`).
 
