@@ -340,7 +340,7 @@
       "oneOf": [
         {
           "type": "string",
-          "enum": ["krisp", "rnnoise", "kugelaudio", "aicoustics"],
+          "enum": ["krisp", "rnnoise", "kugelaudio", "aicoustics", "jambonz"],
           "description": "Shorthand — enable noise isolation with the specified vendor using default settings."
         },
         {
@@ -349,7 +349,7 @@
           "properties": {
             "mode": {
               "type": "string",
-              "description": "Noise isolation vendor/mode: 'krisp', 'rnnoise', 'kugelaudio' or 'aicoustics'."
+              "description": "Noise isolation vendor/mode: 'krisp', 'rnnoise', 'kugelaudio', 'aicoustics' or 'jambonz' (the in-house model)."
             },
             "label": {
               "type": "string",
@@ -382,7 +382,7 @@
             },
             "model": {
               "type": "string",
-              "description": "Optional model name override. For aicoustics, the name of a model file in the media server's ai-coustics model directory; paths are rejected."
+              "description": "Optional model name override. For aicoustics and jambonz, the name of a model file in the media server's model directory for that vendor; paths are rejected."
             }
           },
           "required": ["mode"],

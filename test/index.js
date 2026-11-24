@@ -3672,7 +3672,7 @@ test('rejects an unknown turnDetection mode', () => {
 /* ---- agent noiseIsolation ---- */
 console.log('\nagent noiseIsolation');
 
-for (const vendor of ['krisp', 'rnnoise', 'kugelaudio', 'aicoustics']) {
+for (const vendor of ['krisp', 'rnnoise', 'kugelaudio', 'aicoustics', 'jambonz']) {
   test(`accepts noiseIsolation shorthand ${vendor}`, () => {
     validateVerb('agent', {llm: agentLlm, noiseIsolation: vendor}, console);
   });
@@ -3682,6 +3682,10 @@ test('accepts noiseIsolation aicoustics object form', () => {
   validateVerb('agent', {llm: agentLlm, noiseIsolation: {
     mode: 'aicoustics', level: 80, direction: 'write', model: 'quail-s-8khz.aicmodel'
   }}, console);
+});
+
+test('accepts noiseIsolation jambonz object form', () => {
+  validateVerb('agent', {llm: agentLlm, noiseIsolation: {mode: 'jambonz', level: 60}}, console);
 });
 
 test('rejects an unknown noiseIsolation shorthand', () => {
